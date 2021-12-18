@@ -62,9 +62,7 @@ Notes:
 
 The following image summarizes the model for an **sc_group**, in the case where a set of `X` array layers shares the `obs` and `var` dataframes. This can be generalized to _multiple different groups_ of what is depicted below to capture cases where the  `X` array layers do not share the `obs` and `var` dataframes.
 
-<p id="gdcalert1" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image1.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert2">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-![alt_text](images/image1.png "image_tooltip")
+![matrix schema](./images/matrix.png)
 
 And for the entire **sc_dataset**, containing one or more named **sc_group**:
 
@@ -156,7 +154,7 @@ A more complicated scenario where the user slices out of a cloud-based dataset, 
 
 10x has two assays that generate different data types, but I think they reduce to the similar problems: ATAC/RNA multi-omics and CITE-seq (protein + RNA)
 
-**ATAC/RNA multi-omics. **
+### ATAC/RNA multi-omics
 
 These experiments generate two data modalities from the same cells, and have separate filtering and analysis steps. These measure a subset of the same set of "gene" annotations, but might have a non-zero difference. So, they might produce the following X matrices (shapes in parentheses):
 
@@ -175,7 +173,7 @@ The above can be represented by the following:
 * There will be a super-group containing four sc_groups:  RNA.raw, RNA.filtered, ATAC.normalized and ATAC.filtered
 * Each group will have separate obs/var dataframes, and separate X arrays
 
-RNA:
+### RNA
 
 * RNA.raw - along with its unfiltered obs & var, will be represented as a sc_group with **m** observations and **n** variables. The RNA.raw X will be a TileDB array with a single attribute containing the RNA.raw layer.
 * RNA.filtered & RNA.normalized are contained in a single sc_group with **o** observations and **p** variables. The filtered and normalized values can be either stored in a single array if they have the same coordinates, or as two arrays if they differ in which cells have a value.
@@ -184,7 +182,7 @@ In the above cases, it is most likely that the X arrays will be sparse.
 
 ATAC is similar.
 
-**CITE-seq:**
+### CITE-seq
 
 This is similar to ATAC/RNA except that the two modalities measure _different, non-overlapping feature sets _(protein and RNA). This assay might produce the following X matrices:
 
