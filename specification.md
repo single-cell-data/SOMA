@@ -56,11 +56,9 @@ Notes:
     * It could be **dense**, in which case there must exist some kind of a mapping between the string labels and the integer indices.
     * It could be **sparse**, in which case the labels could just be the string dimensions.
 * The auxiliary dataframes and arrays can be anything (e.g., `reducedDims` in SingleCellExperiment). These should be able to be efficiently joined with `obs` and `var` to produce the labels to query `X` with.
-* There can be more than one `X` arrays, and we will distinguish between two cases:
-    * They _share_ the same labels/coordinates and non-empty cells. In that case, we will talk about “layers” and use an intuitive API (see “attributes” in the TileDB implementation).
-    * They _do not share_ the same labels/coordinates. In that case, we will talk about separate arrays with their own coordinates.
+* There can be more than one `X` arrays. They must the same labels/coordinates and non-empty cells. We call these multiple arrays “layers” and use an intuitive API (see “attributes” in the TileDB implementation).
 
-The following image summarizes the model for an **sc_group**, in the case where a set of `X` array layers shares the `obs` and `var` dataframes. This can be generalized to _multiple different groups_ of what is depicted below to capture cases where the  `X` array layers do not share the `obs` and `var` dataframes.
+The following image summarizes the model for an **sc_group**, in the case where a set of `X` array layers shares the `obs` and `var` dataframes. This can be generalized to _multiple different groups_ of what is depicted below to capture cases where the `X` array layers do not share the `obs` and `var` dataframes.
 
 ![matrix schema](./images/matrix.png)
 
@@ -93,10 +91,10 @@ A handful of simple use cases to demonstrate possible usage.
 Unified single cell data corpus available on the cloud, at s3://giant-dataset/.  User's can open, slice and extract data in their format of choice.  In this case, we are extracting it as H5AD/AnnData. A similar method should be available for BioConductor & Seurat toolchains.
 
 ```
-    import tiledb.sc as sc
+    import tiledb.sc as api
 
-    with sc.open("s3://giant-dataset/") as full_corpus:
-      obs_filter = sc.filter(
+    with api.open("s3://giant-dataset/") as full_corpus:
+      obs_filter = api.filter(
     	"cell_type in ['lung', 'heart'] and organism == 'human'"
       )
       query = full_corpus[obs_filter, :]
@@ -109,11 +107,11 @@ Unified single cell data corpus available on the cloud, at s3://giant-dataset/. 
 Related, the user may wish to perform the same extraction from a cloud dataset, but simply introspect the cloud slice in a notebook and calculate mean expression for a set of genes and a type of cell/tissue:
 
 ```
-    import tiledb.sc as sc
+    import tiledb.sc as api
 
-    with sc.open("s3://giant-dataset/") as full_corpus:
-    	obs_filter = sc.filter("tissue == 'tongue'")
-    	var_filter = sc.filter("pathway == 'ABCA1'")
+    with api.open("s3://giant-dataset/") as full_corpus:
+    	obs_filter = api.filter("tissue == 'tongue'")
+    	var_filter = api.filter("pathway == 'ABCA1'")
   		query = full_corpus[obs_filter, var_filter]
 
 		obs = query.obs.to_df() # 1D DF indexed by obs_label
@@ -133,11 +131,11 @@ Related, the user may wish to perform the same extraction from a cloud dataset, 
 A more complicated scenario where the user slices out of a cloud-based dataset, and wants to do some complicated analysis using ScanPy, and then save the modified result to their local disk as an AnnData/H5AD
 
 ```
-    import tiledb.sc
+    import tiledb.sc as api
 
-    with tiledb.sc.open("s3://giant-dataset/") as full_corpus:
-    	obs_filter = sc.filter("tissue == 'tongue'")
-    	var_filter = sc.filter("pathway == 'ABCA1'")
+    with api.open("s3://giant-dataset/") as full_corpus:
+    	obs_filter = api.filter("tissue == 'tongue'")
+    	var_filter = api.filter("pathway == 'ABCA1'")
       	query = full_corpus[obs_filter, var_filter]
     adata = query.to_anndata()
 
@@ -225,7 +223,7 @@ A full single cell dataset, composed of one or more sc_group, would look like:
 
 ```
 sc_dataset                              # sc_dataset
-    |_ sc_group_1                        # sc_group
+    |_ sc_group_1                       # sc_group
     |     |_ __meta                     # key-value metadata
     |     |_ X                          # array
     |     |  |_ <timestamped_fragment>  # fragment for versioning 
