@@ -5,14 +5,14 @@
 * Multimodal data, which are becoming more common, lack standardization and support--particularly in the python ecosystem.
 * Data are becoming large enough that moving serialized objects around will soon be infeasible - cloud optimized formats will be required to support the next analysis phase, and out of core processing is becoming increasingly important.
 
-We envision an API that enables users to slice and compute on large (100s millions observations) single cell datasets stored in the cloud using the AnnData, Seurat, or Bioconductor toolchains.
+We envision an API that enables users to slice and compute on large (100s millions observations) single cell datasets stored in the cloud using the [AnnData](https://anndata.readthedocs.io/en/latest/), [SingleCellExperiment](http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html), and [Seurat](https://satijalab.org/seurat/) toolchains.
 
 To get started, we will focus on enabling data to be used by all major toolchains and on nailing the multi-modal data use cases. We believe this will be sufficient to drive API adoption.
 With data silos broken, larger data use cases will be enabled and the need for a cloud-optimized data format will be more widely felt.
 
 Initial Focus:
 * A standardized single-cell container, with (basic) read & query access to the data in the container.
-* Import/export from all commonly used in-memory formats (eg, [AnnData](https://anndata.readthedocs.io/en/latest/), [SingleCellExperiment](http://bioconductor.org/packages/release/bioc/html/SingleCellExperiment.html), [Seurat](https://satijalab.org/seurat/))
+* Import/export from all commonly used in-memory formats (eg, AnnData, SingleCellExperiment, or Seurat)
 * Access to underlying native (eg, TileDB) objects to allow advanced use cases
 * Python and R support
 
