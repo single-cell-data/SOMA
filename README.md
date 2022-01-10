@@ -26,7 +26,7 @@ The core functions of the initial API are:
 * Simple access to sc_dataset/sc_group properties (eg, obs, var, X) and ability to slice/query on the entire object based on obs/var labels.
 * For Python, Import/export an in-memory AnnData object (for subsequent use with AnnData/ScanPy) from either a slice/query result or the entire object.  For R, same basic function but to/from Seurat and SingleCellExperiment
 
-This initial draft proposes an API for single-cell data that attempts to unify the data models followed by AnnData, Bioconductor’s SingleCellExperiment, Seurat and CXG.
+This [initial draft](specification.md) proposes an API for single-cell data that attempts to unify the data models followed by AnnData, Bioconductor’s SingleCellExperiment, Seurat and CXG.
 The initial API surface is intentionally focused on a small initial set of use cases, on the assumption that API users can always escape to more complete tool chain specific API, or to underlying (advanced) native objects (eg, TileDB).
 We are seeking community feedback.
 
