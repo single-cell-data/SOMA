@@ -31,3 +31,41 @@ The initial API surface is intentionally focused on a small initial set of use c
 We are seeking community feedback.
 
 It first describes a general data model that captures all the above frameworks. Then it explains how TileDB can implement this model on-disk so that we have a concrete implementation reference. Next, it describes how TileDB can query this model with its generic array API “soon” (as some minor features are a work in progress). Subsequently, it proposes a more single-cell-specific API that can easily be built on top of TileDB’s, in order to hide the TileDB-specific implementation and API. We will focus only on Python and R for now for simplicity. Finally, it concludes with a list of features that will need to be implemented on the TileDB side in order to have a working prototype very soon.
+
+### Development Roadmap:
+
+Q1 Goal: Demonstrate a proof-of-concept of the Matrix-API and a TileDB-based format implementation that can generate and be created from AnnData, MuData, SingleCellExperiment, MultiAssayExperiment, and Seurat objects.  
+
+#### Deliverables:
+
+* Definition of the matrix API spec for Python, R and C++, fully documented
+* A first pass implementation of the API using TileDB
+* Single-modality data support:
+  * Ability for round-trip AnnData -> matrix API -> write to TileDB format -> read to matrix API -> anndata
+  * Ability for round-trip Seurat -> matrix API -> write to TileDB format -> read to matrix API -> Seurat
+  * Ability for round-trip SingleCellExperiment -> matrix API -> write to TileDB format -> read to matrix API -> SingleCellExperiment
+* Multi-modality data support:
+  * Ability for round-trip MultiAssayExperiment -> matrix API -> write to TileDB format -> read to matrix API -> MultiAssayExperiment
+  * Ability for round-trip mudata -> matrix API -> write to TileDB format -> read to matrix API -> mudata
+* Ability to store analysis results (e.g., graphs, reductions, etc)
+
+
+#### Plan:
+
+| Category | Milestone | Date |
+| --- | --- | --- |
+Foundation (C++) | Ability to import a h5ad file to the TileDB on-disk format that the matrix API will use | Feb 4
+Foundation (C++) | Implement C++ API of the matrix API spec with read support from the TileDB on-disk format | Feb 4
+Python | Define the in-memory format spec for the Python API | Feb 4
+Python | Build the Python API wrapper for the C++ API that implements the matrix API, with focus on reads | Feb 4
+Python | Implement to_anndata from the Python in-memory objects of the matrix API | Feb 18
+Python | Implement from_anndata to the in-memory format of the matrix API spec | Feb 18
+R | Define the in-memory format spec for the R API  (done, need to document) | March 4
+R | Build the R API that wraps the C++ API of the matrix API spec with focus on reads | Feb 11 
+R | Implement to_seurat from the R in-memory objects of the matrix API | March 4
+R | Implement from_seurat to the in-memory format of the matrix API spec (done, need to document | Feb 18
+R | Implement from_single_cell_experiment for bioconductor | March 4
+R | Implement to_single_cell_experiment for bioconductor | March 4
+Common | Write from the in-memory TileDB formats to TileDB on disk | March 4
+Common | Storage of analysis results, such as, graphs, reductions, etc | Mar 11
+Common | Multimodal support with sc_dataset | Mar 18
