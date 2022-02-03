@@ -55,8 +55,8 @@ Q1 Goal: Demonstrate a proof-of-concept of the Matrix-API and a TileDB-based for
 
 | Category | Milestone | Date |
 | --- | --- | --- |
-Foundation (C++) | Ability to import a h5ad file to the TileDB on-disk format that the matrix API will use | Feb 4
-Foundation (C++) | Implement C++ API of the matrix API spec with read support from the TileDB on-disk format | Feb 4
+Foundation | Ability to import a h5ad file to the TileDB on-disk format that the matrix API will use | Feb 4
+Foundation | Implement C++ API of the matrix API spec with read support from the TileDB on-disk format | Feb 4
 Python | Define the in-memory format spec for the Python API | Feb 4
 Python | Build the Python API wrapper for the C++ API that implements the matrix API, with focus on reads | Feb 4
 Python | Implement to_anndata from the Python in-memory objects of the matrix API | Feb 18
