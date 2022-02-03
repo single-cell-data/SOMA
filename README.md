@@ -47,6 +47,7 @@ Q1 Goal: Demonstrate a proof-of-concept of the Matrix-API and a TileDB-based for
 * Multi-modality data support:
   * Ability for round-trip MultiAssayExperiment -> matrix API -> write to TileDB format -> read to matrix API -> MultiAssayExperiment
   * Ability for round-trip mudata -> matrix API -> write to TileDB format -> read to matrix API -> mudata
+  * Ability for round-trip Seurat -> matrix API -> write to TileDB format -> read to matrix API -> Seurat
 * Ability to store analysis results (e.g., graphs, reductions, etc)
 
 
