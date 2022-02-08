@@ -28,7 +28,7 @@ The core functions of the initial API are:
 
 * Compose a "sc dataset" Python object out of pre-existing TileDB arrays.  This object is the composition of one or more sc_groups (terms defined below).
 * Simple access to sc_dataset/sc_group properties (eg, obs, var, X) and ability to slice/query on the entire object based on obs/var labels.
-* For Python, Import/export an in-memory AnnData object (for subsequent use with AnnData/ScanPy) from _either _a slice/query result or the entire object.  For R, same basic function but to/from Seurat and SingleCellExperiment
+* For Python, Import/export an in-memory AnnData object (for subsequent use with AnnData/ScanPy) from _either_ a slice/query result or the entire object.  For R, same basic function but to/from Seurat and SingleCellExperiment
 
 This draft, written by TileDB and CZI, proposes an API for single-cell data that attempts to unify the data models followed by [AnnData](https://anndata.readthedocs.io/en/latest/), Bioconductor’s [SingleCellExperiment](http://bioconductor.org/books/3.13/OSCA.intro/the-singlecellexperiment-class.html), [Seurat](https://github.com/satijalab/seurat/) and [CXG](https://github.com/chanzuckerberg/single-cell-explorer/blob/main/dev_docs/cxg.md). We are seeking community feedback.
 
@@ -182,7 +182,7 @@ ATAC is similar.
 
 ### CITE-seq
 
-This is similar to ATAC/RNA except that the two modalities measure _different, non-overlapping feature sets _(protein and RNA). This assay might produce the following X matrices:
+This is similar to ATAC/RNA except that the two modalities measure _different, non-overlapping feature sets_ (protein and RNA). This assay might produce the following X matrices:
 
 (m, n): RNA.raw
 
@@ -190,7 +190,7 @@ This is similar to ATAC/RNA except that the two modalities measure _different, n
 
 (o, p) RNA.normalized (a transformation of RNA.filtered)
 
-(m, l) Protein.raw (note: _dense _data, but m >>> l. Usually ~ 50-200 features total)
+(m, l) Protein.raw (note: _dense_ data, but m >>> l. Usually ~ 50-200 features total)
 
 (x, y) Protein.filtered (some genes and cells masked)
 
