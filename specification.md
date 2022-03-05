@@ -36,18 +36,18 @@ It first describes a general data model that captures all the above frameworks. 
 
 ## The Data Model
 
-Based on our research and avoiding a lot of the jargon, there are the following “components” in all the single-cell projects:
+Based on our research and avoiding a lot of the jargon, there are the following “components” in typical single-cell projects, which account for various means of representing filtered & transformed datasets, and associating data from different assays/modalities.
 
-* One or more **labeled 2D arrays** that we will call `X` (similar to AnnData and CXG - Seurat and SingleCellExperiment call them `assays`, and Loom calls them `layers`).
+* A **sc_group**, a characterization of a set of cells that can be cast into a matrix structure with extensive annotations. An `sc_group` often groups variables of the same type and assay (say, `RNA`, `ATAC`, `Protein`) and cells sourced from comparable homogeneously processed samples. An `sc_group` would be called `AnnData` in anndata, and `assay` in `SingleCellExperiment` and Seurat. Every `sc_group` exists within a `sc_dataset`.
+* A **sc_dataset**, which is a set of named `sc_groups`.  Primary use is representing a collection of related annotated matrix data, including progressively filtered data (raw vs norm), related assays with different labels/shape, etc.
+
+Within an `sc_group`, we find
+
+* One or more **labeled 2D arrays** that we will call `X` (as within AnnData and CXG - Seurat and SingleCellExperiment call them `assays`, and Loom calls them `layers`).
 * A **dataframe** called `obs`, which contains the row labels for the `X` arrays (in SingleCellExperient the `X` arrays are transposed, so `obs` are the column labels).
 * A **dataframe** called `var`, which contains the column labels for the `X` arrays (in SingleCellExperient the `X` arrays are transposed, so `var` are the row labels).
-* Any **key-value metadata**.
-* Any other number of auxiliary **dataframes** and **arrays**.
-
-In addition to the core model above, there exist various means of representing filtered & transformed datasets, and associating data from different assays/modalities.  We propose modelling as:
-
-* A **sc_group**, composed of the above elements -- a self-consistent set of `X` matrices (aka _layers_) and their axis labels (`obs`,`var`), where all three share consistent shape and indexing labels.  Every `sc_group` exists within a `sc_dataset`.
-* A **sc_dataset**, which is a set of named `sc_groups`.  Primary use is representing a collection of related annotated matrix data, including progressively filtered data (raw vs norm), related assays with different labels/shape, etc.
+* Any **key-value metadata** called `uns`.
+* Any other number of auxiliary **dataframes** and **arrays**. [Why do we think we don't need `obsm` and `varm`?]
 
 Notes:
 
