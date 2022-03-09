@@ -47,7 +47,7 @@ Within an `sc_group`, we find
 * A **dataframe** called `obs`, which contains the row labels for the `X` arrays (in SingleCellExperient the `X` arrays are transposed, so `obs` are the column labels).
 * A **dataframe** called `var`, which contains the column labels for the `X` arrays (in SingleCellExperient the `X` arrays are transposed, so `var` are the row labels).
 * Any **key-value metadata** called `uns`.
-* Any other number of auxiliary **dataframes** and **arrays**. [Why do we think we don't need `obsm` and `varm`?]
+* Any other number of auxiliary **dataframes** and **arrays**.
 
 Notes:
 
