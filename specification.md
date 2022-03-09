@@ -43,20 +43,11 @@ Based on our research and avoiding a lot of the jargon, there are the following 
 
 Within an `sc_group`, we find
 
-* One or more **labeled 2D arrays** that we will call `X` (as within AnnData and CXG - Seurat and SingleCellExperiment call them `assays`, and Loom calls them `layers`).
-* A **dataframe** called `obs`, which contains the row labels for the `X` arrays (in SingleCellExperient the `X` arrays are transposed, so `obs` are the column labels).
-* A **dataframe** called `var`, which contains the column labels for the `X` arrays (in SingleCellExperient the `X` arrays are transposed, so `var` are the row labels).
+* One or more **labeled 2D arrays**[^1] called `X` (as within AnnData and CXG - Seurat and SingleCellExperiment call them `assays`, and Loom calls them `layers`) that can be sliced using string values, or values of any data type other than the typical integer matrix indices. There can be more than one `X` array but they must share the same labels/coordinates and non-empty cells. We call these multiple arrays “layers” and use an intuitive API (see “attributes” in the TileDB implementation).
+* A **dataframe** called `obs`, which contains the row labels for the `X` arrays (in SingleCellExperiment the `X` arrays are transposed, so `obs` are the column labels).
+* A **dataframe** called `var`, which contains the column labels for the `X` arrays (in SingleCellExperiment the `X` arrays are transposed, so `var` are the row labels).
 * Any **key-value metadata** called `uns`.
-* Any other number of auxiliary **dataframes** and **arrays**.
-
-Notes:
-
-* A “labeled 2D array” is just a 2D array that can be sliced potentially using string values, or values of any data type other than the typical integer matrix indices.
-* The way a labeled 2D array is implemented is _specific to the storage engine that implements it_. For example:
-    * It could be **dense**, in which case there must exist some kind of a mapping between the string labels and the integer indices.
-    * It could be **sparse**, in which case the labels could just be the string dimensions.
-* The auxiliary dataframes and arrays can be anything (e.g., `reducedDims` in SingleCellExperiment). These should be able to be efficiently joined with `obs` and `var` to produce the labels to query `X` with.
-* There can be more than one `X` arrays. They must the same labels/coordinates and non-empty cells. We call these multiple arrays “layers” and use an intuitive API (see “attributes” in the TileDB implementation).
+* Any number of auxiliary **dataframes** and **arrays**. These can contain anything (e.g., `reducedDims` in SingleCellExperiment) but should be able to efficiently join with `obs` and `var` to produce the labels to query `X`.
 
 The following image summarizes the model for an **sc_group**, in the case where a set of `X` array layers shares the `obs` and `var` dataframes. This can be generalized to _multiple different groups_ of what is depicted below to capture cases where the `X` array layers do not share the `obs` and `var` dataframes.
 
@@ -226,7 +217,7 @@ sc_dataset                              # sc_dataset
     |_ sc_group_1                       # sc_group
     |     |_ __meta                     # key-value metadata
     |     |_ X                          # array
-    |     |  |_ <timestamped_fragment>  # fragment for versioning 
+    |     |  |_ <timestamped_fragment>  # fragment for versioning
     |     |              |_ layer_1     # attribute (X layer)
     |     |              |_ layer_2     # attribute (X layer)
     |     |              |_ …
@@ -296,12 +287,12 @@ A similar API can be imagined for other language ecosystems.
 #### Create
 
 ```
-import tiledb.sc as api 
+import tiledb.sc as api
 
 # Compose sc_group from a TileDB group containing required arrays.
 # Validates that the triple <obs, var, X> are all consistent &
 # compatible.
-# 
+#
 # Example validation/constraints:
 #	* indexing dims exist and are of same type, etc
 #	* all arrays are in the group
@@ -332,7 +323,7 @@ meta=None | dict,
 api.create(
 	<super_group_uri>,
 groups={
-    "normalized": normalized_group, 
+    "normalized": normalized_group,
     "unfiltered": unfiltered_group
     },
 default_group="normalized",
@@ -342,7 +333,7 @@ default_group="normalized",
 #### Import/export
 
 ```
-# Create from in-memory AnnData/ScanPy. Suggest a similar approach 
+# Create from in-memory AnnData/ScanPy. Suggest a similar approach
 # for R ecosystem (Seurat & SingleCellExperiment)
 import anndata
 adata = anndata.read_h5ad("file.h5ad")
@@ -362,7 +353,7 @@ adata = sc_group.to_anndata()
 # sc_group in the sc_super_group.  Also works as a Python context
 # manager.
 # This open function, similar to the functionality supported in
-# TileDB, can take as arguments timestamps to support versioning 
+# TileDB, can take as arguments timestamps to support versioning
 # and time traveling.
 sc_group = api.open(<uri>)
 
@@ -402,7 +393,7 @@ with api.open(<uri>) as sc_group:
     ]
 
 # or, to configure query (eg, incremental results, constrain result
-# to partial attributes, etc). 
+# to partial attributes, etc).
 with api.open(<uri>) as sc_group:
     sc_group_slice = sc_group.query(
     	return_incomplete=True,
@@ -427,8 +418,8 @@ sc_group_slice.X["layer"].to_array() # dense ndarray
 sc_group_slice.aux['arrayname'].to_array() # dense ndarray
 # sparse - dataframe, with 2D index (obs_label, var_label)
 # or dict-like (COO): {
-#    "obs_labels": 1d_ndarray, 
-#    "var_labels": 1d_ndarray, 
+#    "obs_labels": 1d_ndarray,
+#    "var_labels": 1d_ndarray,
 #    "layer_data": 1d_ndarray
 # }
 sc_group_slice.X["layer"].to_df()
@@ -497,3 +488,9 @@ The `api.create()` and `sc_group.to_anndata()` functions imply a conventional ma
     * The Unicode issues will go away eventually, and in the meantime we can use the same conventions as TileDB uses elsewhere (to_pandas(), df[], etc)
     * Pandas categorical can be left to the user to apply after they run to_anndata(), eg, by using the [AnnData.strings_to_categoricals()](https://anndata.readthedocs.io/en/latest/generated/anndata.AnnData.strings_to_categoricals.html#anndata.AnnData.strings_to_categoricals) function.
     * A default mapping of type systems can be established for the remainder, eg, when creating from AnnData, a Pandas dataframe column of type **bool** will be cast to uint8.  Most, eg, np.object will error.  Most of this is already in place in the TileDB-Py and TileDB-R interfaces, and we can simply use it it.
+
+
+<!-- footnotes -->
+[^1]: The implementation of a labeled 2D array is _specific to the storage engine that implements it_. For example:
+    * It could be **dense**, in which case there must exist some kind of a mapping between the string labels and the integer indices.
+    * It could be **sparse**, in which case the labels could just be the string dimensions.
