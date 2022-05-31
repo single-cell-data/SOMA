@@ -1,4 +1,4 @@
-## Unified Single-cell Data Model and API
+## Unified Single-Cell Data Model and API
 
 Opportunity:
 
@@ -26,8 +26,8 @@ Longer-term goals:
 
 The core functions of the initial API are:
 
-* Compose a _SOMA collection_ object out of pre-existing TileDB arrays.  This object is the composition of one or more _SOMAs_(terms defined below).
-* Simple access to SOMA/SOMA-collection properties (e.g., `obs`, `var`, `X`) and ability to slice/query on the entire object based on `obs`/`var` labels.
+* Support storage of single-cell datasets, as well as collections of single-cell datasets, in TileDB groups. As discussed below in "The Data Model", datasets will be referred to as _SOMAs_.
+* Simple access to dataset/collection properties (e.g., `obs`, `var`, `X`) and ability to slice/query on the entire collection based on `obs`/`var` labels.
 * For Python, import/export an in-memory AnnData object (for subsequent use with AnnData/ScanPy) from _either_ a slice/query result or the entire object.  For R, same basic function but to/from Seurat and SingleCellExperiment.
 
 This draft, written by TileDB and CZI, proposes an API for single-cell data that attempts to unify the data models followed by [AnnData](https://anndata.readthedocs.io/en/latest/), Bioconductor’s [SingleCellExperiment](http://bioconductor.org/books/3.13/OSCA.intro/the-singlecellexperiment-class.html), [Seurat](https://github.com/satijalab/seurat/) and [CXG](https://github.com/chanzuckerberg/single-cell-explorer/blob/main/dev_docs/cxg.md). We are seeking community feedback.
@@ -41,7 +41,7 @@ Based on our research and avoiding a lot of the jargon, there are the following 
 * A **SOMA** (for _Stack of Matrices, Annotated_ -- note also the Greek etymlogy _σῶμα_, "body") is a characterization of a set of cells that can be cast into a matrix structure with extensive annotations. A SOMA often groups variables of the same type and assay (say, `RNA`, `ATAC`, `Protein`) and cells sourced from comparable homogeneously processed samples. An SOMA would be called `AnnData` in anndata, and `assay` in `SingleCellExperiment` and Seurat. Every SOMA exists within a SOMA Collection.
 * A **SOMA collection**, which is a set of named SOMAs.  Primary use is representing a collection of related annotated matrix data, including progressively filtered data (raw vs. norm), related assays with different labels/shape, etc.
 
-Within a a SOMA, we find:
+Within a SOMA, we find:
 
 * One or more **labeled 2D arrays**[^1] called `X` (as within AnnData and CXG -- Seurat and SingleCellExperiment call them `assays`, and Loom calls them `layers`) that can be sliced using string values, or values of any data type other than the typical integer matrix indices. There can be more than one `X` array but they must share the same labels/coordinates and non-empty cells. We call these multiple arrays “layers” and use an intuitive API (see “attributes” in the TileDB implementation).
 * A **dataframe** called `obs`, which contains the row labels for the `X` arrays (in SingleCellExperiment the `X` arrays are transposed, so `obs` are the column labels).
@@ -86,7 +86,7 @@ Unified single-cell-data corpus available on the cloud, at s3://giant-dataset/. 
 
     with api.open("s3://giant-dataset/") as full_corpus:
         obs_filter = api.filter(
-            "cell_type in ['lung', 'heart'] and organism == 'human'"
+            "tissue in ['lung', 'heart'] and organism == 'human'"
         )
         query = full_corpus[obs_filter, :]
         adata = query.to_anndata()  # instantiates in memory
