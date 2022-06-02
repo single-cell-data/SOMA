@@ -229,7 +229,7 @@ Most of the functionality can be implemented via TileDB’s (existing) generic A
 ```
 # Get the obs labels
 obs_array = tiledb.open(<obs_array_uri>)
-obs_qc = tiledb.QueryCondition('cell_type == "lung"') # any query condition here
+obs_qc = tiledb.QueryCondition('tissue == "lung"') # any query condition here
 obs_labels = obs_array.query(qc = obs_qc, cols=["obs_labels"])
 
 # Get the var labels
