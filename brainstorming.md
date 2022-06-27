@@ -1,6 +1,6 @@
 # Introduction
 
-> **Version**: 20220625T150000 [bkm]. Status: brainstorming, pre-proposal, uncirculated
+> **Status**: brainstorming, pre-proposal
 >
 > ℹ️ **Note** - this is an early draft and has not had any review or circulation. It may contain controversial, undecided, or just plain wrong-headed ideas. I expect several iterations will be required to converge the underlying primitives with use cases. Please see `issues` noted throughout the doc for a list of active discussions/debates. In particular, this doc has known gaps in:
 >
@@ -24,17 +24,22 @@ This document is attempting to codify the abstract, language-neutral SOMA data m
 
 # Data Model
 
-The abstract data model comprises three "core" data types, and one specialization intended to improve ease of use and interoperability. The core types are:
+The data model is separated into two layers:
+
+- a set of "foundational" types which are general in nature
+- a set of "composed" types, which are composed from the foundational types, and are intended to improve ease of use and interoperability
+
+The foundational types are:
 
 - SOMACollection - a string-keyed container (key-value map) of other SOMA data types, eg, SOMADataFrame, SOMAMatrix and SOMACollection.
 - SOMADataFrame - a 1-D, string-indexed, multi-column table, with monomorphic columns of equal length -- essentially a single-index dataframe.
 - SOMAMatrix - a 2-D, sparse, string-indexed multi-column matrix, with monomorphic columns of equal length -- essentially a two-index dataframe.
 
-In addition, a convenience type is defined:
+The composed types are:
 
 - SOMA - a specialization and extension of SOMACollection, codifying a set of naming and indexing conventions to represent an annotated, 2-D matrix of observations across a well-defined set of variables.
 
-In this document, the term `dataframe` implies something akin to an Arrow `RecordBatch`, R `data.table` or Python `pandas.DataFrame`, where:
+In this document, the term `dataframe` implies something akin to an Arrow `RecordBatch`, R `data.frame` or Python `pandas.DataFrame`, where:
 
 - dimensions are string-indexed
 - multiple columns may exist, each with a string column name
@@ -43,9 +48,9 @@ In this document, the term `dataframe` implies something akin to an Arrow `Recor
 
 All SOMA data objects are named with URIs.
 
-> ⚠️ **Issue** -- this section would benefit from a data model diagram, helpfing visualize the relationships between the types.
+> ⚠️ **Issue** -- this section would benefit from a data model diagram, helping visualize the relationships between the types.
 
-> ⚠️ **Issue** -- the use of `SOMA` to name the API _and_ a data type is confusing. We should consider a new name for the aforementioned SOMA _type_. _Candidate:_ `SOMAAnnotatedMatrix`?
+> ⚠️ **Issue** -- the use of `SOMA` to name the API _and_ a data type is confusing. We should consider a new name for the aforementioned SOMA _type_. _Candidates suggested:_ `SOMAAnnotatedMatrix`, `SOMAAnnotationEnsemble`, `SOMAEnsemble`, `SOMAAnnotationMatrixEnsemble`, ???
 
 ## Base Type System
 
@@ -53,66 +58,75 @@ The SOMA API borrows its base type system from the Arrow language-agnostic in-me
 
 Where SOMA requires an explicit typing system, it utilizes the Arrow types and schema. SOMA has no specific requirements for the type or serialization system used by the underlying storage engine, other than it be capable of understanding and representing the Arrow types. It is understood and expected that each implementation of SOMA will have data type expressiveness limits (eg, just because you can express a type in he Arrow type system does not mean all SOMA implementations will understand it).
 
+### Type definitions used in this document
+
 In the following doc:
 
-- `primitive` types in this specification refers to Arrow primitive types, eg, `int32`, `float`, etc.
+- `primitive` types in this specification refer to Arrow primitive types, eg, `int32`, `float`, etc.
 - `string` refers to Arrow UTF-8 variable-length `string`, ie, `List<Char>`.
 - `simple` types include all primitive types, plus `string`.
 
-Other Arrow types are explicitly noted as such, eg, `Arrow.RecordBatch`.
-
-> ⚠️ **Issue** - is the use of Arrow as a base type language acceptable? There are others, up to and including inventing a new system, but it seemed prudent to adopt an existing, language neutral specification, which is already supported by many "engines".
+Other Arrow types are explicitly noted as such, eg, `Arrow RecordBatch`.
 
 > ⚠️ **Issue** - are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (ie, no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (eg, RecordBatch, List, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
 
-## Metadata (uns)
+## Metadata
 
 All SOMA objects may be annotated with a small amount of metadata, in the form of a simple key/value map:
 
-- `uns` (map[string, simple]) - string-keyed mapping to any **simple** type (eg, int32, string, etc).
+- `metadata` (map[string, simple]) - string-keyed mapping to any [**simple**](#type-definitions-used-in-this-document) type (eg, int32, string, etc).
 
-Only `simple` types are supported in the metadata values. The metadata lifecycle is the same as its containing object, eg, it will be deleted when the containing object is deleted.
+Only [`simple`](#type-definitions-used-in-this-document) types are supported as metadata values. The metadata lifecycle is the same as its containing object, eg, it will be deleted when the containing object is deleted.
 
-> ⚠️ **Issue** - `uns` - do we need more complex typing for uns values, and if so, how to represent capture what can is required to be supported? (eg, anything Arrow can represent? a subset?)
+> ⚠️ **Issue** - do we need more complex typing for metadata values, and if so, how to represent capture what can is required to be supported? (eg, anything Arrow can represent? a subset?)
 >
-> **Proposal**: restrict `uns` to a mapping of string keys and `simple` values. Extend to complex types in the future as we have concrete use cases which warrant the complexity.
+> **Proposal**: restrict to a mapping of string keys and `simple` values. Extend to complex types in the future as we have concrete use cases which warrant the complexity.
 
-> ⚠️ **Issue** - the name `uns` is not really all that suggestive. **Proposal:** rename `uns` to `metadata`, eg, `print(soma.metadata['version'])`
+## Foundational Types
 
-## SOMACollection
+### SOMACollection
 
 SOMACollection is an unordered, `string`-keyed map of values of type SOMADataFrame, SOMAMatrix, SOMACollection or SOMA. SOMACollection objects are typically persistent, and may be nested to any level (eg, SOMACollection may contain other SOMACollection objects). Keys in the map are unique and singular (no duplicates, ie, it is not a multi-map).
 
-## SOMADataFrame
+The SOMACollection is expected to be used for a variety of use cases:
+
+- as a container of independent objects (eg, a collection of single-cell datasets, each manifest as a [SOMA](#soma) object)
+- as the basis for building other composed types (eg, using SOMACollection to organize pre-defined fields in [SOMA](#soma) such as multiple layers of `X`).
+
+### SOMADataFrame
 
 SOMADataFrame is a 1-D multi-column table of monomorphic arrays, all of equal length -- ie, a "dataframe". The SOMADataFrame has a user-defined schema, which includes:
 
-- a table schema, expressed as an `Arrow.RecordBatch` type, defining number of columns, and their respective names and types
-- the index column name
+- a schema, expressed as an Arrow `Schema`, defining the columns and their respective names and types
+- an index column name, which specifies a column name that exists in the column schema
 
-A SOMADataFrame must contain at least a single column which is the named index column. The index column _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
+A SOMADataFrame must contain at least two columns, one of which is the named index column. The index column _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
 
 Most language-specific implementations will present SOMADataFrame in more convenient forms, such as Python `pandas.DataFrame`, R `data.frame` or other environment-specific data structures. Specific implementations of the SOMA API may extend this type with convertors to/from the underlying data structure, and enforce indexing conventions.
 
 > ⚠️ **Issue** - this spec requires that index column is a `string` type. Most underlying "engines" will support more flexibility. Do we want to enable that flexibility, or stick with requiring string for simplicity/commonality?
 
-## SOMAMatrix
+### SOMAMatrix
 
 SOMAMatrix is a 2-D multi-column table of monomorphic arrays, ie, a "dataframe" with two index dimensions. SOMAMatrix is an extension of SOMADataFrame, with two indexing dimensions. The SOMAMatrix has a user-defined schema, which includes:
 
-- a table schema, expressed as an `Arrow.RecordBatch` type, defining the number of columns, and their respective names and types
-- the _primary_ index column name
-- the _secondary_ index column name
+- a schema, expressed as an Arrow `Schema`, defining the columns and their respective names and types
+- a _primary_ index column name, which specifies a column name that exists in the column schema
+- a _secondary_ index column name, which specifies a column name that exists in the column schema
 
-A SOMAMatrix must contain (minimally) two columns which are the primary and secondary index columns. The index columns _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
+A SOMAMatrix must contain (minimally) three columns, two of which are the primary and secondary index columns. The index columns _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
 
 > ⚠️ **Issue** - SOMAMatrix and SOMADataFrame differ only in the number of dimensions (2 vs 1 respectively). Should they be unified into a single type object/API of more general nature? Clarity vs flexibility?
 
-## SOMA
+## Composed Types
 
-The SOMA type is a specialized SOMACollection, representing an annotated 2-D matrix of observations across a set of variables. The SOMA composes SOMACollection, SOMADataFrame and SOMAMatrix types using a set of predefined fields (keys & values), to represent the annotated matrix. Each predefined field in the SOMA has a well-defined type, dimensionality and indexing convention. Other user defined data may be added to a SOMA, as a SOMA is a specialization of a SOMACollection.
+Composed types are defined as a composition of foundational types, adding constraints such as name, type and indexing. They are intended to facilitate data interoperability, ease of use, and _potentially_ enable implementation optimizations.
 
-Implementations _should_ enforce the naming and indexing constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
+### SOMA
+
+The SOMA type is a specialized SOMACollection, representing an annotated 2-D matrix of observations across a set of variables. The SOMA composes SOMACollection, SOMADataFrame and SOMAMatrix types using a set of predefined fields (keys & values), to represent the annotated matrix. Each predefined field in the SOMA has well-defined typing, dimensionality and indexing. Other user defined data may be added to a SOMA, as a SOMA is a specialization of a SOMACollection.
+
+Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
 
 The predefined fields within SOMA share common indices and `shape`:
 
@@ -121,8 +135,9 @@ The predefined fields within SOMA share common indices and `shape`:
 
 SOMA pre-defined fields are principally differentiated by:
 
+- typing
 - dimensionality, eg, 1-D (SOMADataFrame) or 2-D (SOMAMatrix)
-- index column names, `obs_id` or `var_id` or both
+- index column names, eg, `obs_id` or `var_id` or both
 
 The pre-defined fields are:
 
@@ -140,7 +155,7 @@ The `obs_id` domain for `obsp`, `obsm` and `X` (primary dimension) are the value
 
 As with other SOMACollections, the SOMA also has a `metadata` field, and may contain other user-defined elements.
 
-### SOMA field constraints
+#### SOMA field constraints
 
 The following naming and indexing constraints are defined for the SOMA:
 
@@ -169,6 +184,8 @@ The SOMA API includes functional capabilities around the [SOMA data model](#data
 As any given storage "engine" upon which SOMA is implemented may have additional features and capabilities required to support advanced use cases, it is expected that SOMA implementations will expose engine-specific features. Where possible, these should be implemented to avoid conflict with future changes to the common SOMA API.
 
 > ⚠️ **Issue** - this spec needs to provide guidance on HOW to do that. Fro example, can we carve out some namespace for extensions in the functional API?
+
+> ⚠️ **Issue** - the scope of the functional spec needs to be nailed down. For example, does it include object lifecycle (create, delete, ...) or just the operations an existing object? See John's comments.
 
 In the following, a pseudo-object-oriented syntax is used, eg, `obj.op()` is calling `op()` upon `obj`. Where a type is used, eg, SOMA.op(), it is a `static` operation (ie, no state other than parameters provided).
 
@@ -205,7 +222,7 @@ SOMACollection.open(uri, mode=read|write) -> soco
 SOMACollection.delete(uri) -> void
 SOMACollection.exists(uri) -> bool   # exists and is a SOMACollection
 soco.close()
-soco.uns -> metadata as a SOMAMapping
+soco.metadata -> metadata as a SOMAMapping
 ```
 
 > ⚠️ **Issue** - do we need a specific open/close API, or is the object stateless? Or is that language/environment-specific?
@@ -336,7 +353,7 @@ SOMA.open(uri, mode=read|write) -> soma
 SOMA.delete(uri) -> void
 SOMA.exists(uri) -> bool   # exists and is a SOMA
 soma.close()
-soma.uns -> metadata
+soma.metadata -> metadata as a SOMAMapping
 
 type ValueType = SOMACollection | SOMADataFrame | SOMAMatrix
 
@@ -365,8 +382,33 @@ This is a pre-release specification in active development. As defined by [semver
 
 ## Value Filters
 
-> 🛑 **To be specified** -- a string-based language which can express simple filters and filter combinations based on column values, eg, "col_name == 'value'".
+Value filters are expressions used to filter the results of a `read` operation, and specify which results should be returned. The specific expression syntax is delegated to per-language specifications, and is outside the scope of this document. This specification uses a pseudo-language for _examples_, but per-language specifications must specify a complete syntax.
 
-# Other
+Value filter expressions will have the following capabilities:
+
+- per-column filter expressions which define:
+  - a column name
+  - a comparison operator, supporting ==, !=, <, >, <=, >=
+  - and a constant
+- compound expressions combining other expressions with AND and OR boolean operations
+
+Examples, using a pseudo-syntax:
+
+- `col_A > 0`
+- `col_A > 0 AND col_B != "deleted"`
+
+# Other Issues
 
 > ⚠️ **Issue** language bindings - we need to define the base-level language bindings for Python & R, _somewhere_...
+
+> ⚠️ **Issue** the scope of the spec needs clarity. In particular, are the following in scope?
+>
+> - interfaces to manage the lifecyle of objects in a given storage engine (eg, create, delete, open/close, test for existence)
+> - how objects are externally named (eg, by URI)
+
+# Changelog
+
+1. acceptance of Arrow as base type system
+2. adding explicit separation of foundational and composed types, and clarified the intent of composed types
+3. rename `uns` to `metadata`
+4. Added initial prose for value filter expressions
