@@ -18,9 +18,9 @@ The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible,
 
 The SOMA data model is centered on annotated 2-D matrices, conceptually similar to data structures embedded within existing single-cell data models including Seurat Assay, Bioconductor SingleCellExperiment, and ScanPy AnnData. Where possible, the SOMA API attempts to be general purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
 
-SOMA is an abstract _API specification_, with the goal of enabling multiple concrete API implementations within different computing environments and data storage systems. SOMA does not specify an at-rest serialization format or underlying storage system.
+SOMA is an abstract _API specification_, with the goal of enabling multiple concrete API implementations within different computing environments and data storage systems. SOMA does not specify an at-rest serialization format or underlying storage system.bb
 
-This document is attempting to codify the abstract, language-neutral SOMA data model and functional operations. Other specifications will document specific language bindings and particular storage system implementations.
+This document is attempting to codify the abstract, language-neutral SOMA data model and functional operations. Other specifications will document specific language bindings and particular storage system implementations. Where the term `language-specific SOMA specification` is used below, it implies a specification of the SOMA API as it is presented in a given language or computing environment (eg, the SOMA Python API), common across all storage engine implementations in that language.
 
 # Data Model
 
@@ -102,7 +102,7 @@ SOMADataFrame is a 1-D multi-column table of monomorphic arrays, all of equal le
 
 A SOMADataFrame must contain at least two columns, one of which is the named index column. The index column _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
 
-Most language-specific implementations will present SOMADataFrame in more convenient forms, such as Python `pandas.DataFrame`, R `data.frame` or other environment-specific data structures. Specific implementations of the SOMA API may extend this type with convertors to/from the underlying data structure, and enforce indexing conventions.
+Most language-specific bindings will present SOMADataFrame in more convenient forms, such as Python `pandas.DataFrame`, R `data.frame` or other environment-specific data structures. Specific implementations of the SOMA API may extend this type with convertors to/from the underlying data structure, and enforce indexing conventions.
 
 > ⚠️ **Issue** - this spec requires that index column is a `string` type. Most underlying "engines" will support more flexibility. Do we want to enable that flexibility, or stick with requiring string for simplicity/commonality?
 
@@ -281,23 +281,25 @@ Parameters:
 
 ### Method: read()
 
-Read a user-defined subset of data and return as an Arrow.RecordBatch. User-provided parameters specify the index values (`ids`), which columns to read, and column filters to apply. There is no guarantee of result ordering.
+Read a user-defined subset of data and return one or more Arrow.RecordBatch. User-provided parameters specify the index values (`ids`), which columns to read, and column filters to apply. There is no guarantee of result ordering.
+
+Summary:
 
 ```
-sdf.read(ids=[`string`, ...]|all, column_names=[`string`, ...]|all, ValueFilter filter=_TBD_) -> Arrow.RecordBatch
+sdf.read(ids=[`string`, ...]|all, column_names=[`string`, ...]|all, ValueFilter filter=_TBD_) -> delayed iterator over Arrow.RecordBatch
 ```
 
 Parameters:
 
 - ids - list of indices to read. Defaults to 'all'
 - column_names - the named columns to read and return. Defaults to all.
-- filter - [value filter](#value-filters) to apply (_TBD_). Defaults to no filter.
+- filter - [value filter](#value-filters) to apply to the results. Defaults to no filter.
+
+The `read` operation will return a language-specific iterator over one or more Arrow RecordBatch objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 > ⚠️ **Issue** - sdf.read() needs further definition for:
 >
-> - incremental/streaming queries - critical gap
 > - result ordering - would be useful, but also adds complexity (order by index? order by column value?). Most useful for streaming queries where the total result may be too large to load into memory and sort.
-> - filtering based upon values - need to write the section: [Value Filter](#value-filters)
 
 > ℹ️ **Note** -- with this definition for read(), it should be possible to implement the equivalent of the higher level functions in the current prototype:
 >
@@ -399,7 +401,7 @@ Examples, using a pseudo-syntax:
 
 # Other Issues
 
-> ⚠️ **Issue** language bindings - we need to define the base-level language bindings for Python & R, _somewhere_...
+> ⚠️ **Issue** language SOMA spec (bindings) - we need to define the base-level language bindings for Python & R, _somewhere_... It is important that there is common bindings for a given language/environment (eg, R).
 
 > ⚠️ **Issue** the scope of the spec needs clarity. In particular, are the following in scope?
 >
@@ -412,3 +414,4 @@ Examples, using a pseudo-syntax:
 2. adding explicit separation of foundational and composed types, and clarified the intent of composed types
 3. rename `uns` to `metadata`
 4. Added initial prose for value filter expressions
+5. Added further clarification to read incremental return
