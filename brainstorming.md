@@ -65,15 +65,11 @@ Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
 ## Metadata
 
-All SOMA objects may be annotated with a small amount of metadata:
+All SOMA objects may be annotated with a small amounts of metadata. Metadata for any SOMA object is a `string`-keyed map of values. Metadata values are Arrow primitive types, Arrow strings and Arrow arrays.
 
-- `metadata` (map[string, simple]) - user metadata, specified as string-keyed mapping to any [**simple**](#type-definitions-used-in-this-document) type (e.g., int32, string, etc).
+The metadata lifecycle is the same as its containing object, e.g., it will be deleted when the containing object is deleted.
 
-Only [`simple`](#type-definitions-used-in-this-document) types are supported as metadata values. The metadata lifecycle is the same as its containing object, e.g., it will be deleted when the containing object is deleted.
-
-> ⚠️ **Issue** - do we need more complex metadata value types, and if so, how to represent capture what is supported? (e.g., anything Arrow can represent? a subset?)
->
-> **Proposal**: restrict to a mapping of string keys and `simple` values. Extend to complex types in the future as we have concrete use cases which warrant the complexity.
+> ℹ️ **Note** - it is possible the acceptable value types will be expanded in the future. It would be good if implementations allowed for this possibility.
 
 ## Foundational Types
 
@@ -153,9 +149,9 @@ The shape of each axis (`obs` and `var`) are defined by their respective datafra
 
 The pre-defined fields of a `SOMAExperiment` object are:
 
-| Field name | Field type                                 | Field description                                                                                                                                                                                                           |
-| ---------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `obs`      | `SOMADataFrame`                            | Primary annotations on the _observation_ axis. The contents of the `__rowid` pseudo-column define the _observation_ index domain, aka `obsid`. All observations for the SOMAExperiment _must_ be defined in this dataframe. |
+| Field name | Field type                                | Field description                                                                                                                                                                                                           |
+| ---------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `obs`      | `SOMADataFrame`                           | Primary annotations on the _observation_ axis. The contents of the `__rowid` pseudo-column define the _observation_ index domain, aka `obsid`. All observations for the SOMAExperiment _must_ be defined in this dataframe. |
 | `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurement sets.                                                                                                                                                                                     |
 
 The `SOMAMeasurement` is a sub-element of a SOMAExperiment, and is otherwise a specialized SOMACollection with pre-defined fields:
@@ -166,10 +162,10 @@ The `SOMAMeasurement` is a sub-element of a SOMAExperiment, and is otherwise a s
 | `X`        | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`                                                                                                                                                                         |
 | `obsm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                           |
 | `obsp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                        |
-| `obs_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each observation, specific to the SOMAMeasurement                                                                                                                                                        |
+| `obs_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each observation, specific to the SOMAMeasurement                                                                                                                                                         |
 | `varm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`                                                                                                                                                            |
 | `varp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                         |
-| `var_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each variable, specific to the SOMAMeasurement                                                                                                                                                           |
+| `var_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each variable, specific to the SOMAMeasurement                                                                                                                                                            |
 
 For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm`, `obs_ms` and `X` (first dimension) are the values defined by the `obs` `SOMADataFrame` `__rowid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm`, `var_ms` and `X` (second dimension) are the values defined by the `var` `SOMADataFrame` `__rowid` column in the same measurement set. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
 
@@ -179,20 +175,20 @@ As with other SOMACollections, the `SOMAExperiment` and `SOMAMeasurement` also h
 
 The following naming and indexing constraints are defined for the `SOMAExperiment` and `SOMAMeasurement`:
 
-| Field name                                         | Field constraints                                                                                                                                                                                                                    |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `obs`, `var`                                       | Field type is a `SOMADataFrame`                                                                                                                                                                                                      |
-| `obs_ms`, `var_ms`,                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADataFrame`                                                                                                                             |
-| `obsp`, `varp`, `X`                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                                                                                         |
-| `obsm`, `varm`                                     | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray`                                                                                                                          |
-| `obs_ms`, `obsm`, `obsp`, `var_ms`, `varm`, `varp` | Fields may be empty collections.                                                                                                                                                                                                     |
+| Field name                                         | Field constraints                                                                                                                                                                                                                   |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `obs`, `var`                                       | Field type is a `SOMADataFrame`                                                                                                                                                                                                     |
+| `obs_ms`, `var_ms`,                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADataFrame`                                                                                                                            |
+| `obsp`, `varp`, `X`                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                                                                                        |
+| `obsm`, `varm`                                     | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray`                                                                                                                         |
+| `obs_ms`, `obsm`, `obsp`, `var_ms`, `varm`, `varp` | Fields may be empty collections.                                                                                                                                                                                                    |
 | `X` collection values                              | All matrixes must have the shape `(#obs, #var)`. The domain of the first dimension is the values of `obs.__rowid`, and the index domain of the second dimension is the values of `var.__rowid` in the containing `SOMAMeasurement`. |
-| `obsm` collection values                           | All matrixes must have the shape `(#obs, M)`, where `M` is user-defined. The domain of the first dimension is the values of `obs.__rowid`.                                                                                           |
-| `obsp` collection values                           | All matrixes must have the shape `(#obs, #obs)`. The domain of both dimensions is the values of `obs.__rowid`.                                                                                                                       |
-| `obs_ms` collection values                         | All dataframes must have the shape `(#obs,)`. The domain of the dimension is the values of `obs.__rowid`.                                                                                                                            |
-| `varm` collection values                           | All matrixes must have the shape `(#var, M)`, where `M` is user-defined. The domain of the first dimension is the values of `var.__rowid`.                                                                                           |
-| `varp` collection values                           | All matrixes must have the shape `(#var, #var)`. The domain of both dimensions is the values of `var.__rowid`.                                                                                                                       |
-| `var_ms` collection values                         | All dataframes must have the shape `(#var,)`. The domain of the dimension is the values of `var.__rowid`.                                                                                                                            |
+| `obsm` collection values                           | All matrixes must have the shape `(#obs, M)`, where `M` is user-defined. The domain of the first dimension is the values of `obs.__rowid`.                                                                                          |
+| `obsp` collection values                           | All matrixes must have the shape `(#obs, #obs)`. The domain of both dimensions is the values of `obs.__rowid`.                                                                                                                      |
+| `obs_ms` collection values                         | All dataframes must have the shape `(#obs,)`. The domain of the dimension is the values of `obs.__rowid`.                                                                                                                           |
+| `varm` collection values                           | All matrixes must have the shape `(#var, M)`, where `M` is user-defined. The domain of the first dimension is the values of `var.__rowid`.                                                                                          |
+| `varp` collection values                           | All matrixes must have the shape `(#var, #var)`. The domain of both dimensions is the values of `var.__rowid`.                                                                                                                      |
+| `var_ms` collection values                         | All dataframes must have the shape `(#var,)`. The domain of the dimension is the values of `var.__rowid`.                                                                                                                           |
 
 > ⚠️ **Issue** `raw` -- do we need `raw.X` and `raw.var` at all, or can we model them with existing structures? **Proposal**: the current `X` and `varm` can represent typical `raw` semantics (filtered subset, or transformed values). Assume that higher level usage conventions will utilize these to represent raw, e.g., `X['raw']` and `varm['raw']`, or alternatively by adding additional columns to `var` that indicate filtering status (e.g., `var['is_filtered']`).
 
@@ -238,7 +234,7 @@ Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined
 | create(uri)         | Create a SOMACollection named with the URI.           |
 | delete(uri)         | Delete the SOMACollection specified with the URI.     |
 | exists(uri) -> bool | Return true if object exists and is a SOMACollection. |
-| get metadata        | Access the metadata as a SOMAMapping                  |
+| get metadata        | Access the metadata as a mutable SOMAMapping          |
 | get type            | Returns the constant "SOMACollection"                 |
 
 In addition, SOMACollection supports all SOMAMapping operations:
@@ -265,7 +261,7 @@ Summary of operations:
 | create(uri, ...)                        | Create a SOMADataFrame.                                                                 |
 | delete(uri)                             | Delete the SOMADataFrame specified with the URI.                                        |
 | exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                                    |
-| get metadata                            | Access the metadata as a SOMAMapping                                                    |
+| get metadata                            | Access the metadata as a mutable SOMAMapping                                            |
 | get type                                | Returns the constant "SOMADataFrame"                                                    |
 | get shape -> (int, ...)                 | Return length of each dimension, always a list of length `ndims`                        |
 | get ndims -> int                        | Return number of index columns                                                          |
@@ -348,7 +344,7 @@ Summary of operations:
 | create(uri, ...)           | Create a SOMADenseNdArray named with the URI.                    |
 | delete(uri)                | Delete the SOMADenseNdArray specified with the URI.              |
 | exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.          |
-| get metadata               | Access the metadata as a SOMAMapping                             |
+| get metadata               | Access the metadata as a mutable SOMAMapping                     |
 | get type                   | Returns the constant "SOMADenseNdArray"                          |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
 | get ndims -> int           | Return number of index columns                                   |
@@ -404,7 +400,7 @@ Summary of operations:
 | create(uri, ...)           | Create a SOMASparseNdArray named with the URI.                   |
 | delete(uri)                | Delete the SOMASparseNdArray specified with the URI.             |
 | exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.         |
-| get metadata               | Access the metadata as a SOMAMapping                             |
+| get metadata               | Access the metadata as a mutable SOMAMapping                     |
 | get type                   | Returns the constant "SOMASparseNdArray"                         |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
 | get ndims -> int           | Return number of index columns                                   |
@@ -508,3 +504,4 @@ Examples, using a pseudo-syntax:
 9. Introduced SOMADenseNdArray/SOMAsparseNdArray and SOMAExperiment/SOMAMeasurement
 10. Removed composed type `SOMA`
 11. Added initial general utility operations
+12. Expanded the data types that may be stored in `metadata`.
