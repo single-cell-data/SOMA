@@ -502,7 +502,7 @@ Examples, using a pseudo-syntax:
 5. Added further clarification to read incremental return
 6. SOMAMatrix removed
 7. Operations clarified (add description). Remove assumption of handle/object state.
-8. SOMADataFrame generalized to row-indexed or (multi-) user-indexed.
+8. SOMADataFrame generalized to row-indexed or (multi-) user-indexed.  Adding __rowid pseudo-column to use in indexing dense matrices.
 9. Introduced SOMADenseNdArray/SOMAsparseNdArray and SOMAExperiment/SOMAMeasurements
 10. Removed composed type `SOMA`
 11. Added initial general utility operations
