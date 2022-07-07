@@ -490,9 +490,10 @@ Examples, using a pseudo-syntax:
 
 > 1. Are there operations specific to SOMAExperiment and SOMAMeasurements that need to be defined? Or do they inherit only the ops from SOMACollection?
 > 2. The `read` interfaces need work to handle "partitioned" queries/reads - i.e., asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
-> 3. What (if any) additional semantics about writes need to be defined?
+> 3. What (if any) additional semantics around writes need to be defined?
 > 4. SOMAExperiment/SOMAMeasurements - do we need the `obs_ms` and `var_ms` layered dataframes, i.e., secondary annotation dataframes?
 > 5. Should `raw` vs `processed` conventions be codified in this spec (eg, as predefined fields in SOMAExperiment/SOMAMeasurements)? Or should they be the purview of higher level schema/conventions, built upon the general-purpose features of this API?
+> 6. Should `metadata` support more complex value types? For example: Arrow Array?
 
 # Changelog
 
