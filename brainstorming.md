@@ -491,6 +491,7 @@ Examples, using a pseudo-syntax:
 > 1. Are there operations specific to SOMAExperiment and SOMAMeasurements that need to be defined? Or do they inherit only the ops from SOMACollection?
 > 2. The `read` interfaces need work to handle "partitioned" queries/reads - ie, asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
 > 3. What (if any) additional semantics about writes need to be defined?
+> 4. SOMAExperiment/SOMAMeasurements - do we need the `obs_ms` and `var_ms` layered dataframes, ie, secondary annotation dataframes?
 
 # Changelog
 
