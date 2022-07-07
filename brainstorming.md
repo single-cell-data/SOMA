@@ -127,38 +127,38 @@ All dimensions must have a positive, non-zero length.
 
 Composed types are defined as a composition of foundational types, adding name, type and indexing constraints. These types are intended to facilitate data interoperability, ease of use, and _potentially_ enable implementation optimizations by virtue of their typing and structural guarantees. The initial composed types are motivated by single cell biology, but additional types may be added in the future for more diverse use cases.
 
-### SOMAExperiment & SOMAMeasurements
+### SOMAExperiment & SOMAMeasurement
 
-`SOMAExperiment` is a specialized `SOMACollection`, representing an annotated 2-D matrix of measurements. In the single-cell biology use case, a `SOMAExperiment` can represent multiple modes of measurement across a single collection of cells (aka a "multimodal dataset"). Within a `SOMAExperiment`, a set of measurements on a single set of variables (features) is represented as a `SOMAMeasurements`.
+`SOMAExperiment` is a specialized `SOMACollection`, representing an annotated 2-D matrix of measurements. In the single-cell biology use case, a `SOMAExperiment` can represent multiple modes of measurement across a single collection of cells (aka a "multimodal dataset"). Within a `SOMAExperiment`, a set of measurements on a single set of variables (features) is represented as a `SOMAMeasurement`.
 
-The SOMAExperiment and SOMAMeasurements types compose [foundational types](#foundational-types):
+The `SOMAExperiment` and `SOMAMeasurement` types compose [foundational types](#foundational-types):
 
-- SOMAExperiment - a well defined set of annotated observations defined by a SOMADataFRame, and one or more "measurement sets" on those observations.
-- SOMAMeasurements - for all observables, a common set of annotated variables (defined by a SOMADataFrame) for which values (e.g., measurements, calculations) are stored in SOMADenseNdMatrix and SOMASparseNdMatrix.
+- `SOMAExperiment` - a well defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement sets" on those observations.
+- `SOMAMeasurement` - for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdMatrix` and `SOMASparseNdMatrix`.
 
-In other words, all SOMAMeasurements have a distinct set of variables (features), and inherit common observables from their parent SOMAExperiment. The `obs` and `var` dataframes define the axis annotations, and their respective `__rowid` values are the indices for all matrixes stored in the SOMAMeasurements.
+In other words, all `SOMAMeasurement` have a distinct set of variables (features), and inherit common observables from their parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `__rowid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
 
 <figure>
     <img src="images/SOMAExperiment.png" alt="SOMAExperiment">
 </figure>
 
-> ⚠️ **Issue** - it would be a good idea to factor SOMAExperiment and SOMAMeasurements into separate sections.
+> ⚠️ **Issue** - it would be a good idea to factor `SOMAExperiment` and `SOMAMeasurement` into separate sections.
 
-These types have pre-defined fields, each of which have well-defined naming, typing, dimensionality and indexing constraints. Other user-defined data may be added to a `SOMAExperiment` and `SOMAMeasurements`, as both are a specialization of the `SOMACollection`. Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
+These types have pre-defined fields, each of which have well-defined naming, typing, dimensionality and indexing constraints. Other user-defined data may be added to a `SOMAExperiment` and `SOMAMeasurement`, as both are a specialization of the `SOMACollection`. Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
 
 The shape of each axis (`obs` and `var`) are defined by their respective dataframes, and the indexing of matrices is defined by the `__rowid` of the respective axis dataframe.
 
 - `obs` - the observation annotations are shared across the entire `SOMAExperiment`. Matrices indexed on this dimension use the domain defined by the `__rowid` values of the `obs` SOMADataFrame (aka `obsid`).
-- `var` - the variable annotations are shared within any given `SOMAMeasurements`. Matrices indexed on this dimension use the domain defined by the `__rowid` values of the `var` SOMADataFrame (aka `varid`).
+- `var` - the variable annotations are shared within any given `SOMAMeasurement`. Matrices indexed on this dimension use the domain defined by the `__rowid` values of the `var` SOMADataFrame (aka `varid`).
 
-The pre-defined fields of a SOMAExperiment object are:
+The pre-defined fields of a `SOMAExperiment` object are:
 
 | Field name | Field type                                 | Field description                                                                                                                                                                                                           |
 | ---------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `obs`      | `SOMADataFrame`                            | Primary annotations on the _observation_ axis. The contents of the `__rowid` pseudo-column define the _observation_ index domain, aka `obsid`. All observations for the SOMAExperiment _must_ be defined in this dataframe. |
-| `ms`       | `SOMACollection[string, SOMAMeasurements]` | A collection of named measurement sets.                                                                                                                                                                                     |
+| `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurement sets.                                                                                                                                                                                     |
 
-The SOMAMeasurements is a sub-element of a SOMAExperiment, and is otherwise a specialized SOMACollection with pre-defined fields:
+The `SOMAMeasurement` is a sub-element of a SOMAExperiment, and is otherwise a specialized SOMACollection with pre-defined fields:
 
 | Field name | Field type                                  | Field description                                                                                                                                                                                                                                                                            |
 | ---------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -166,18 +166,18 @@ The SOMAMeasurements is a sub-element of a SOMAExperiment, and is otherwise a sp
 | `X`        | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`                                                                                                                                                                         |
 | `obsm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                           |
 | `obsp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                        |
-| `obs_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each observation, specific to the SOMAMeasurements                                                                                                                                                        |
+| `obs_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each observation, specific to the SOMAMeasurement                                                                                                                                                        |
 | `varm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`                                                                                                                                                            |
 | `varp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                         |
-| `var_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each variable, specific to the SOMAMeasurements                                                                                                                                                           |
+| `var_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each variable, specific to the SOMAMeasurement                                                                                                                                                           |
 
-For the entire SOMAExperiment, the index domain for the elements within `obsp`, `obsm`, `obs_ms` and `X` (first dimension) are the values defined by the `obs` SOMADataFrame `__rowid` column. For each SOMAMeasurements, the index domain for `varp`, `varm`, `var_ms` and `X` (second dimension) are the values defined by the `var` SOMADataFrame `__rowid` column in the same measurement set. In other words, all predefined fields in the SOMAMeasurements share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
+For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm`, `obs_ms` and `X` (first dimension) are the values defined by the `obs` `SOMADataFrame` `__rowid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm`, `var_ms` and `X` (second dimension) are the values defined by the `var` `SOMADataFrame` `__rowid` column in the same measurement set. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
 
-As with other SOMACollections, the SOMAExperiment and SOMAMeasurements also have a `metadata` field, and may contain other user-defined elements.
+As with other SOMACollections, the `SOMAExperiment` and `SOMAMeasurement` also have a `metadata` field, and may contain other user-defined elements.
 
 > ⚠️ **Issue** - the utility of `obs_ms` and `var_ms` are still in debate, and we may remove them.
 
-The following naming and indexing constraints are defined for the SOMAExperiment and SOMAMeasurements:
+The following naming and indexing constraints are defined for the `SOMAExperiment` and `SOMAMeasurement`:
 
 | Field name                                         | Field constraints                                                                                                                                                                                                                    |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -186,7 +186,7 @@ The following naming and indexing constraints are defined for the SOMAExperiment
 | `obsp`, `varp`, `X`                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                                                                                         |
 | `obsm`, `varm`                                     | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray`                                                                                                                          |
 | `obs_ms`, `obsm`, `obsp`, `var_ms`, `varm`, `varp` | Fields may be empty collections.                                                                                                                                                                                                     |
-| `X` collection values                              | All matrixes must have the shape `(#obs, #var)`. The domain of the first dimension is the values of `obs.__rowid`, and the index domain of the second dimension is the values of `var.__rowid` in the containing `SOMAMeasurements`. |
+| `X` collection values                              | All matrixes must have the shape `(#obs, #var)`. The domain of the first dimension is the values of `obs.__rowid`, and the index domain of the second dimension is the values of `var.__rowid` in the containing `SOMAMeasurement`. |
 | `obsm` collection values                           | All matrixes must have the shape `(#obs, M)`, where `M` is user-defined. The domain of the first dimension is the values of `obs.__rowid`.                                                                                           |
 | `obsp` collection values                           | All matrixes must have the shape `(#obs, #obs)`. The domain of both dimensions is the values of `obs.__rowid`.                                                                                                                       |
 | `obs_ms` collection values                         | All dataframes must have the shape `(#obs,)`. The domain of the dimension is the values of `obs.__rowid`.                                                                                                                            |
@@ -488,11 +488,11 @@ Examples, using a pseudo-syntax:
 
 # ⚠️ Other Issues (open issues with this doc)
 
-> 1. Are there operations specific to SOMAExperiment and SOMAMeasurements that need to be defined? Or do they inherit only the ops from SOMACollection?
+> 1. Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
 > 2. The `read` interfaces need work to handle "partitioned" queries/reads - i.e., asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
 > 3. What (if any) additional semantics around writes need to be defined?
-> 4. SOMAExperiment/SOMAMeasurements - do we need the `obs_ms` and `var_ms` layered dataframes, i.e., secondary annotation dataframes?
-> 5. Should `raw` vs `processed` conventions be codified in this spec (eg, as predefined fields in SOMAExperiment/SOMAMeasurements)? Or should they be the purview of higher level schema/conventions, built upon the general-purpose features of this API?
+> 4. SOMAExperiment/SOMAMeasurement - do we need the `obs_ms` and `var_ms` layered dataframes, i.e., secondary annotation dataframes?
+> 5. Should `raw` vs `processed` conventions be codified in this spec (eg, as predefined fields in SOMAExperiment/SOMAMeasurement)? Or should they be the purview of higher level schema/conventions, built upon the general-purpose features of this API?
 > 6. Should `metadata` support more complex value types? For example: Arrow Array?
 
 # Changelog
@@ -505,6 +505,6 @@ Examples, using a pseudo-syntax:
 6. SOMAMatrix removed
 7. Operations clarified (add description). Remove assumption of handle/object state.
 8. SOMADataFrame generalized to row-indexed or (multi-) user-indexed. Adding \_\_rowid pseudo-column to use in indexing dense matrices.
-9. Introduced SOMADenseNdArray/SOMAsparseNdArray and SOMAExperiment/SOMAMeasurements
+9. Introduced SOMADenseNdArray/SOMAsparseNdArray and SOMAExperiment/SOMAMeasurement
 10. Removed composed type `SOMA`
 11. Added initial general utility operations
