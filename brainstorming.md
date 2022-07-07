@@ -2,61 +2,52 @@
 
 > **Status**: brainstorming, pre-proposal
 >
-> ℹ️ **Note** - this is an early draft and has not had any review or circulation. It may contain controversial, undecided, or just plain wrong-headed ideas. I expect several iterations will be required to converge the underlying primitives with use cases. Please see `issues` noted throughout the doc for a list of active discussions/debates. In particular, this doc has known gaps in:
->
-> - multi-modal support - modelling is still in active requirements identification
-> - incremental/streaming reads/queries - will be critical for large datasets
-> - the team's desired tradeoffs between flexibility and higher level conventions
-> - and more...?
+> ℹ️ **Note** - this is an early draft and has not had any substantive review or circulation. It may contain controversial, undecided, or just plain wrong-headed ideas. I expect several major iterations will be required to converge the underlying primitives with use cases. Please see `issues` noted throughout the doc for a list of active discussions/debates. In particular, this doc has many known gaps identified throughout the with callouts.
 
 The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible, and open-source API providing access to annotated, 2D matrix data stored in multiple underlying formats and systems. The vision for this API family includes:
 
-- support for accessing data from persistent, cloud-resident datasets,
+- support access to persistent, cloud-resident datasets,
 - enable use within popular data science environments (eg, R, Python), using the tools of that environment (eg, Python Pandas integration),
 - enable access to data aggregations much larger than single-host main memory
 - provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (eg, a cell "atlas").
 
-The SOMA data model is centered on annotated 2-D matrices, conceptually similar to data structures embedded within existing single-cell data models including Seurat Assay, Bioconductor SingleCellExperiment, and ScanPy AnnData. Where possible, the SOMA API attempts to be general purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
+The SOMA data model is centered on annotated 2-D matrices, conceptually similar to commonly used single-cell 'omics data structures including Seurat Assay, Bioconductor SingleCellExperiment, and ScanPy AnnData. Where possible, the SOMA API attempts to be general purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
 
-SOMA is an abstract _API specification_, with the goal of enabling multiple concrete API implementations within different computing environments and data storage systems. SOMA does not specify an at-rest serialization format or underlying storage system.bb
+SOMA is an abstract _API specification_, with the goal of enabling multiple concrete API implementations within different computing environments and data storage systems. SOMA does not specify an at-rest serialization format or underlying storage system.
 
 This document is attempting to codify the abstract, language-neutral SOMA data model and functional operations. Other specifications will document specific language bindings and particular storage system implementations. Where the term `language-specific SOMA specification` is used below, it implies a specification of the SOMA API as it is presented in a given language or computing environment (eg, the SOMA Python API), common across all storage engine implementations in that language.
 
 # Data Model
 
-The data model is separated into two layers:
+The data model is comprised of two layers:
 
 - a set of "foundational" types which are general in nature
-- a set of "composed" types, which are composed from the foundational types, and are intended to improve ease of use and interoperability
+- a set of "composed" types, which are composed from the foundational types, and are intended to improve ease of dataset use and interoperability
 
 The foundational types are:
 
-- SOMACollection - a string-keyed container (key-value map) of other SOMA data types, eg, SOMADataFrame, SOMAMatrix and SOMACollection.
-- SOMADataFrame - a 1-D, string-indexed, multi-column table, with monomorphic columns of equal length -- essentially a single-index dataframe.
-- SOMAMatrix - a 2-D, sparse, string-indexed multi-column matrix, with monomorphic columns of equal length -- essentially a two-index dataframe.
+- SOMACollection - a string-keyed container (key-value map) of other SOMA data types, eg, SOMADataFrame, SOMADataMatrix and SOMACollection.
+- SOMADataFrame - a single- or multi-index, multi-column table, with monomorphic columns of equal length -- essentially a dataframe.
+- SOMANdArray - an offset indexed (zero-based), dense, single-typeN-D array.
 
 The composed types are:
 
-- SOMA - a specialization and extension of SOMACollection, codifying a set of naming and indexing conventions to represent an annotated, 2-D matrix of observations across a well-defined set of variables.
+- SOMAExperiment - a specialization and extension of SOMACollection, codifying a set of naming and indexing conventions to represent annotated, 2-D matrix of observations across _multiple_ sets of variables.
 
 In this document, the term `dataframe` implies something akin to an Arrow `RecordBatch`, R `data.frame` or Python `pandas.DataFrame`, where:
 
-- dimensions are string-indexed
 - multiple columns may exist, each with a string column name
 - all columns are individually typed, monomorphic, and contain simple types (eg, int64)
 - all columns are of equal length
+- one or more columns may be indexed
 
 All SOMA data objects are named with URIs.
-
-> ⚠️ **Issue** -- this section would benefit from a data model diagram, helping visualize the relationships between the types.
-
-> ⚠️ **Issue** -- the use of `SOMA` to name the API _and_ a data type is confusing. We should consider a new name for the aforementioned SOMA _type_. _Candidates suggested:_ `SOMAAnnotatedMatrix`, `SOMAAnnotationEnsemble`, `SOMAEnsemble`, `SOMAAnnotationMatrixEnsemble`, ???
 
 ## Base Type System
 
 The SOMA API borrows its base type system from the Arrow language-agnostic in-memory system for data typing and serialization ([format](https://arrow.apache.org/docs/format/Columnar.html)). The SOMA API is intended to be used with an Arrow implementation such as [PyArrow](https://arrow.apache.org/docs/python/) or the [Arrow R package](https://arrow.apache.org/docs/r/), or other libraries which interoperate with Arrow (eg, Pandas).
 
-Where SOMA requires an explicit typing system, it utilizes the Arrow types and schema. SOMA has no specific requirements for the type or serialization system used by the underlying storage engine, other than it be capable of understanding and representing the Arrow types. It is understood and expected that each implementation of SOMA will have data type expressiveness limits (eg, just because you can express a type in he Arrow type system does not mean all SOMA implementations will understand it).
+Where SOMA requires an explicit typing system, it utilizes the Arrow types and schema. SOMA has no specific requirements on the type or serialization system used by the underlying storage engine, other than it be capable of understanding and representing the Arrow types. It is expected that any given implementation of SOMA will have limits on the underlying capabilities of its data type system (eg, just because you can express a type in he Arrow type system does not mean all SOMA implementations will understand it).
 
 ### Type definitions used in this document
 
@@ -70,143 +61,169 @@ Other Arrow types are explicitly noted as such, eg, `Arrow RecordBatch`.
 
 > ⚠️ **Issue** - are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (ie, no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (eg, RecordBatch, List, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
 
+> ⚠️ **Issue** - the above uses Arrow `string`. Should we be using `large_string` instead (no 2GB cap)?
+
 ## Metadata
 
-All SOMA objects may be annotated with a small amount of metadata, in the form of a simple key/value map:
+All SOMA objects may be annotated with a small amount of metadata:
 
-- `metadata` (map[string, simple]) - string-keyed mapping to any [**simple**](#type-definitions-used-in-this-document) type (eg, int32, string, etc).
+- `metadata` (map[string, simple]) - user metadata, specified as string-keyed mapping to any [**simple**](#type-definitions-used-in-this-document) type (eg, int32, string, etc).
 
 Only [`simple`](#type-definitions-used-in-this-document) types are supported as metadata values. The metadata lifecycle is the same as its containing object, eg, it will be deleted when the containing object is deleted.
 
-> ⚠️ **Issue** - do we need more complex typing for metadata values, and if so, how to represent capture what can is required to be supported? (eg, anything Arrow can represent? a subset?)
+> ⚠️ **Issue** - do we need more complex metadata value types, and if so, how to represent capture what is supported? (eg, anything Arrow can represent? a subset?)
 >
 > **Proposal**: restrict to a mapping of string keys and `simple` values. Extend to complex types in the future as we have concrete use cases which warrant the complexity.
 
 ## Foundational Types
 
+The foundational types represent the core data structures used to store and index data. They are intended to be moderately general purpose, and to serve as building blocks for the [Composed Types](#composed-types) which codify domain-specific use cases (eg, single cell experimental datasets).
+
 ### SOMACollection
 
-SOMACollection is an unordered, `string`-keyed map of values of type SOMADataFrame, SOMAMatrix, SOMACollection or SOMA. SOMACollection objects are typically persistent, and may be nested to any level (eg, SOMACollection may contain other SOMACollection objects). Keys in the map are unique and singular (no duplicates, ie, it is not a multi-map).
+SOMACollection is an unordered, `string`-keyed map of values. Values may be any SOMA foundational or composed type, including other (nested) SOMACollection objects. Keys in the map are unique and singular (no duplicates, ie, the SOMACollection is _not_ a multi-map). The SOMACollection is expected to be used for a variety of use cases:
 
-The SOMACollection is expected to be used for a variety of use cases:
-
-- as a container of independent objects (eg, a collection of single-cell datasets, each manifest as a [SOMA](#soma) object)
-- as the basis for building other composed types (eg, using SOMACollection to organize pre-defined fields in [SOMA](#soma) such as multiple layers of `X`).
+- as a container of independent objects (eg, a collection of single-cell datasets, each manifest as a [SOMAExperiment](#soma-experiment) object)
+- as the basis for building other composed types (eg, using SOMACollection to organize pre-defined fields in [SOMAExperiment](#soma-experiment) such as multiple layers of `X`).
 
 ### SOMADataFrame
 
-SOMADataFrame is a 1-D multi-column table of monomorphic arrays, all of equal length -- ie, a "dataframe". The SOMADataFrame has a user-defined schema, which includes:
+`SOMADataFrame` is a multi-index, multi-column table of monomorphic arrays, all of equal length. A `SOMADataFrame` has a user-defined schema, which defines the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`. All `SOMADataFrame` contain a "pseudo-column" called `__rowid`, of type `uint64` and domain `[0, #rows)`. The `__rowid` pseudo-column contains a unique value for each row in the `SOMADataFrame`, and is intended to act as a join key for other objects, such as a `SOMANdArray`.
 
-- a schema, expressed as an Arrow `Schema`, defining the columns and their respective names and types
-- an index column name, which specifies a column name that exists in the column schema
+A `SOMADataFrame` may be `user-indexed` or `row-indexed`:
 
-A SOMADataFrame must contain at least two columns, one of which is the named index column. The index column _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
+- `row-indexed` - each row is addressable (indexed) by the pseudo-column `__rowid` (ie, a single-index using offset indexing).
+- `user-indexed` - each row is addressable (indexed) by one or more user-specified index columns, which must be named columns in the dataframe schema.
 
-Most language-specific bindings will present SOMADataFrame in more convenient forms, such as Python `pandas.DataFrame`, R `data.frame` or other environment-specific data structures. Specific implementations of the SOMA API may extend this type with convertors to/from the underlying data structure, and enforce indexing conventions.
+Row-indexed datafames must have no user-specified index columns and at least one column defined in their schema. User-indexed dataframes must have at least one schema-defined column named as an index column. The user-specified schema may not redefine the `__rowid` pseudo-column.
 
-> ⚠️ **Issue** - this spec requires that index column is a `string` type. Most underlying "engines" will support more flexibility. Do we want to enable that flexibility, or stick with requiring string for simplicity/commonality?
+Most language-specific bindings will provide convertors between SOMADataFrame and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
 
-### SOMAMatrix
+> ℹ️ **Note** - on a TileDB implementation, `row-indexed` SOMADataFrames will likely map to a _dense_ array, with a single uint64 dimension called **rowid, with domain [0 #nrows). A `user-indexed` SOMADataframe will be a _sparse_ array, with a dimension for each user-specified index column, and a hidden **rowid attribute.
 
-SOMAMatrix is a 2-D multi-column table of monomorphic arrays, ie, a "dataframe" with two index dimensions. SOMAMatrix is an extension of SOMADataFrame, with two indexing dimensions. The SOMAMatrix has a user-defined schema, which includes:
+### SOMADenseNdArray
 
-- a schema, expressed as an Arrow `Schema`, defining the columns and their respective names and types
-- a _primary_ index column name, which specifies a column name that exists in the column schema
-- a _secondary_ index column name, which specifies a column name that exists in the column schema
+`SOMADenseNdArray` is a monomorphic, dense, N-dimensional array with offset (zero-based) integer indexing on each dimension. The `SOMADenseNdArray` has a user-defined schema, which includes:
 
-A SOMAMatrix must contain (minimally) three columns, two of which are the primary and secondary index columns. The index columns _must_ be of `string` type. Index values are non-null and must be unique (ie, no duplicates are allowed) within the object. The index is sparse and unordered, ie, supported indexing is by ID value only, with no indexing order or positional (offset-based) indexing.
+- type - a `primitive` type, expressed as an Arrow type (eg, `int64`, `float32`, etc)
+- shape - the shape of the array, ie, number and length of each dimension
 
-> ⚠️ **Issue** - SOMAMatrix and SOMADataFrame differ only in the number of dimensions (2 vs 1 respectively). Should they be unified into a single type object/API of more general nature? Clarity vs flexibility?
+All dimensions must have a positive, non-zero length.
+
+> ℹ️ **Note** - on TileDB this is an dense array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
+
+### SOMASparseNdArray
+
+`SOMASparseNdArray` is a monomorphic, sparse, N-dimensional array with offset (zero-based) integer indexing on each dimension. The `SOMASparseNdArray` has a user-defined schema, which includes:
+
+- type - a `primitive` type, expressed as an Arrow type (eg, `int64`, `float32`, etc)
+- shape - the shape of the array, ie, number and length of each dimension
+
+All dimensions must have a positive, non-zero length.
+
+> ℹ️ **Note** - on TileDB this is an sparse array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
 
 ## Composed Types
 
-Composed types are defined as a composition of foundational types, adding constraints such as name, type and indexing. They are intended to facilitate data interoperability, ease of use, and _potentially_ enable implementation optimizations.
+Composed types are defined as a composition of foundational types, adding name, type and indexing constraints. These types are intended to facilitate data interoperability, ease of use, and _potentially_ enable implementation optimizations by virtue of their typing and structural guarantees. The initial composed types are motivated by single cell biology, but additional types may be added in the future for more diverse use cases.
 
-### SOMA
+### SOMAExperiment & SOMAMeasurements
 
-The SOMA type is a specialized SOMACollection, representing an annotated 2-D matrix of observations across a set of variables. The SOMA composes SOMACollection, SOMADataFrame and SOMAMatrix types using a set of predefined fields (keys & values), to represent the annotated matrix. Each predefined field in the SOMA has well-defined typing, dimensionality and indexing. Other user defined data may be added to a SOMA, as a SOMA is a specialization of a SOMACollection.
+`SOMAExperiment` is a specialized `SOMACollection`, representing an annotated 2-D matrix of measurements. In the single-cell biology use case, a `SOMAExperiment` can represent multiple modes of measurement across a single collection of cells. Within a `SOMAExperiment`, a set of measurements on a single set of variables (features) is represented as a `SOMAMeasurements`.
 
-Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
+The SOMAExperiment and SOMAMeasurements types compose [foundational types](#foundational-types):
 
-The predefined fields within SOMA share common indices and `shape`:
+- SOMAExperiment - a well defined set of annotated observations defined by a SOMADataFRame, and one or more "measurement sets" on those observations.
+- SOMAMeasurements - for all observables, a common set of annotated variables (defined by a SOMADataFrame) for which values (eg, measurements, calculations) are stored in SOMADenseNdMatrix and SOMASparseNdMatrix.
 
-- obs_id - the observation, a `string` type
-- var_id - the variable, a `string` type
+In other words, all SOMAMeasurements have a distinct set of variables (features), and inherit common observables from their parent SOMAExperiment. The `obs` and `var` dataframes define the axis annotations, and their respective `__rowid` values are the indices for all matrixes stored in the SOMAMeasurements.
 
-SOMA pre-defined fields are principally differentiated by:
+<figure>
+    <img src="images/SOMAExperiment.png" alt="SOMAExperiment">
+</figure>
 
-- typing
-- dimensionality, eg, 1-D (SOMADataFrame) or 2-D (SOMAMatrix)
-- index column names, eg, `obs_id` or `var_id` or both
+> ⚠️ **Issue** - it would be a good idea to factor SOMAExperiment and SOMAMeasurements into separate sections.
 
-The pre-defined fields are:
+These types have pre-defined fields, each of which have well-defined naming, typing, dimensionality and indexing constraints. Other user-defined data may be added to a `SOMAExperiment` and `SOMAMeasurements`, as both are a specialization of the `SOMACollection`. Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
 
-| Field name | Field type                              | Field description                                                                                                                                                                                                                                               |
-| ---------- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `obs`      | `SOMADataFrame`                         | Primary annotations on the _observation_ axis. Must be of length #observations (ie, every observation _must_ be defined in this field), and must contain and be indexed by the `obs_id` column. The contents of `obs_id` define the _observation_ index domain. |
-| `var`      | `SOMADataFrame`                         | Primary annotations on the _variable_ axis. Must be of length #variables (ie, every variable _must_ be defined in this field), and must contain and be indexed by the `var_id` column. The contents of `var_id` define _variable_ index domain.                 |
-| `obsm`     | `SOMACollection[string, SOMADataFrame]` | Secondary _observation_ annotations, indexed with `obs_id`                                                                                                                                                                                                      |
-| `varm`     | `SOMACollection[string, SOMADataFrame]` | Secondary _variable_ annotations, indexed with `var_id`                                                                                                                                                                                                         |
-| `obsp`     | `SOMACollection[string, SOMAMatrix]`    | Pairwise _observation_ annotations, indexed with `[obs_1_id, obs_2_id]`                                                                                                                                                                                         |
-| `varp`     | `SOMACollection[string, SOMAMatrix]`    | Pairwise _variable_ annotations, indexed with `[var_1_id, var_2_id]`                                                                                                                                                                                            |
-| `X`        | `SOMACollection[string, SOMAMatrix]`    | Sparse observations on a variable, indexed by `[obs_id, var_id]`                                                                                                                                                                                                |
+The shape of each axis (`obs` and `var`) are defined by their respective dataframes, and the indexing of matrices is defined by the `__rowid` of the respective axis dataframe.
 
-The `obs_id` domain for `obsp`, `obsm` and `X` (primary dimension) are the values defined by the `obs` SOMADataFrame `obs_id` column. The `var_id` domain for `varp`, `varm` and `X` (secondary dimension) are the values defined by the `var` SOMADataFrame `var_id` column. In other words, all predefined fields in the SOMA share a common `obs_id` and `var_id` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
+- `obs` - the observation annotations are shared across the entire `SOMAExperiment`. Matrices indexed on this dimension use the domain defined by the `__rowid` values of the `obs` SOMADataFrame (aka `obsid`).
+- `var` - the variable annotations are shared within any given `SOMAMeasurements`. Matrices indexed on this dimension use the domain defined by the `__rowid` values of the `var` SOMADataFrame (aka `varid`).
 
-As with other SOMACollections, the SOMA also has a `metadata` field, and may contain other user-defined elements.
+The pre-defined fields of a SOMAExperiment object are:
 
-#### SOMA field constraints
+| Field name | Field type                                 | Field description                                                                                                                                                                                                           |
+| ---------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `obs`      | `SOMADataFrame`                            | Primary annotations on the _observation_ axis. The contents of the `__rowid` pseudo-column define the _observation_ index domain, aka `obsid`. All observations for the SOMAExperiment _must_ be defined in this dataframe. |
+| `ms`       | `SOMACollection[string, SOMAMeasurements]` | A collection of named measurement sets.                                                                                                                                                                                     |
 
-The following naming and indexing constraints are defined for the SOMA:
+The SOMAMeasurements is a sub-element of a SOMAExperiment, and is otherwise a specialized SOMACollection with pre-defined fields:
 
-| Field name              | Field constraints                                                                                                                                                                        |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _all predefined fields_ | Index column(s) are of type `string`                                                                                                                                                     |
-| obs, var                | Field value type is `SOMADataFrame`                                                                                                                                                      |
-| obsm, varm              | Field value type is a `SOMACollection`, where each element in the collection has a value of type `SOMADataFrame`                                                                         |
-| obsp, varp , X          | Field value type is a `SOMACollection`, where each element in the collection has a value of type `SOMAMatrix`                                                                            |
-| obs, obsm               | Index column name is `'obs_id'`. All `obs_id` values exist in the `obs_id` column of the `obs` field.                                                                                    |
-| var, varm               | Index column name is `'var_id'`. All `var_id` values exist in the `var_id` column of the `var` field.                                                                                    |
-| obsp                    | Index column names are `['obs_1_id', 'obs_2_id']`. All `obs_1_id` and `obs_2_id` values exist in the `obs_id` column of the `obs` field.                                                 |
-| varp                    | Index column names are `['var_1_id', 'var_2_id']`. All `var_1_id` and `var_2_id` values exist in the `var_id` column of the `var` field.                                                 |
-| X                       | Index column names are `['obs_id', 'var_id']`. All `obs_id` values exist in the `obs_id` column of the `obs` field. All `var_id` values exist in the `var_id` column of the `var` field. |
+| Field name | Field type                                  | Field description                                                                                                                                                                                                                                                                          |
+| ---------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `var`      | `SOMADataFrame`                             | Primary annotations on the _variable_ axis, for variables in this measurement set (ie, annotates columns of `X`). The contents of the `__rowid` pseudo-column define the _variable_ index domain, aka `varid`. All variables for this measurement set _must_ be defined in this dataframe. |
+| `X`        | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`                                                                                                                                                                       |
+| `obsm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                         |
+| `obsp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                      |
+| `obs_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each observation, specific to the SOMAMeasurements                                                                                                                                                      |
+| `varm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`                                                                                                                                                          |
+| `varp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                       |
+| `var_ms`   | `SOMACollection[string, SOMADataFrame]`     | A collection of row-indexed dataframes, each containing _secondary_ annotations of each variable, specific to the SOMAMeasurements                                                                                                                                                         |
 
-> ⚠️ **Issue** `raw` -- do we need `raw.X` and `raw.var` at all, or can we model them with existing structures? **Proposal**: the current `X` and `varm` can represent typical `raw` semantics (filtered subset, or transformed values). Assume that higher level usage conventions will utilize these to represent raw, eg, `X['raw']` and `varm['raw']`, or alternatively by adding additional columns to `var` that indicate filtering status.
+For the entire SOMAExperiment, the index domain for the elements within `obsp`, `obsm`, `obs_ms` and `X` (first dimension) are the values defined by the `obs` SOMADataFrame `__rowid` column. For each SOMAMeasurements, the index domain for `varp`, `varm`, `var_ms` and `X` (second dimension) are the values defined by the `var` SOMADataFrame `__rowid` column in the same measurement set. In other words, all predefined fields in the SOMAMeasurements share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
 
-> ⚠️ **Issue** `obsm` and `varm` schema -- if these are RecordBatches indexed by obs_id / var_id, then they are essentially identical to obs/var slots. Are they necessary, or can we represent obsm/varm with conventions layered on top of obs/var? if they are different, how? The only current difference is that `obs` and `var` are required to have an entry for each value on that dimension, whereas `obsm`/`varm` do not require all dimension IDs to exist (ie, they are sparse like X). **Proposal**: retain, but differentiate by considering obsm/varm as secondary annotations on the axis, which do **not** require a value for each obs_id/var_id (ie are **sparse**).
+As with other SOMACollections, the SOMAExperiment and SOMAMeasurements also have a `metadata` field, and may contain other user-defined elements.
 
-> ⚠️ **Issue** `obsm` and `varm` names - field inspiration and name were borrowed from AnnData, but are misleading in this context as both are essentially a collection of SOMADataFrame values, not a collection of dense "matrix" in the AnnData sense. We should consider renaming them. While they can express the typical use case of AnnData.obsm/varm, they are better thought of as a collection of DataFrame containing secondary annotations for the obs/var axis. Possible ideas for better names: obsd/vard ('d' as in dataframe), obs_axis/var_axis, "axis annotation layers", or?
+> ⚠️ **Issue** - the utility of `obs_ms` and `var_ms` are still in debate, and we may remove them.
+
+The following naming and indexing constraints are defined for the SOMAExperiment and SOMAMeasurements:
+
+| Field name                                         | Field constraints                                                                                                                                                                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `obs`, `var`                                       | Field type is a `SOMADataFrame`                                                                                                                                                                                                      |
+| `obs_ms`, `var_ms`,                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADataFrame`                                                                                                                             |
+| `obsp`, `varp`, `X`                                | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                                                                                         |
+| `obsm`, `varm`                                     | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray`                                                                                                                          |
+| `obs_ms`, `obsm`, `obsp`, `var_ms`, `varm`, `varp` | Fields may be empty collections.                                                                                                                                                                                                     |
+| `X` collection values                              | All matrixes must have the shape `(#obs, #var)`. The domain of the first dimension is the values of `obs.__rowid`, and the index domain of the second dimension is the values of `var.__rowid` in the containing `SOMAMeasurements`. |
+| `obsm` collection values                           | All matrixes must have the shape `(#obs, M)`, where `M` is user-defined. The domain of the first dimension is the values of `obs.__rowid`.                                                                                           |
+| `obsp` collection values                           | All matrixes must have the shape `(#obs, #obs)`. The domain of both dimensions is the values of `obs.__rowid`.                                                                                                                       |
+| `obs_ms` collection values                         | All dataframes must have the shape `(#obs,)`. The domain of the dimension is the values of `obs.__rowid`.                                                                                                                            |
+| `varm` collection values                           | All matrixes must have the shape `(#var, M)`, where `M` is user-defined. The domain of the first dimension is the values of `var.__rowid`.                                                                                           |
+| `varp` collection values                           | All matrixes must have the shape `(#var, #var)`. The domain of both dimensions is the values of `var.__rowid`.                                                                                                                       |
+| `var_ms` collection values                         | All dataframes must have the shape `(#var,)`. The domain of the dimension is the values of `var.__rowid`.                                                                                                                            |
+
+> ⚠️ **Issue** `raw` -- do we need `raw.X` and `raw.var` at all, or can we model them with existing structures? **Proposal**: the current `X` and `varm` can represent typical `raw` semantics (filtered subset, or transformed values). Assume that higher level usage conventions will utilize these to represent raw, eg, `X['raw']` and `varm['raw']`, or alternatively by adding additional columns to `var` that indicate filtering status (eg, `var['is_filtered']`).
 
 # Functional Operations
 
-The SOMA API includes functional capabilities around the [SOMA data model](#datamodel.md). The specifics of how these operations manifest in any given language and computing environment is defined in per-language specifications (**to be created**), but each implementation will minimally support the functional operations defined here. For example, it is likely that a Python implementation will prefer `__getattr__` over an explicit `get()` method, and will add other Pythonic functionality to facilitate use.
+The SOMA API includes functional capabilities built around the [SOMA data model](#datamodel.md). The specifics of how these operations manifest in any given language and computing environment is defined elsewhere (**to be created**). Each implementation will minimally support the functional operations defined here. For example, it is likely that a Python implementation will prefer `__getattr__` over an explicit `get()` method, and will augment these functional operations with other Pythonic functionality for ease of use.
 
-As any given storage "engine" upon which SOMA is implemented may have additional features and capabilities required to support advanced use cases, it is expected that SOMA implementations will expose engine-specific features. Where possible, these should be implemented to avoid conflict with future changes to the common SOMA API.
+In several cases an explicit Application Binary Interface (ABI) has been specified for a function, in the form of an Arrow type or construct. The choice of Arrow as both a type system and data ABI is intended to facilitate integration with third party software in a variety of computing environments.
 
-> ⚠️ **Issue** - this spec needs to provide guidance on HOW to do that. Fro example, can we carve out some namespace for extensions in the functional API?
+Any given storage "engine" upon which SOMA is implemented may have additional features and capabilities, and support advanced use cases -- it is expected that SOMA implementations will expose engine-specific features. Where possible, these should be implemented to avoid conflict with future changes to the common SOMA API.
 
-> ⚠️ **Issue** - the scope of the functional spec needs to be nailed down. For example, does it include object lifecycle (create, delete, ...) or just the operations an existing object? See John's comments.
+> ⚠️ **Issue** - this spec needs to provide guidance on HOW to avoid future incompatibility. For example, can we carve out some namespace for extensions in the functional API?
 
-In the following, a pseudo-object-oriented syntax is used, eg, `obj.op()` is calling `op()` upon `obj`. Where a type is used, eg, SOMA.op(), it is a `static` operation (ie, no state other than parameters provided).
-
-> ℹ️ **Note** - this section is just a sketch. Primarily focused on adding pseudo-signatures for any primitive operation that must exist on each type.
+> ℹ️ **Note** - this section is just a sketch, and is primarily focused on defining abstract primitive operations that must exist on each type.
 
 ## SOMAMapping interface
 
-> ℹ️ **Note** - this is an interface defined only to make the subsequent prose simpler. It is not a primary element in the data model.
+> ℹ️ **Note** - this is an interface defined only to make the subsequent prose simpler. It is not an element in the data model, but rather a set of operations that will be supported on other objects.
 
-The SOMAMapping is a string-keyed map. It may be immutable or mutable depending on the context. In most implementations, it will be presented with a language-appropriate interface, eg, Python `Mapping` or `MutableMapping`.
+The SOMAMapping is an interface to a string-keyed map. It may be immutable or mutable depending on the context. In most implementations, it will be presented with a language-appropriate interface, eg, Python `Mapping` or `MutableMapping`.
 
-The following operations manipulate the mapping, providing a getter/setter interface plus the ability to iterate on the collection:
+The following operations will exist to manipulate the mapping, providing a getter/setter interface plus the ability to iterate on the collection:
 
-```
-  mapping.get(string key) -> value
-  mapping.has(string key) -> bool
-  mapping.set(string key, simple value) -> void
-  mapping.del(string key) -> void
-  mapping.__iterator__
-  mapping.__length__
-```
+| Operation                      | Description                                            |
+| ------------------------------ | ------------------------------------------------------ |
+| get(string key) -> value       | Get the value associated with the key.                 |
+| has(string key) -> bool        | Test for key existence.                                |
+| set(string key, value) -> void | Set the value associated with the key.                 |
+| del(string key) -> void        | Remove the key/value from the collection.              |
+| iterator                       | Iterate over the collection.                           |
+| get length                     | Get the length of the map, the number of keys present. |
 
 > ⚠️ Issue - do we need a "is_readonly" or "is_immutable" attribute, or assume user can figure it out from the context?
 
@@ -214,160 +231,228 @@ The following operations manipulate the mapping, providing a getter/setter inter
 
 ## SOMACollection
 
-In the following, `soco` refers to an SOMACollection instance or handle.
+Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined foundational or composed type, including SOMACollection, SOMADataFrame, SOMADenseNdArray, SOMASparseNdArray or SOMAExperiment:
 
-```
-SOMACollection.create(uri) ->
-SOMACollection.open(uri, mode=read|write) -> soco
-SOMACollection.delete(uri) -> void
-SOMACollection.exists(uri) -> bool   # exists and is a SOMACollection
-soco.close()
-soco.metadata -> metadata as a SOMAMapping
-```
+| Operation           | Description                                           |
+| ------------------- | ----------------------------------------------------- |
+| create(uri)         | Create a SOMACollection named with the URI.           |
+| delete(uri)         | Delete the SOMACollection specified with the URI.     |
+| exists(uri) -> bool | Return true if object exists and is a SOMACollection. |
+| get metadata        | Access the metadata as a SOMAMapping                  |
+| get type            | Returns the constant "SOMACollection"                 |
 
-> ⚠️ **Issue** - do we need a specific open/close API, or is the object stateless? Or is that language/environment-specific?
+In addition, SOMACollection supports all SOMAMapping operations:
 
-Collection operations include access to the collection using the SOMAMaping interface:
+| Operation                        | Description                                   |
+| -------------------------------- | --------------------------------------------- |
+| get(string key)                  | Get the object associated with the key        |
+| has(string key)                  | Test for the existence of key in collection.  |
+| set(string key, ValueType value) | Set the key/value in the collection.          |
+| del(string key)                  | Remove the key/value from the collection.     |
+| iterator                         | Iterate over the collection.                  |
+| get length                       | Get the number of elements in the collection. |
 
-```
-type ValueType = SOMACollection | SOMADataFrame | SOMAMatrix
-
-soco.get(string key) -> ValueType
-soco.has(string key) -> bool
-soco.set(string key, ValueType value)
-soco.del(string key) -> void
-soco.__iterator__ -> key/value iterator for collection
-soco.__length__ -> int
-```
+> ⚠️ Issue - does the delete() operation recursively delete, or simply remove the container? For now, define it as removing from container, but not deleting the underlying object.
 
 ## SOMADataFrame
 
-> 🛑 **To be further specified** -- methods need additional specification.
+> ⚠️ **To be further specified** -- all methods need specification.
 
-In the following, `sdf` is used to indicate an "instance" or "handle" to a SOMADataFrame.
+Summary of operations:
 
-Summary:
+| Operation                               | Description                                                                             |
+| --------------------------------------- | --------------------------------------------------------------------------------------- |
+| create(uri, ...)                        | Create a SOMADataFrame.                                                                 |
+| delete(uri)                             | Delete the SOMADataFrame specified with the URI.                                        |
+| exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                                    |
+| get metadata                            | Access the metadata as a SOMAMapping                                                    |
+| get type                                | Returns the constant "SOMADataFrame"                                                    |
+| get shape -> (int, ...)                 | Return length of each dimension, always a list of length `ndims`                        |
+| get ndims -> int                        | Return number of index columns                                                          |
+| get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                                      |
+| get is user-index -> bool               | Return true if user-indexed, false if row-indexed.                                      |
+| get index column names -> [string, ...] | Return index (dimension) column names if user-indexed, or an empty list if row-indexed. |
+| read                                    | Read a subset of data from the SOMADataFrame                                            |
+| write                                   | Write a subset of data to the SOMADataFrame                                             |
 
-```
-SOMADataFrame.create(string uri, Arrow.Schema schema, string index_column_name) -> void
+### Operation: create()
 
-SOMADataFrame.delete(string uri) -> void
-SOMADataFrame.exists(string uri) -> bool  # exists and is a SOMADataFrame
-SOMADataFrame.open(string uri, mode=read|write) -> sdf
-sdf.close()
-
-sdf.shape -> (int, )                      # length of each index dimension, always a list of length 1
-sdf.ndims -> 1                            # returns a constant
-sdf.schema -> Arrow.Schema                # data schema, which must be the schema for an Arrow.RecordBatch
-sdf.index_column_names -> (string, )      # list of index column names, always a list of length 1
-
-sdf.read(ids=[...]|all, column_names=[...]|all, filter=_TBD_) -> Arrow.RecordBatch
-sdf.write(Arrow.RecordBatch values)          # write
-```
-
-### Method: create()
-
-Create a new SOMADataFrame with user-specified URI and schema. If the schema includes unsupported types, an error will be raised.
+Create a new SOMADataFrame with user-specified URI and schema.
 
 ```
-SOMADataFrame.create(string uri, Arrow.Schema schema, string index_column_name) -> void
+create(string uri, Arrow.Schema schema,  user_indexed=True, string[] index_column_names) -> void
+create(string uri, Arrow.Schema schema,  user_indexed=False) -> void
 ```
 
 Parameters:
 
 - uri - location at which to create the object
-- schema - an Arrow.RecordBatch type defining all column schema, including the index columns
-- index_column_name - the name of the index column (eg, 'obs_id')
+- schema - an Arrow Schema defining the per-column schema. This schema must define all columns, including columns to be named as index columns. The column name `__rowid` is reserved for the pseudo-column of the same name. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
+- user_indexed - boolean. If `false`, is a `row-indexed` dataframe. If `true`, is a `user-indexed` dataframe.
+- index_column_names - a list of column names to use as user-defined index columns (eg, `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. This parameter is undefined if `user_indexed` is False (ie, if the dataframe is `row-indexed`).
 
-### Method: read()
+### Operation: read()
 
-Read a user-defined subset of data and return one or more Arrow.RecordBatch. User-provided parameters specify the index values (`ids`), which columns to read, and column filters to apply. There is no guarantee of result ordering.
+Read a user-defined subset of data, addressed by the dataframe indexing columns, optionally filtered, and return results as one or more Arrow.RecordBatch.
 
 Summary:
 
 ```
-sdf.read(ids=[`string`, ...]|all, column_names=[`string`, ...]|all, ValueFilter filter=_TBD_) -> delayed iterator over Arrow.RecordBatch
+read(ids=[[id,...]|all, ...], column_names=[`string`, ...]|all, ValueFilter filter) -> delayed iterator over Arrow.RecordBatch
 ```
 
 Parameters:
 
-- ids - list of indices to read. Defaults to 'all'
+- ids - for each index dimension, which rows to read. Defaults to 'all'.
 - column_names - the named columns to read and return. Defaults to all.
-- filter - [value filter](#value-filters) to apply to the results. Defaults to no filter.
+- filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
+
+**Indexing**: the `ids` parameter will support per-dimension:
+
+- for `row-indexed` dataframes, a row offset (uint), a row-offset range (slice), or a list of both.
+- for `user-indexed` dataframes, a list of values of the type of the indexed column.
 
 The `read` operation will return a language-specific iterator over one or more Arrow RecordBatch objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 > ⚠️ **Issue** - sdf.read() needs further definition for:
 >
-> - result ordering - would be useful, but also adds complexity (order by index? order by column value?). Most useful for streaming queries where the total result may be too large to load into memory and sort.
+> - result ordering - this is needed for most use cases, especially where total size is larger than core. We should add a user-specified parameter. Possible values: unordered, index ordered (C or Fortran?), and \_\_rowid order.
 
 > ℹ️ **Note** -- with this definition for read(), it should be possible to implement the equivalent of the higher level functions in the current prototype:
 >
-> - ids() -- read(ids=all, column_names=['the index column name, eg, obs_id'])
-> - query()/attribute_filter() -- read(column_names=['ids', 'a_col'], filter='a_col == "foobar"')
+> - ids() -- read(ids=all, column_names=['__rowid'])
+> - query()/attribute_filter() -- read(column_names=['__rowids', 'a_col'], filter='a_col == "foobar"')
 
-### Method: write()
+### Operation: write()
 
 Write an Arrow.RecordBatch to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
 
 ```
-sdf.write(Arrow.RecordBatch values)          # write
+write(Arrow.RecordBatch values)
 ```
 
 Parameters:
 
-- values - an Arrow.RecordBatch containing all columns, including the index column. The schema for the values must match the schema for the SOMADataFrame.
+- values - an Arrow.RecordBatch containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
 
-## SOMAMatrix
+If the dataframe is `row-indexed`, the `values` Arrow RecordBatch must contain a `__rowid` (uint64) column, indicating which rows are being written.
 
-> 🛑 **To be further specified** -- will look essentially the same as SOMADataFrame, extended with a second index dimension.
+## SOMADenseNdArray
 
-In the following, `smx` is used to indicate an "instance" or "handle" to a SOMAMatrix.
+> ⚠️ **To be further specified** -- this is incomplete.
+
+Summary of operations:
+
+| Operation                  | Description                                                      |
+| -------------------------- | ---------------------------------------------------------------- |
+| create(uri, ...)           | Create a SOMADenseNdArray named with the URI.                    |
+| delete(uri)                | Delete the SOMADenseNdArray specified with the URI.              |
+| exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.          |
+| get metadata               | Access the metadata as a SOMAMapping                             |
+| get type                   | Returns the constant "SOMADenseNdArray"                          |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
+| get ndims -> int           | Return number of index columns                                   |
+| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema               |
+| get is sparse -> False     | Return the constant False.                                       |
+| read                       | Read a slice of data from the SOMADenseNdArray                   |
+| write                      | Write a slice of data to the SOMADenseNdArray                    |
+
+### Operation: create()
+
+Create a new SOMADenseNdArray with user-specified URI and schema.
+
+```
+create(string uri, type, shape) -> void
+```
+
+Parameters:
+
+- uri - location at which to create the object
+- type - an Arrow type defining the type of each element in the array. If the type is unsupported, an error will be raised.
+- shape - the length of each domain as a list, eg, [100, 10]. All lengths must be in the uint64 range.
+
+### Operation: read()
+
+> ⚠️ **To be further specified**
+
+Read a user-specified subset of the object, and return as one or more Arrow.Tensor.
 
 Summary:
 
 ```
-SOMAMatrix.create(string uri, Arrow.Schema schema, string index_column_name) -> void
-
-SOMAMatrix.delete(string uri) -> void
-SOMAMatrix.exists(string uri) -> bool  # exists and is a SOMADataFrame
-SOMAMatrix.open(string uri, mode=read|write) -> smx
-smx.close()
-
-smx.shape -> (int, int)                     # length of each index dimension, always a list of length 2
-smx.ndims -> 2                              # returns a constant
-smx.schema -> Arrow.Schema                  # data schema, which must be the schema for an Arrow.RecordBatch
-smx.index_column_names -> (string, string)  # list of index column names, always a list of length 2
-
-smx.read(ids=[...]|all, column_names=[...]|all, filter=_TBD_) -> Arrow.RecordBatch
-smx.write(Arrow.RecordBatch values)          # write
+read(slice, ...) -> delayed iterator over Arrow.Tensor
 ```
 
-## SOMA
+- slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
 
-SOMA supports all SOMACollection functions, including access to the predefined fields (eg, `X`) using SOMACollection API. The primary difference in behavior between a SOMACollection and a SOMA is that the SOMA _should_ enforce naming and indexing conventions for the predefine fields (eg, `obs`), as define in the [SOMA data model](#soma).
+The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
+
+> ⚠️ **Issue** - the read operation very likely requires user control over order of results.
+
+### Operation: write()
+
+> ⚠️ **To be further specified**
+
+## SOMASparseNdArray
+
+> ⚠️ **To be further specified** -- this is incomplete.
+
+Summary of operations:
+
+| Operation                  | Description                                                      |
+| -------------------------- | ---------------------------------------------------------------- |
+| create(uri, ...)           | Create a SOMASparseNdArray named with the URI.                   |
+| delete(uri)                | Delete the SOMASparseNdArray specified with the URI.             |
+| exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.         |
+| get metadata               | Access the metadata as a SOMAMapping                             |
+| get type                   | Returns the constant "SOMASparseNdArray"                         |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
+| get ndims -> int           | Return number of index columns                                   |
+| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema               |
+| get is sparse -> True      | Return the constant True.                                        |
+| get nnz -> uint            | Return the number of non-zero values in the array                |
+| read                       | Read a slice of data from the SOMASparseNdArray                  |
+| write                      | Write a slice of data to the SOMASparseNdArray                   |
+
+### Operation: create()
+
+Create a new SOMASparseNdArray with user-specified URI and schema.
+
+```
+create(string uri, type, shape) -> void
+```
+
+Parameters:
+
+- uri - location at which to create the object
+- type - an Arrow type defining the type of each element in the array. If the type is unsupported, an error will be raised.
+- shape - the length of each domain as a list, eg, [100, 10]. All lengths must be in the uint64 range.
+
+### Operation: read()
+
+> ⚠️ **To be further specified**
+
+Read a user-specified subset of the object, and return as one or more Arrow.SparseTensor.
 
 Summary:
 
 ```
-SOMA.create(uri) -> soma
-SOMA.open(uri, mode=read|write) -> soma
-SOMA.delete(uri) -> void
-SOMA.exists(uri) -> bool   # exists and is a SOMA
-soma.close()
-soma.metadata -> metadata as a SOMAMapping
-
-type ValueType = SOMACollection | SOMADataFrame | SOMAMatrix
-
-soma.get(string key) -> ValueType
-soma.has(string key) -> bool
-soma.set(string key, ValueType value)
-soma.del(string key) -> void
-soma.__iterator__ -> key/value iterator for collection
-soma.__length__ -> int
+read(slice, ...) -> delayed iterator over Arrow.SparseTensor
 ```
+
+- slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
+
+The `read` operation will return a language-specific iterator over one or more Arrow SparseTensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
+
+> ⚠️ **Issue** - the read operation very likely requires user control over order of results.
+
+### Operation: write()
+
+> ⚠️ **To be further specified**
 
 ## General Utilities
+
+> ⚠️ **To be further specified**
 
 Summary:
 
@@ -384,7 +469,9 @@ This is a pre-release specification in active development. As defined by [semver
 
 ## Value Filters
 
-Value filters are expressions used to filter the results of a `read` operation, and specify which results should be returned. The specific expression syntax is delegated to per-language specifications, and is outside the scope of this document. This specification uses a pseudo-language for _examples_, but per-language specifications must specify a complete syntax.
+> ⚠️ **To be further specified**
+
+Value filters are expressions used to filter the results of a `read` operation, and specify which results should be returned. The specific means to create and manipulate a value filter is delegated to per-language specifications. This specification uses a pseudo-language for _examples only_.
 
 Value filter expressions will have the following capabilities:
 
@@ -397,21 +484,24 @@ Value filter expressions will have the following capabilities:
 Examples, using a pseudo-syntax:
 
 - `col_A > 0`
-- `col_A > 0 AND col_B != "deleted"`
+- `(col_A > 0) AND (col_B != "deleted")`
 
-# Other Issues
+# ⚠️ Other Issues (open issues with this doc)
 
-> ⚠️ **Issue** language SOMA spec (bindings) - we need to define the base-level language bindings for Python & R, _somewhere_... It is important that there is common bindings for a given language/environment (eg, R).
-
-> ⚠️ **Issue** the scope of the spec needs clarity. In particular, are the following in scope?
->
-> - interfaces to manage the lifecyle of objects in a given storage engine (eg, create, delete, open/close, test for existence)
-> - how objects are externally named (eg, by URI)
+> 1. Are there operations specific to SOMAExperiment and SOMAMeasurements that need to be defined? Or do they inherit only the ops from SOMACollection?
+> 2. The `read` interfaces need work to handle "partitioned" queries/reads - ie, asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
+> 3. What (if any) additional semantics about writes need to be defined?
 
 # Changelog
 
-1. acceptance of Arrow as base type system
-2. adding explicit separation of foundational and composed types, and clarified the intent of composed types
-3. rename `uns` to `metadata`
+1. Acceptance of Arrow as base type system
+2. Adding explicit separation of foundational and composed types, and clarified the intent of composed types
+3. Rename `uns` to `metadata`
 4. Added initial prose for value filter expressions
 5. Added further clarification to read incremental return
+6. SOMAMatrix removed
+7. Operations clarified (add description). Remove assumption of handle/object state.
+8. SOMADataFrame generalized to row-indexed or (multi-) user-indexed.
+9. Introduced SOMADenseNdArray/SOMAsparseNdArray and SOMAExperiment/SOMAMeasurements
+10. Removed composed type `SOMA`
+11. Added initial general utility operations
