@@ -484,12 +484,17 @@ Examples, using a pseudo-syntax:
 
 # ⚠️ Other Issues (open issues with this doc)
 
-> 1. Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
-> 2. The `read` interfaces need work to handle "partitioned" queries/reads - i.e., asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
-> 3. What (if any) additional semantics around writes need to be defined?
-> 4. SOMAExperiment/SOMAMeasurement - do we need the `obs_ms` and `var_ms` layered dataframes, i.e., secondary annotation dataframes?
-> 5. Should `raw` vs `processed` conventions be codified in this spec (eg, as predefined fields in SOMAExperiment/SOMAMeasurement)? Or should they be the purview of higher level schema/conventions, built upon the general-purpose features of this API?
-> 6. Should `metadata` support more complex value types? For example: Arrow Array?
+> 1.  Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
+> 2.  The `read` interfaces need work to handle "partitioned" queries/reads - i.e., asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
+>     - partitioning: what partition parameters? Perhaps: number of partitions, in-mem size (bytes), and divisions (by count).
+>     - ordering:
+>       - for the ND arrays (sparse and dense):   row-major (C), col-major (F) and unordered
+>       - for the SOMADataFrame, if "row-indexed"(aka dense): "rowid" ordered, unordered
+>       - for the SOMADataFrame, if "user-indexed" (aka sparse): row-major (C), col-major (F) and unordered
+> 3.  What (if any) additional semantics around writes need to be defined?
+> 4.  SOMAExperiment/SOMAMeasurement - do we need the `obs_ms` and `var_ms` layered dataframes, i.e., secondary annotation dataframes?
+> 5.  Should `raw` vs `processed` conventions be codified in this spec (eg, as predefined fields in SOMAExperiment/SOMAMeasurement)? Or should they be the purview of higher level schema/conventions, built upon the general-purpose features of this API?
+> 6.  Should `metadata` support more complex value types? For example: Arrow Array?
 
 # Changelog
 
