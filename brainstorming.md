@@ -65,11 +65,9 @@ Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
 ## Metadata
 
-All SOMA objects may be annotated with a small amounts of metadata. Metadata for any SOMA object is a `string`-keyed map of values. Metadata values are Arrow primitive types, Arrow strings and Arrow arrays.
+All SOMA objects may be annotated with a small amounts of simple metadata. Metadata for any SOMA object is a `string`-keyed map of values. Metadata values are Arrow primitive types and Arrow strings. The metadata lifecycle is the same as its containing object, e.g., it will be deleted when the containing object is deleted.
 
-The metadata lifecycle is the same as its containing object, e.g., it will be deleted when the containing object is deleted.
-
-> ℹ️ **Note** - it is possible the acceptable value types will be expanded in the future. It would be good if implementations allowed for this possibility.
+> ℹ️ **Note** - larger or more complex types should be stored using SOMADataFrame, SOMADenseNdArray or SOMASparseNdArray and added to a SOMACollection .
 
 ## Foundational Types
 
@@ -169,7 +167,7 @@ The `SOMAMeasurement` is a sub-element of a SOMAExperiment, and is otherwise a s
 
 For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm`, `obs_ms` and `X` (first dimension) are the values defined by the `obs` `SOMADataFrame` `__rowid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm`, `var_ms` and `X` (second dimension) are the values defined by the `var` `SOMADataFrame` `__rowid` column in the same measurement set. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
 
-As with other SOMACollections, the `SOMAExperiment` and `SOMAMeasurement` also have a `metadata` field, and may contain other user-defined elements.
+As with other SOMACollections, the `SOMAExperiment` and `SOMAMeasurement` also have a `metadata` field, and may contain other user-defined elements. Keys in a `SOMAExperiment` and `SOMAMeasurement` beginning with the characters `_`, `.`, or `$` are reserved for ad hoc use, and will not be utilized by this specification. All other keys are reserved for future future specifications.
 
 > ⚠️ **Issue** - the utility of `obs_ms` and `var_ms` are still in debate, and we may remove them.
 
@@ -204,11 +202,11 @@ Any given storage "engine" upon which SOMA is implemented may have additional fe
 
 > ℹ️ **Note** - this section is just a sketch, and is primarily focused on defining abstract primitive operations that must exist on each type.
 
-## SOMAMapping interface
+## SOMAMetadataMapping interface
 
-> ℹ️ **Note** - this is an interface defined only to make the subsequent prose simpler. It is not an element in the data model, but rather a set of operations that will be supported on other objects.
+> ℹ️ **Note** - this is an interface defined only to make the subsequent prose simpler. It is not an element in the data model, but rather a set of operations that will be supported on the `metadata` associated with all foundational objects.
 
-The SOMAMapping is an interface to a string-keyed map. It may be immutable or mutable depending on the context. In most implementations, it will be presented with a language-appropriate interface, e.g., Python `Mapping` or `MutableMapping`.
+The SOMAMetadataMapping is an interface to a string-keyed mutable map. In most implementations, it will be presented with a language-appropriate interface, e.g., Python `MutableMapping`.
 
 The following operations will exist to manipulate the mapping, providing a getter/setter interface plus the ability to iterate on the collection:
 
@@ -221,8 +219,6 @@ The following operations will exist to manipulate the mapping, providing a gette
 | iterator                       | Iterate over the collection.                           |
 | get length                     | Get the length of the map, the number of keys present. |
 
-> ⚠️ Issue - do we need a "is_readonly" or "is_immutable" attribute, or assume user can figure it out from the context?
-
 > ℹ️ **Note** - it is possible that the data model will grow to include more complex value types. If possible, retain that future option in any API defined.
 
 ## SOMACollection
@@ -234,10 +230,10 @@ Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined
 | create(uri)         | Create a SOMACollection named with the URI.           |
 | delete(uri)         | Delete the SOMACollection specified with the URI.     |
 | exists(uri) -> bool | Return true if object exists and is a SOMACollection. |
-| get metadata        | Access the metadata as a mutable SOMAMapping          |
+| get metadata        | Access the metadata as a mutable SOMAMetadataMapping  |
 | get type            | Returns the constant "SOMACollection"                 |
 
-In addition, SOMACollection supports all SOMAMapping operations:
+In addition, SOMACollection supports operations to manage the contents of the collection:
 
 | Operation                        | Description                                   |
 | -------------------------------- | --------------------------------------------- |
@@ -261,7 +257,7 @@ Summary of operations:
 | create(uri, ...)                        | Create a SOMADataFrame.                                                                 |
 | delete(uri)                             | Delete the SOMADataFrame specified with the URI.                                        |
 | exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                                    |
-| get metadata                            | Access the metadata as a mutable SOMAMapping                                            |
+| get metadata                            | Access the metadata as a mutable SOMAMetadataMapping                                    |
 | get type                                | Returns the constant "SOMADataFrame"                                                    |
 | get shape -> (int, ...)                 | Return length of each dimension, always a list of length `ndims`                        |
 | get ndims -> int                        | Return number of index columns                                                          |
@@ -344,7 +340,7 @@ Summary of operations:
 | create(uri, ...)           | Create a SOMADenseNdArray named with the URI.                    |
 | delete(uri)                | Delete the SOMADenseNdArray specified with the URI.              |
 | exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.          |
-| get metadata               | Access the metadata as a mutable SOMAMapping                     |
+| get metadata               | Access the metadata as a mutable SOMAMetadataMapping             |
 | get type                   | Returns the constant "SOMADenseNdArray"                          |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
 | get ndims -> int           | Return number of index columns                                   |
@@ -400,7 +396,7 @@ Summary of operations:
 | create(uri, ...)           | Create a SOMASparseNdArray named with the URI.                   |
 | delete(uri)                | Delete the SOMASparseNdArray specified with the URI.             |
 | exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.         |
-| get metadata               | Access the metadata as a mutable SOMAMapping                     |
+| get metadata               | Access the metadata as a mutable SOMAMetadataMapping             |
 | get type                   | Returns the constant "SOMASparseNdArray"                         |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
 | get ndims -> int           | Return number of index columns                                   |
@@ -488,13 +484,12 @@ Examples, using a pseudo-syntax:
 > 2.  The `read` interfaces need work to handle "partitioned" queries/reads - i.e., asking the underlying storage engine to generate efficient read batches given the persistent data organization and engine characteristics (example: doing a large read of a sparse matrix in batches/chunks).
 >     - partitioning: what partition parameters? Perhaps: number of partitions, in-mem size (bytes), and divisions (by count).
 >     - ordering:
->       - for the ND arrays (sparse and dense):   row-major (C), col-major (F) and unordered
+>       - for the ND arrays (sparse and dense): row-major (C), col-major (F) and unordered
 >       - for the SOMADataFrame, if "row-indexed"(aka dense): "rowid" ordered, unordered
 >       - for the SOMADataFrame, if "user-indexed" (aka sparse): row-major (C), col-major (F) and unordered
 > 3.  What (if any) additional semantics around writes need to be defined?
 > 4.  SOMAExperiment/SOMAMeasurement - do we need the `obs_ms` and `var_ms` layered dataframes, i.e., secondary annotation dataframes?
 > 5.  Should `raw` vs `processed` conventions be codified in this spec (eg, as predefined fields in SOMAExperiment/SOMAMeasurement)? Or should they be the purview of higher level schema/conventions, built upon the general-purpose features of this API?
-> 6.  Should `metadata` support more complex value types? For example: Arrow Array?
 
 # Changelog
 
@@ -509,4 +504,6 @@ Examples, using a pseudo-syntax:
 9. Introduced SOMADenseNdArray/SOMAsparseNdArray and SOMAExperiment/SOMAMeasurement
 10. Removed composed type `SOMA`
 11. Added initial general utility operations
-12. Expanded the data types that may be stored in `metadata`.
+12. Clarified the data types that may be stored in `metadata`.
+13. Clarified namespacing of reserved slots in SOMAExperiment/SOMAMeasurement
+14. Renamed SOMAMapping to SOMAMetadataMapping to clarify use
