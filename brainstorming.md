@@ -365,16 +365,17 @@ read(
     [slice, ...],
     partitions,
     result_order
-) -> delayed iterator over Arrow.Tensor
+) -> delayed iterator over DenseReadResult
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
 - partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
 
-The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
+The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects and information describing them, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The `DenseReadResult` should include:
 
-> ⚠️ **Issue** - the Arrow.Tensor is a dense contiguous array, i.e., doesn't contain coordinates. If we partition or re-order the results, the result needs to indicate the coordinates associated with the results, or they are not meaningful. This interface needs work - as specified it doesn't really work. One possible solution is to return a SparseTensor if not a simple slice.
+- The coordinates of the slice (e.g., origin, shape)
+- an Arrow.Tensor with the slice values
 
 ### Operation: write()
 
