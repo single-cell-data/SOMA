@@ -370,7 +370,7 @@ read(
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
 - partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
-- result_order - order of read results. Can be one of row-major, column-major and unordered.
+- result_order - order of read results. Can be one of row-major or column-major.
 
 The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects and information describing them, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The `DenseReadResult` should include:
 
