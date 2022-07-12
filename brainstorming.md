@@ -202,36 +202,17 @@ Any given storage "engine" upon which SOMA is implemented may have additional fe
 
 > ℹ️ **Note** - this section is just a sketch, and is primarily focused on defining abstract primitive operations that must exist on each type.
 
-## SOMAMetadataMapping interface
-
-> ℹ️ **Note** - this is an interface defined only to make the subsequent prose simpler. It is not an element in the data model, but rather a set of operations that will be supported on the `metadata` associated with all foundational objects.
-
-The SOMAMetadataMapping is an interface to a string-keyed mutable map. In most implementations, it will be presented with a language-appropriate interface, e.g., Python `MutableMapping`.
-
-The following operations will exist to manipulate the mapping, providing a getter/setter interface plus the ability to iterate on the collection:
-
-| Operation                      | Description                                            |
-| ------------------------------ | ------------------------------------------------------ |
-| get(string key) -> value       | Get the value associated with the key.                 |
-| has(string key) -> bool        | Test for key existence.                                |
-| set(string key, value) -> void | Set the value associated with the key.                 |
-| del(string key) -> void        | Remove the key/value from the collection.              |
-| iterator                       | Iterate over the collection.                           |
-| get length                     | Get the length of the map, the number of keys present. |
-
-> ℹ️ **Note** - it is possible that the data model will grow to include more complex value types. If possible, retain that future option in any API defined.
-
 ## SOMACollection
 
 Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined foundational or composed type, including SOMACollection, SOMADataFrame, SOMADenseNdArray, SOMASparseNdArray or SOMAExperiment:
 
-| Operation           | Description                                           |
-| ------------------- | ----------------------------------------------------- |
-| create(uri)         | Create a SOMACollection named with the URI.           |
-| delete(uri)         | Delete the SOMACollection specified with the URI.     |
-| exists(uri) -> bool | Return true if object exists and is a SOMACollection. |
-| get metadata        | Access the metadata as a mutable SOMAMetadataMapping  |
-| get type            | Returns the constant "SOMACollection"                 |
+| Operation           | Description                                                                    |
+| ------------------- | ------------------------------------------------------------------------------ |
+| create(uri)         | Create a SOMACollection named with the URI.                                    |
+| delete(uri)         | Delete the SOMACollection specified with the URI.                              |
+| exists(uri) -> bool | Return true if object exists and is a SOMACollection.                          |
+| get metadata        | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
+| get type            | Returns the constant "SOMACollection"                                          |
 
 In addition, SOMACollection supports operations to manage the contents of the collection:
 
@@ -257,7 +238,7 @@ Summary of operations:
 | create(uri, ...)                        | Create a SOMADataFrame.                                                                 |
 | delete(uri)                             | Delete the SOMADataFrame specified with the URI.                                        |
 | exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                                    |
-| get metadata                            | Access the metadata as a mutable SOMAMetadataMapping                                    |
+| get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping)          |
 | get type                                | Returns the constant "SOMADataFrame"                                                    |
 | get shape -> (int, ...)                 | Return length of each dimension, always a list of length `ndims`                        |
 | get ndims -> int                        | Return number of index columns                                                          |
@@ -290,14 +271,22 @@ Read a user-defined subset of data, addressed by the dataframe indexing columns,
 Summary:
 
 ```
-read(ids=[[id,...]|all, ...], column_names=[`string`, ...]|all, ValueFilter filter) -> delayed iterator over Arrow.RecordBatch
+read(
+    ids=[[id,...]|all, ...],
+    column_names=[`string`, ...]|all,
+    partitions,
+    result_order,
+    value_filter
+) -> delayed iterator over Arrow.RecordBatch
 ```
 
 Parameters:
 
 - ids - for each index dimension, which rows to read. Defaults to 'all'.
 - column_names - the named columns to read and return. Defaults to all.
-- filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
+- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
+- result_order - order of read results. If dataframe is `user-indexed`, can be one of row-major, col-major or unordered. If dataframe is `row-indexed`, can be one of rowid-ordered or unordered.
+- value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 
 **Indexing**: the `ids` parameter will support per-dimension:
 
@@ -335,19 +324,19 @@ If the dataframe is `row-indexed`, the `values` Arrow RecordBatch must contain a
 
 Summary of operations:
 
-| Operation                  | Description                                                      |
-| -------------------------- | ---------------------------------------------------------------- |
-| create(uri, ...)           | Create a SOMADenseNdArray named with the URI.                    |
-| delete(uri)                | Delete the SOMADenseNdArray specified with the URI.              |
-| exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.          |
-| get metadata               | Access the metadata as a mutable SOMAMetadataMapping             |
-| get type                   | Returns the constant "SOMADenseNdArray"                          |
-| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
-| get ndims -> int           | Return number of index columns                                   |
-| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema               |
-| get is sparse -> False     | Return the constant False.                                       |
-| read                       | Read a slice of data from the SOMADenseNdArray                   |
-| write                      | Write a slice of data to the SOMADenseNdArray                    |
+| Operation                  | Description                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| create(uri, ...)           | Create a SOMADenseNdArray named with the URI.                                  |
+| delete(uri)                | Delete the SOMADenseNdArray specified with the URI.                            |
+| exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.                        |
+| get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
+| get type                   | Returns the constant "SOMADenseNdArray"                                        |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`               |
+| get ndims -> int           | Return number of index columns                                                 |
+| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
+| get is sparse -> False     | Return the constant False.                                                     |
+| read                       | Read a slice of data from the SOMADenseNdArray                                 |
+| write                      | Write a slice of data to the SOMADenseNdArray                                  |
 
 ### Operation: create()
 
@@ -372,14 +361,18 @@ Read a user-specified subset of the object, and return as one or more Arrow.Tens
 Summary:
 
 ```
-read(slice, ...) -> delayed iterator over Arrow.Tensor
+read(
+    [slice, ...],
+    partitions,
+    result_order
+) -> delayed iterator over Arrow.Tensor
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
+- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
+- result_order - order of read results. Can be one of row-major, column-major and unordered.
 
 The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
-
-> ⚠️ **Issue** - the read operation very likely requires user control over order of results.
 
 ### Operation: write()
 
@@ -391,20 +384,20 @@ The `read` operation will return a language-specific iterator over one or more A
 
 Summary of operations:
 
-| Operation                  | Description                                                      |
-| -------------------------- | ---------------------------------------------------------------- |
-| create(uri, ...)           | Create a SOMASparseNdArray named with the URI.                   |
-| delete(uri)                | Delete the SOMASparseNdArray specified with the URI.             |
-| exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.         |
-| get metadata               | Access the metadata as a mutable SOMAMetadataMapping             |
-| get type                   | Returns the constant "SOMASparseNdArray"                         |
-| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims` |
-| get ndims -> int           | Return number of index columns                                   |
-| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema               |
-| get is sparse -> True      | Return the constant True.                                        |
-| get nnz -> uint            | Return the number of non-zero values in the array                |
-| read                       | Read a slice of data from the SOMASparseNdArray                  |
-| write                      | Write a slice of data to the SOMASparseNdArray                   |
+| Operation                  | Description                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| create(uri, ...)           | Create a SOMASparseNdArray named with the URI.                                 |
+| delete(uri)                | Delete the SOMASparseNdArray specified with the URI.                           |
+| exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.                       |
+| get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
+| get type                   | Returns the constant "SOMASparseNdArray"                                       |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`               |
+| get ndims -> int           | Return number of index columns                                                 |
+| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
+| get is sparse -> True      | Return the constant True.                                                      |
+| get nnz -> uint            | Return the number of non-zero values in the array                              |
+| read                       | Read a slice of data from the SOMASparseNdArray                                |
+| write                      | Write a slice of data to the SOMASparseNdArray                                 |
 
 ### Operation: create()
 
@@ -429,18 +422,56 @@ Read a user-specified subset of the object, and return as one or more Arrow.Spar
 Summary:
 
 ```
-read(slice, ...) -> delayed iterator over Arrow.SparseTensor
+read(
+    [slice, ...],
+    partitions,
+    result_order
+) -> delayed iterator over Arrow.SparseTensor
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
+- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
+- result_order - order of read results. Can be one of row-major, column-major and unordered.
 
 The `read` operation will return a language-specific iterator over one or more Arrow SparseTensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
-
-> ⚠️ **Issue** - the read operation very likely requires user control over order of results.
 
 ### Operation: write()
 
 > ⚠️ **To be further specified**
+
+## Common Interfaces
+
+The following are interfaces defined only to make the subsequent specification simpler. They are not elements in the data model, but rather are named sets of operations used to facilitate the definition of supported operations.
+
+### SOMAMetadataMapping
+
+The SOMAMetadataMapping is an interface to a string-keyed mutable map, representing the available operations on the metadata field in all foundational objects. In most implementations, it will be presented with a language-appropriate interface, e.g., Python `MutableMapping`.
+
+The following operations will exist to manipulate the mapping, providing a getter/setter interface plus the ability to iterate on the collection:
+
+| Operation                      | Description                                            |
+| ------------------------------ | ------------------------------------------------------ |
+| get(string key) -> value       | Get the value associated with the key.                 |
+| has(string key) -> bool        | Test for key existence.                                |
+| set(string key, value) -> void | Set the value associated with the key.                 |
+| del(string key) -> void        | Remove the key/value from the collection.              |
+| iterator                       | Iterate over the collection.                           |
+| get length                     | Get the length of the map, the number of keys present. |
+
+> ℹ️ **Note** - it is possible that the data model will grow to include more complex value types. If possible, retain that future option in any API defined.
+
+### SOMAReadPartitions
+
+Read operations on foundational types SOMADataFrame, SOMADenseNdArray and SOMASparseNdArray accept a user-specified parameter indicating desired partitioning of partial results. The following partition methods are supported:
+
+| Partition Type   | Description                                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `count`          | Partitions defined by count, e.g., for a SOMADataFrame this indicates row count returned per RecordBatch, or for an array, the number of values. |
+| `size`           | Partition defined by size, in bytes, e.g., max RecordBatch size returned by SOMADataFRame read operation)                                        |
+| `num_partitions` | Results divided into `num_partitions` (roughly) equal size partitions                                                                            |
+| `auto`           | An automatically determined, "reasonable" default partition size. The default partition size.                                                    |
+
+> ⚠️ **Issue** - there are more complicated schemes in the art, eg, Dask dataframe `division` partitions. Do we need others?
 
 ## General Utilities
 
@@ -507,3 +538,4 @@ Examples, using a pseudo-syntax:
 12. Clarified the data types that may be stored in `metadata`.
 13. Clarified namespacing of reserved slots in SOMAExperiment/SOMAMeasurement
 14. Renamed SOMAMapping to SOMAMetadataMapping to clarify use
+15. Add read partitions and ordering to foundational types.
