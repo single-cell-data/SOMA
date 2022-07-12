@@ -379,7 +379,7 @@ The `read` operation will return a language-specific iterator over one or more A
 
 ### Operation: write()
 
-> ⚠️ **To be further specified** - not workable as written
+> ⚠️ **To be further specified**
 
 Write an Arrow.Tensor to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
 
@@ -389,7 +389,7 @@ write(coords, Arrow.Tensor values)
 
 Parameters:
 
-- coords - _TBD_
+- coords[] - location at which to write the tensor
 - values - an Arrow.Tensor containing values to be written. The type of elements in `values` must match the type of the SOMADenseNdArray.
 
 ## SOMASparseNdArray
@@ -452,6 +452,16 @@ The `read` operation will return a language-specific iterator over one or more A
 ### Operation: write()
 
 > ⚠️ **To be further specified**
+
+Write an Arrow.SparseTensor to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
+
+```
+write(Arrow.SparseTensor values)
+```
+
+Parameters:
+
+- values - an Arrow.SparseTensor containing values to be written. The type of elements in `values` must match the type of the SOMASparseNdArray.
 
 ## Common Interfaces
 
@@ -553,3 +563,4 @@ Examples, using a pseudo-syntax:
 13. Clarified namespacing of reserved slots in SOMAExperiment/SOMAMeasurement
 14. Renamed SOMAMapping to SOMAMetadataMapping to clarify use
 15. Add read partitions and ordering to foundational types.
+16. Clarify ABI for read/write chunks to NDArrays.
