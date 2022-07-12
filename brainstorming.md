@@ -374,9 +374,22 @@ read(
 
 The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
+> ⚠️ **Issue** - the Arrow.Tensor is a dense contiguous array, i.e., doesn't contain coordinates. If we partition or re-order the results, the result needs to indicate the coordinates associated with the results, or they are not meaningful. This interface needs work - as specified it doesn't really work. One possible solution is to return a SparseTensor if not a simple slice.
+
 ### Operation: write()
 
-> ⚠️ **To be further specified**
+> ⚠️ **To be further specified** - not workable as written
+
+Write an Arrow.Tensor to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
+
+```
+write(coords, Arrow.Tensor values)
+```
+
+Parameters:
+
+- coords - _TBD_
+- values - an Arrow.Tensor containing values to be written. The type of elements in `values` must match the type of the SOMADenseNdArray.
 
 ## SOMASparseNdArray
 
