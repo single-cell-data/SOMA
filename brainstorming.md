@@ -146,14 +146,14 @@ The pre-defined fields of a `SOMAExperiment` object are:
 
 The `SOMAMeasurement` is a sub-element of a SOMAExperiment, and is otherwise a specialized SOMACollection with pre-defined fields:
 
-| Field name | Field type                                  | Field description                                                                                                                                                                                                                                                                    |
-| ---------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `var`      | `SOMADataFrame`                             | Primary annotations on the _variable_ axis, for variables in this measurement (i.e., annotates columns of `X`). The contents of the `__rowid` pseudo-column define the _variable_ index domain, aka `varid`. All variables for this measurement _must_ be defined in this dataframe. |
-| `X`        | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`                                                                                                                                                                 |
-| `obsm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                   |
-| `obsp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                |
-| `varm`     | `SOMACollection[string, SOMADenseNdArray]`  | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`                                                                                                                                                    |
-| `varp`     | `SOMACollection[string, SOMASparseNdArray]` | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                 |
+| Field name | Field type                                                    | Field description                                                                                                                                                                                                                                                                    |
+| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `var`      | `SOMADataFrame`                                               | Primary annotations on the _variable_ axis, for variables in this measurement (i.e., annotates columns of `X`). The contents of the `__rowid` pseudo-column define the _variable_ index domain, aka `varid`. All variables for this measurement _must_ be defined in this dataframe. |
+| `X`        | `SOMACollection[string, SOMASparseNdArray\|SOMADenseNdArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                 |
+| `obsm`     | `SOMACollection[string, SOMADenseNdArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                   |
+| `obsp`     | `SOMACollection[string, SOMASparseNdArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                |
+| `varm`     | `SOMACollection[string, SOMADenseNdArray]`                    | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`                                                                                                                                                    |
+| `varp`     | `SOMACollection[string, SOMASparseNdArray]`                   | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                 |
 
 For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm` and `X` (first dimension) are the values defined by the `obs` `SOMADataFrame` `__rowid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm` and `X` (second dimension) are the values defined by the `var` `SOMADataFrame` `__rowid` column in the same measurement. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` SOMADataFrames.
 
@@ -164,7 +164,8 @@ The following naming and indexing constraints are defined for the `SOMAExperimen
 | Field name                     | Field constraints                                                                                                                                                                                                                   |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `obs`, `var`                   | Field type is a `SOMADataFrame`                                                                                                                                                                                                     |
-| `obsp`, `varp`, `X`            | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                                                                                        |
+| `X`                            | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray` or `SOMASparseNdArray`                                                                                                  |
+| `obsp`, `varp`                 | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                                                                                        |
 | `obsm`, `varm`                 | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray`                                                                                                                         |
 | `obsm`, `obsp`, `varm`, `varp` | Fields may be empty collections.                                                                                                                                                                                                    |
 | `X` collection values          | All matrixes must have the shape `(#obs, #var)`. The domain of the first dimension is the values of `obs.__rowid`, and the index domain of the second dimension is the values of `var.__rowid` in the containing `SOMAMeasurement`. |
@@ -179,7 +180,7 @@ The SOMA API includes functional capabilities built around the [SOMA data model]
 
 In several cases an explicit Application Binary Interface (ABI) has been specified for a function, in the form of an Arrow type or construct. The choice of Arrow as both a type system and data ABI is intended to facilitate integration with third party software in a variety of computing environments.
 
-Any given storage "engine" upon which SOMA is implemented may have additional features and capabilities, and support advanced use cases -- it is expected that SOMA implementations will expose engine-specific features. Where possible, these should be implemented to avoid conflict with future changes to the common SOMA API.
+Any given storage "engine" upon which SOMA is implemented may have additional features and capabilities, and support advanced use cases -- it is expected that SOMA implementations will expose storage engine-specific features. Where possible, these should be implemented to avoid conflict with future changes to the common SOMA API.
 
 > ⚠️ **Issue** - this spec needs to provide guidance on HOW to avoid future incompatibility. For example, can we carve out some namespace for extensions in the functional API?
 
@@ -210,6 +211,19 @@ In addition, SOMACollection supports operations to manage the contents of the co
 
 > ⚠️ Issue - does the delete() operation recursively delete, or simply remove the container? For now, define it as removing from container, but not deleting the underlying object.
 
+### Operation: create()
+
+Create a new SOMACollection with the user-specified URI.
+
+```
+create(string uri, platform_config) -> void
+```
+
+Parameters:
+
+- uri - location at which to create the object.
+- platform_config - optional storage-engine specific configuration
+
 ## SOMADataFrame
 
 > ⚠️ **To be further specified** -- all methods need specification.
@@ -236,8 +250,8 @@ A SOMADataFrame may be optionally indexed by one or more dataframe columns (aka 
 Create a new SOMADataFrame with user-specified URI and schema.
 
 ```
-create(string uri, Arrow.Schema schema,  is_indexed=True, string[] index_column_names) -> void
-create(string uri, Arrow.Schema schema,  is_indexed=False) -> void
+create(string uri, Arrow.Schema schema,  is_indexed=True, string[] index_column_names, platform_config) -> void
+create(string uri, Arrow.Schema schema,  is_indexed=False, platform_config) -> void
 ```
 
 Parameters:
@@ -246,6 +260,7 @@ Parameters:
 - schema - an Arrow Schema defining the per-column schema. This schema must define all columns, including columns to be named as index columns. The column name `__rowid` is reserved for the pseudo-column of the same name. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
 - is_indexed - boolean. If `false`, this is a non-indexed dataframe. If `true`, is an indexed dataframe and `index_column_names` must be specified.
 - index_column_names - an list of column names to use as index columns, aka "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). This parameter is undefined if `is_indexed` is False (i.e., if the dataframe is non-indexed).
+- platform_config - optional storage-engine specific configuration
 
 ### Operation: read()
 
@@ -259,7 +274,8 @@ read(
     column_names=[`string`, ...]|all,
     partitions,
     result_order,
-    value_filter
+    value_filter,
+    platform_config,
 ) -> delayed iterator over Arrow.RecordBatch
 ```
 
@@ -270,29 +286,22 @@ Parameters:
 - partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
+- platform_config - optional storage-engine specific configuration
 
 The `read` operation will return a language-specific iterator over one or more Arrow RecordBatch objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
-
-> ⚠️ **Issue** - sdf.read() needs further definition for:
->
-> - result ordering - this is needed for most use cases, especially where total size is larger than core. We should add a user-specified parameter. Possible values: unordered, index ordered (C or Fortran?), and \_\_rowid order.
-
-> ℹ️ **Note** -- with this definition for read(), it should be possible to implement the equivalent of the higher level functions in the current prototype:
->
-> - ids() -- read(ids=all, column_names=['__rowid'])
-> - query()/attribute_filter() -- read(column_names=['__rowids', 'a_col'], filter='a_col == "foobar"')
 
 ### Operation: write()
 
 Write an Arrow.RecordBatch to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
 
 ```
-write(Arrow.RecordBatch values)
+write(Arrow.RecordBatch values, platform_config)
 ```
 
 Parameters:
 
 - values - an Arrow.RecordBatch containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
+- platform_config - optional storage-engine specific configuration
 
 If the dataframe is non-indexed, the `values` Arrow RecordBatch must contain a `__rowid` (uint64) column, indicating which rows are being written. If the dataframe is indexed, all index coordinates must be specified in the `values` RecordBatch.
 
@@ -321,7 +330,7 @@ Summary of operations:
 Create a new SOMADenseNdArray with user-specified URI and schema.
 
 ```
-create(string uri, type, shape) -> void
+create(string uri, type, shape, platform_config) -> void
 ```
 
 Parameters:
@@ -329,12 +338,13 @@ Parameters:
 - uri - location at which to create the object
 - type - an Arrow type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
+- platform_config - optional storage-engine specific configuration
 
 ### Operation: read()
 
 > ⚠️ **To be further specified**
 
-Read a user-specified subset of the object, and return as one or more Arrow.Tensor.
+Read a user-specified subset of the object and return as one or more Arrow.Tensor.
 
 Summary:
 
@@ -342,13 +352,15 @@ Summary:
 read(
     [slice, ...],
     partitions,
-    result_order
+    result_order,
+    platform_config,
 ) -> delayed iterator over DenseReadResult
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
 - partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
 - result_order - order of read results. Can be one of row-major or column-major.
+- platform_config - optional storage-engine specific configuration
 
 The `read` operation will return a language-specific iterator over one or more Arrow Tensor objects and information describing them, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The `DenseReadResult` should include:
 
@@ -362,13 +374,14 @@ The `read` operation will return a language-specific iterator over one or more A
 Write an Arrow.Tensor to the persistent object. As duplicate coordinates are not allowed, coordinates with values already present in the object are overwritten and new coordinates are added.
 
 ```
-write(coords, Arrow.Tensor values)
+write(coords, Arrow.Tensor values, platform_config)
 ```
 
 Parameters:
 
 - coords[] - location at which to write the tensor
 - values - an Arrow.Tensor containing values to be written. The type of elements in `values` must match the type of the SOMADenseNdArray.
+- platform_config - optional storage-engine specific configuration
 
 ## SOMASparseNdArray
 
@@ -396,7 +409,7 @@ Summary of operations:
 Create a new SOMASparseNdArray with user-specified URI and schema.
 
 ```
-create(string uri, type, shape) -> void
+create(string uri, type, shape, platform_config) -> void
 ```
 
 Parameters:
@@ -404,6 +417,7 @@ Parameters:
 - uri - location at which to create the object
 - type - an Arrow type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
+- platform_config - optional storage-engine specific configuration
 
 ### Operation: read()
 
@@ -417,13 +431,15 @@ Summary:
 read(
     [slice, ...],
     partitions,
-    result_order
+    result_order,
+    platform_config,
 ) -> delayed iterator over Arrow.SparseTensor
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
 - partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
+- platform_config - optional storage-engine specific configuration
 
 The `read` operation will return a language-specific iterator over one or more Arrow SparseTensor objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
@@ -434,12 +450,13 @@ The `read` operation will return a language-specific iterator over one or more A
 Write an Arrow.SparseTensor to the persistent object. As duplicate coordinates are not allowed, coordinates already present in the object are overwritten and new coordinates are added.
 
 ```
-write(Arrow.SparseTensor values)
+write(Arrow.SparseTensor values, platform_config)
 ```
 
 Parameters:
 
 - values - an Arrow.SparseTensor containing values to be written. The type of elements in `values` must match the type of the SOMASparseNdArray.
+- platform_config - optional storage-engine specific configuration
 
 ## Common Interfaces
 
@@ -544,3 +561,5 @@ Examples, using a pseudo-syntax:
 18. Removed var_ms/obs_ms
 19. Editorial cleanup and clarifications
 20. Simpified dataframe indexing to indexed/non-indexed. Removed from data model; isolated to only those operations affected.
+21. Add parameter for storage engine-specific config, to read/write/create ops
+22. Support both sparse and dense ndarray in SOMAExperiment X slot.
