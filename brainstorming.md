@@ -272,6 +272,7 @@ Summary:
 read(
     ids=[[id,...]|all, ...],
     column_names=[`string`, ...]|all,
+    batch_size,
     partitions,
     result_order,
     value_filter,
@@ -283,7 +284,8 @@ Parameters:
 
 - ids - the rows to read. Defaults to 'all'. Non-indexed dataframes are addressable with a row offset (uint), a row-offset range (slice) or a list of both. Indexed dataframes are addressable, for each dimension, by value, a value range (slice) or a list of both.
 - column_names - the named columns to read and return. Defaults to all.
-- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
+- batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
+- partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 - platform_config - optional storage-engine specific configuration
@@ -351,6 +353,7 @@ Summary:
 ```
 read(
     [slice, ...],
+    batch_size,
     partitions,
     result_order,
     platform_config,
@@ -358,7 +361,8 @@ read(
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
-- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
+- batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
+- partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major or column-major.
 - platform_config - optional storage-engine specific configuration
 
@@ -430,6 +434,7 @@ Summary:
 ```
 read(
     [slice, ...],
+    batch_size,
     partitions,
     result_order,
     platform_config,
@@ -437,7 +442,8 @@ read(
 ```
 
 - slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
-- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
+- batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
+- partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
 - platform_config - optional storage-engine specific configuration
 
@@ -479,18 +485,23 @@ The following operations will exist to manipulate the mapping, providing a gette
 
 > ℹ️ **Note** - it is possible that the data model will grow to include more complex value types. If possible, retain that future option in any API defined.
 
+### SOMABatchSize
+
+Read operations on foundational types return an iterator over "batches" of data, enabling the processing of larger-than-core datasets. The SOMABatchSize allows user control over read batch size, and accepts the following methods of determining batch size:
+
+| BatchSize type | Description                                                                                                                                         |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `count`        | Batch size defined by result count. For a SOMADataFrame this indicates row count returned per RecordBatch, or for an ND array the number of values. |
+| `size`         | Partition defined by size, in bytes, e.g., max RecordBatch size returned by SOMADataFRame read operation.                                           |
+| `auto`         | An automatically determined, "reasonable" default partition size. This is the default batch size.                                                   |
+
 ### SOMAReadPartitions
 
-Read operations on foundational types SOMADataFrame, SOMADenseNdArray and SOMASparseNdArray accept a user-specified parameter indicating desired partitioning of partial results. The following partition methods are supported:
+To facilitate distributed computation, read operations on foundational types accept a user-specified parameter indicating the desired partitioning of reads and which partition any given read should return. The following options are supported:
 
-| Partition Type   | Description                                                                                                                                      |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `count`          | Partitions defined by count, e.g., for a SOMADataFrame this indicates row count returned per RecordBatch, or for an array, the number of values. |
-| `size`           | Partition defined by size, in bytes, e.g., max RecordBatch size returned by SOMADataFRame read operation)                                        |
-| `num_partitions` | Results divided into `num_partitions` (roughly) equal size partitions                                                                            |
-| `auto`           | An automatically determined, "reasonable" default partition size. The default partition size.                                                    |
-
-> ⚠️ **Issue** - there are more complicated schemes in the art, eg, Dask dataframe `division` partitions. Do we need others?
+| Partition Type | Description                                                                                                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IofN`         | Given I and N, read operations will return the Ith partition of N approximately equal size partitions. Partition boundaries will be stable for any given N and array or dataframe. |
 
 ## General Utilities
 
@@ -563,3 +574,4 @@ Examples, using a pseudo-syntax:
 20. Simplified dataframe indexing to indexed/non-indexed. Removed from data model; isolated to only those operations affected.
 21. Add parameter for storage engine-specific config, to read/write/create ops
 22. Support both sparse and dense ndarray in SOMAExperiment X slot.
+23. Split read batch_size and partitioning, and clarify intent.
