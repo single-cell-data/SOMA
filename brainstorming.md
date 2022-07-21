@@ -560,6 +560,6 @@ Examples, using a pseudo-syntax:
 17. Removed open issues around `raw` - there is already sufficient expressiveness in this spec.
 18. Removed var_ms/obs_ms
 19. Editorial cleanup and clarifications
-20. Simpified dataframe indexing to indexed/non-indexed. Removed from data model; isolated to only those operations affected.
+20. Simplified dataframe indexing to indexed/non-indexed. Removed from data model; isolated to only those operations affected.
 21. Add parameter for storage engine-specific config, to read/write/create ops
 22. Support both sparse and dense ndarray in SOMAExperiment X slot.
