@@ -28,8 +28,8 @@ The data model is comprised of two layers:
 The foundational types are:
 
 - SOMACollection - a string-keyed container (key-value map) of other SOMA data types, e.g., SOMADataFrame, SOMADataMatrix and SOMACollection.
-- SOMADataFrame - a single- or multi-index, multi-column table -- essentially a dataframe.
-- SOMADenseNdArray and SOMASparseNdArray- an offset indexed (zero-based), single-type N-D array, available in either sparse or dense instantiations
+- SOMADataFrame - a multi-column table with optional indexing -- essentially a dataframe.
+- SOMADenseNdArray and SOMASparseNdArray- an offset addressed (zero-based), single-type N-D array, available in either sparse or dense instantiations
 
 The composed types are:
 
@@ -83,18 +83,9 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 
 ### SOMADataFrame
 
-`SOMADataFrame` is a multi-index, multi-column table. A `SOMADataFrame` has a user-defined schema, which defines the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`. All `SOMADataFrame` contain a "pseudo-column" called `__rowid`, of type `uint64` and domain `[0, #rows)`. The `__rowid` pseudo-column contains a unique value for each row in the `SOMADataFrame`, and is intended to act as a join key for other objects, such as a `SOMADenseNdArray`.
-
-A `SOMADataFrame` may be `user-indexed` or `row-indexed`:
-
-- `row-indexed` - each row is addressable (indexed) by the pseudo-column `__rowid` (i.e., a single-index using offset indexing).
-- `user-indexed` - each row is addressable (indexed) by one or more user-specified index columns, which must be named columns in the dataframe schema.
-
-Row-indexed datafames must have no user-specified index columns and at least one column defined in their schema. User-indexed dataframes must have at least one schema-defined column named as an index column. The user-specified schema may not redefine the `__rowid` pseudo-column.
+`SOMADataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`. All `SOMADataFrame` contain a "pseudo-column" called `__rowid`, of type `uint64` and domain `[0, #rows)`. The `__rowid` pseudo-column contains a unique value for each row in the `SOMADataFrame`, and is intended to act as a join key for other objects, such as a `SOMADenseNdArray`.
 
 Most language-specific bindings will provide convertors between SOMADataFrame and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
-
-> ℹ️ **Note** - on a TileDB implementation, `row-indexed` SOMADataFrames will likely map to a _dense_ array, with a single uint64 dimension called **rowid, with domain [0 #nrows). A `user-indexed` SOMADataframe will be a _sparse_ array, with a dimension for each user-specified index column, and a hidden **rowid attribute.
 
 ### SOMADenseNdArray
 
@@ -225,40 +216,40 @@ In addition, SOMACollection supports operations to manage the contents of the co
 
 Summary of operations:
 
-| Operation                               | Description                                                                             |
-| --------------------------------------- | --------------------------------------------------------------------------------------- |
-| create(uri, ...)                        | Create a SOMADataFrame.                                                                 |
-| delete(uri)                             | Delete the SOMADataFrame specified with the URI.                                        |
-| exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                                    |
-| get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping)          |
-| get type                                | Returns the constant "SOMADataFrame"                                                    |
-| get shape -> (int, ...)                 | Return length of each dimension, always a list of length `ndims`                        |
-| get ndims -> int                        | Return number of index columns                                                          |
-| get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                                      |
-| get is user-index -> bool               | Return true if user-indexed, false if row-indexed.                                      |
-| get index column names -> [string, ...] | Return index (dimension) column names if user-indexed, or an empty list if row-indexed. |
-| read                                    | Read a subset of data from the SOMADataFrame                                            |
-| write                                   | Write a subset of data to the SOMADataFrame                                             |
+| Operation                               | Description                                                                                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| create(uri, ...)                        | Create a SOMADataFrame.                                                                         |
+| delete(uri)                             | Delete the SOMADataFrame specified with the URI.                                                |
+| exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                                            |
+| get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping)                  |
+| get type                                | Returns the constant "SOMADataFrame"                                                            |
+| get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                                              |
+| get is_indexed -> bool                  | Return true if indexed, false if non-indexed.                                                   |
+| get index_column_names -> [string, ...] | Return index (dimension) column names if dataframe is indexed, or an empty list if non-indexed. |
+| read                                    | Read a subset of data from the SOMADataFrame                                                    |
+| write                                   | Write a subset of data to the SOMADataFrame                                                     |
+
+A SOMADataFrame may be optionally indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Subsets of non-indexed dataframes are addressable by offset (i.e. `__rowid`). Subsets of indexed dataframes are addressable by the user-specified dimensions.
 
 ### Operation: create()
 
 Create a new SOMADataFrame with user-specified URI and schema.
 
 ```
-create(string uri, Arrow.Schema schema,  user_indexed=True, string[] index_column_names) -> void
-create(string uri, Arrow.Schema schema,  user_indexed=False) -> void
+create(string uri, Arrow.Schema schema,  is_indexed=True, string[] index_column_names) -> void
+create(string uri, Arrow.Schema schema,  is_indexed=False) -> void
 ```
 
 Parameters:
 
 - uri - location at which to create the object
 - schema - an Arrow Schema defining the per-column schema. This schema must define all columns, including columns to be named as index columns. The column name `__rowid` is reserved for the pseudo-column of the same name. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
-- user_indexed - boolean. If `false`, is a `row-indexed` dataframe. If `true`, is a `user-indexed` dataframe.
-- index_column_names - a list of column names to use as user-defined index columns (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. This parameter is undefined if `user_indexed` is False (i.e., if the dataframe is `row-indexed`).
+- is_indexed - boolean. If `false`, this is a non-indexed dataframe. If `true`, is an indexed dataframe and `index_column_names` must be specified.
+- index_column_names - an list of column names to use as index columns, aka "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). This parameter is undefined if `is_indexed` is False (i.e., if the dataframe is non-indexed).
 
 ### Operation: read()
 
-Read a user-defined subset of data, addressed by the dataframe indexing columns, optionally filtered, and return results as one or more Arrow.RecordBatch.
+Read a user-defined slice of data, optionally filtered, and return results as one or more Arrow.RecordBatch.
 
 Summary:
 
@@ -274,16 +265,11 @@ read(
 
 Parameters:
 
-- ids - for each index dimension, which rows to read. Defaults to 'all'.
+- ids - the rows to read. Defaults to 'all'. Non-indexed dataframes are addressable with a row offset (uint), a row-offset range (slice) or a list of both. Indexed dataframes are addressable, for each dimension, by value, a value range (slice) or a list of both.
 - column_names - the named columns to read and return. Defaults to all.
 - partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) hint to indicate how results should be organized.
-- result_order - order of read results. If dataframe is `user-indexed`, can be one of row-major, col-major or unordered. If dataframe is `row-indexed`, can be one of rowid-ordered or unordered.
+- result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
-
-**Indexing**: the `ids` parameter will support per-dimension:
-
-- for `row-indexed` dataframes, a row offset (uint), a row-offset range (slice), or a list of both.
-- for `user-indexed` dataframes, a list of values of the type of the indexed column.
 
 The `read` operation will return a language-specific iterator over one or more Arrow RecordBatch objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
@@ -308,7 +294,7 @@ Parameters:
 
 - values - an Arrow.RecordBatch containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
 
-If the dataframe is `row-indexed`, the `values` Arrow RecordBatch must contain a `__rowid` (uint64) column, indicating which rows are being written.
+If the dataframe is non-indexed, the `values` Arrow RecordBatch must contain a `__rowid` (uint64) column, indicating which rows are being written. If the dataframe is indexed, all index coordinates must be specified in the `values` RecordBatch.
 
 ## SOMADenseNdArray
 
@@ -322,13 +308,13 @@ Summary of operations:
 | delete(uri)                | Delete the SOMADenseNdArray specified with the URI.                            |
 | exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.                        |
 | get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get type                   | Returns the constant "SOMADenseNdArray"                                        |
-| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`               |
-| get ndims -> int           | Return number of index columns                                                 |
-| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
-| get is sparse -> False     | Return the constant False.                                                     |
-| read                       | Read a slice of data from the SOMADenseNdArray                                 |
-| write                      | Write a slice of data to the SOMADenseNdArray                                  |
+| get type                   | Returns the constant "SOMADenseNdArray".                                       |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`.              |
+| get ndims -> int           | Return number of dimensions.                                                   |
+| get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema.                            |
+| get is_sparse -> False     | Return the constant False.                                                     |
+| read                       | Read a slice of data from the SOMADenseNdArray.                                |
+| write                      | Write a slice of data to the SOMADenseNdArray.                                 |
 
 ### Operation: create()
 
@@ -373,7 +359,7 @@ The `read` operation will return a language-specific iterator over one or more A
 
 > ⚠️ **To be further specified**
 
-Write an Arrow.Tensor to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
+Write an Arrow.Tensor to the persistent object. As duplicate coordinates are not allowed, coordinates with values already present in the object are overwritten and new coordinates are added.
 
 ```
 write(coords, Arrow.Tensor values)
@@ -397,13 +383,13 @@ Summary of operations:
 | exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.                       |
 | get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get type                   | Returns the constant "SOMASparseNdArray"                                       |
-| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`               |
-| get ndims -> int           | Return number of index columns                                                 |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`.              |
+| get ndims -> int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
-| get is sparse -> True      | Return the constant True.                                                      |
-| get nnz -> uint            | Return the number of non-zero values in the array                              |
-| read                       | Read a slice of data from the SOMASparseNdArray                                |
-| write                      | Write a slice of data to the SOMASparseNdArray                                 |
+| get is_sparse -> True      | Return the constant True.                                                      |
+| get nnz -> uint            | Return the number of non-zero values in the array.                             |
+| read                       | Read a slice of data from the SOMASparseNdArray.                               |
+| write                      | Write a slice of data to the SOMASparseNdArray.                                |
 
 ### Operation: create()
 
@@ -445,7 +431,7 @@ The `read` operation will return a language-specific iterator over one or more A
 
 > ⚠️ **To be further specified**
 
-Write an Arrow.SparseTensor to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
+Write an Arrow.SparseTensor to the persistent object. As duplicate coordinates are not allowed, coordinates already present in the object are overwritten and new coordinates are added.
 
 ```
 write(Arrow.SparseTensor values)
@@ -532,8 +518,8 @@ Examples, using a pseudo-syntax:
 >     - partitioning: what partition parameters? Perhaps: number of partitions, in-mem size (bytes), and divisions (by count).
 >     - ordering:
 >       - for the ND arrays (sparse and dense): row-major (C), col-major (F) and unordered
->       - for the SOMADataFrame, if "row-indexed"(aka dense): "rowid" ordered, unordered
->       - for the SOMADataFrame, if "user-indexed" (aka sparse): row-major (C), col-major (F) and unordered
+>       - for the SOMADataFrame, if non-indexed: "rowid" ordered, unordered
+>       - for the SOMADataFrame, if indexed: row-major (C), col-major (F) and unordered
 > 3.  What (if any) additional semantics around writes need to be defined?
 
 # Changelog
@@ -557,3 +543,4 @@ Examples, using a pseudo-syntax:
 17. Removed open issues around `raw` - there is already sufficient expressiveness in this spec.
 18. Removed var_ms/obs_ms
 19. Editorial cleanup and clarifications
+20. Simpified dataframe indexing to indexed/non-indexed. Removed from data model; isolated to only those operations affected.
