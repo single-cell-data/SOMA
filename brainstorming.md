@@ -8,7 +8,8 @@ The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible,
 
 - support access to persistent, cloud-resident datasets,
 - enable use within popular data science environments (e.g., R, Python), using the tools of that environment (e.g., Python Pandas integration),
-- enable access to data aggregations much larger than single-host main memory
+- enable "out-of-core" access to data aggregations much larger than single-host main memory
+- enable distributed computation over datasets
 - provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g., a cell "atlas").
 
 The SOMA data model is centered on annotated 2-D matrices, conceptually similar to commonly used single-cell 'omics data structures including Seurat Assay, Bioconductor SingleCellExperiment, and ScanPy AnnData. Where possible, the SOMA API attempts to be general purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
@@ -27,8 +28,8 @@ The data model is comprised of two layers:
 The foundational types are:
 
 - SOMACollection - a string-keyed container (key-value map) of other SOMA data types, e.g., SOMADataFrame, SOMADataMatrix and SOMACollection.
-- SOMADataFrame - a single- or multi-index, multi-column table, with monomorphic (i.e., of a single data type) columns of equal length -- essentially a dataframe.
-- SOMANdArray - an offset indexed (zero-based), dense, single-typeN-D array.
+- SOMADataFrame - a single- or multi-index, multi-column table -- essentially a dataframe.
+- SOMADenseNdArray and SOMASparseNdArray- an offset indexed (zero-based), single-type N-D array, available in either sparse or dense instantiations
 
 The composed types are:
 
@@ -37,7 +38,7 @@ The composed types are:
 In this document, the term `dataframe` implies something akin to an Arrow `RecordBatch`, R `data.frame` or Python `pandas.DataFrame`, where:
 
 - multiple columns may exist, each with a string column name
-- all columns are individually typed, monomorphic, and contain simple types (e.g., int64)
+- all columns are individually typed and contain simple data types (e.g., int64)
 - all columns are of equal length
 - one or more columns may be indexed
 
@@ -82,7 +83,7 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 
 ### SOMADataFrame
 
-`SOMADataFrame` is a multi-index, multi-column table of monomorphic arrays, all of equal length. A `SOMADataFrame` has a user-defined schema, which defines the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`. All `SOMADataFrame` contain a "pseudo-column" called `__rowid`, of type `uint64` and domain `[0, #rows)`. The `__rowid` pseudo-column contains a unique value for each row in the `SOMADataFrame`, and is intended to act as a join key for other objects, such as a `SOMANdArray`.
+`SOMADataFrame` is a multi-index, multi-column table. A `SOMADataFrame` has a user-defined schema, which defines the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`. All `SOMADataFrame` contain a "pseudo-column" called `__rowid`, of type `uint64` and domain `[0, #rows)`. The `__rowid` pseudo-column contains a unique value for each row in the `SOMADataFrame`, and is intended to act as a join key for other objects, such as a `SOMADenseNdArray`.
 
 A `SOMADataFrame` may be `user-indexed` or `row-indexed`:
 
@@ -97,9 +98,9 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 
 ### SOMADenseNdArray
 
-`SOMADenseNdArray` is a monomorphic, dense, N-dimensional array with offset (zero-based) integer indexing on each dimension. The `SOMADenseNdArray` has a user-defined schema, which includes:
+`SOMADenseNdArray` is a dense, N-dimensional array with offset (zero-based) integer indexing on each dimension. The `SOMADenseNdArray` has a user-defined schema, which includes:
 
-- type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc)
+- type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
 
 All dimensions must have a positive, non-zero length.
@@ -108,9 +109,9 @@ All dimensions must have a positive, non-zero length.
 
 ### SOMASparseNdArray
 
-`SOMASparseNdArray` is a monomorphic, sparse, N-dimensional array with offset (zero-based) integer indexing on each dimension. The `SOMASparseNdArray` has a user-defined schema, which includes:
+`SOMASparseNdArray` is a sparse, N-dimensional array with offset (zero-based) integer indexing on each dimension. The `SOMASparseNdArray` has a user-defined schema, which includes:
 
-- type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc)
+- type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
 
 All dimensions must have a positive, non-zero length.
@@ -555,3 +556,4 @@ Examples, using a pseudo-syntax:
 16. Clarify ABI for read/write chunks to NDArrays.
 17. Removed open issues around `raw` - there is already sufficient expressiveness in this spec.
 18. Removed var_ms/obs_ms
+19. Editorial cleanup and clarifications
