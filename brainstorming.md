@@ -241,6 +241,8 @@ Summary of operations:
 
 A SOMADataFrame may be optionally indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Subsets of non-indexed dataframes are addressable by offset (i.e. `soma_rowid`). Subsets of indexed dataframes are addressable by the user-specified dimensions.
 
+SOMADataFrame rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
+
 ### Operation: create()
 
 Create a new SOMADataFrame with user-specified URI and schema.
