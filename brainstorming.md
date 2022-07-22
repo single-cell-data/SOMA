@@ -557,8 +557,14 @@ Examples, using a pseudo-syntax:
 
 # ⚠️ Other Issues (open issues with this doc)
 
-> 1.  Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
-> 2.  What (if any) additional semantics around writes need to be defined?
+Issues to be resolved:
+
+1. Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
+2. What (if any) additional semantics around writes need to be defined?
+3. Value filter support in NdArray has been proposed:
+   - Is there a use case to motivate it?
+   - This effectively requires that all read() return batches be sparse, as the value filter will remove values.
+   - Where the requested batch_format is `dense` (ie, the user wants a tensor back), this would require that we also provide coordinates and/or a mask in addition to the tensor (values). Or disallow that combination - if you specify a value filter, you can only ask for a sparse-capable batch_format.
 
 # Changelog
 
