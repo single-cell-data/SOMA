@@ -190,26 +190,24 @@ Any given storage "engine" upon which SOMA is implemented may have additional fe
 
 Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined foundational or composed type, including SOMACollection, SOMADataFrame, SOMADenseNdArray, SOMASparseNdArray or SOMAExperiment:
 
-| Operation           | Description                                                                    |
-| ------------------- | ------------------------------------------------------------------------------ |
-| create(uri)         | Create a SOMACollection named with the URI.                                    |
-| delete(uri)         | Delete the SOMACollection specified with the URI.                              |
-| exists(uri) -> bool | Return true if object exists and is a SOMACollection.                          |
-| get metadata        | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get type            | Returns the constant "SOMACollection"                                          |
+| Operation           | Description                                                                                          |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| create(uri)         | Create a SOMACollection named with the URI.                                                          |
+| delete(uri)         | Delete the SOMACollection specified with the URI. Does not delete the objects within the collection. |
+| exists(uri) -> bool | Return true if object exists and is a SOMACollection.                                                |
+| get metadata        | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping)                       |
+| get type            | Returns the constant "SOMACollection"                                                                |
 
 In addition, SOMACollection supports operations to manage the contents of the collection:
 
-| Operation                        | Description                                   |
-| -------------------------------- | --------------------------------------------- |
-| get(string key)                  | Get the object associated with the key        |
-| has(string key)                  | Test for the existence of key in collection.  |
-| set(string key, ValueType value) | Set the key/value in the collection.          |
-| del(string key)                  | Remove the key/value from the collection.     |
-| iterator                         | Iterate over the collection.                  |
-| get length                       | Get the number of elements in the collection. |
-
-> ⚠️ Issue - does the delete() operation recursively delete, or simply remove the container? For now, define it as removing from container, but not deleting the underlying object.
+| Operation                        | Description                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------- |
+| get(string key)                  | Get the object associated with the key                                                   |
+| has(string key)                  | Test for the existence of key in collection.                                             |
+| set(string key, ValueType value) | Set the key/value in the collection.                                                     |
+| del(string key)                  | Remove the key/value from the collection. Does not delete the underlying object (value). |
+| iterator                         | Iterate over the collection.                                                             |
+| get length                       | Get the number of elements in the collection.                                            |
 
 ### Operation: create()
 
@@ -592,3 +590,4 @@ Issues to be resolved:
 22. Support both sparse and dense ndarray in SOMAExperiment X slot.
 23. Split read batch_size and partitioning, and clarify intent.
 24. Allow multiple format support for NDArray read/write ops.
+25. Clarified SOMACollection delete semantics.
