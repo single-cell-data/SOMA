@@ -264,7 +264,7 @@ create(string uri, Arrow.Schema schema, platform_config) -> void
 Parameters:
 
 - uri - location at which to create the object
-- schema - an Arrow Schema defining the per-column schema. This schema must define all columns, including columns to be named as index columns. All column names beginning with `soma_` are reserved. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
+- schema - an Arrow Schema defining the per-column schema. This schema must define all columns. All column names beginning with `soma_` are reserved. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
 - platform_config - optional storage-engine specific configuration
 
 ### Operation: read()
