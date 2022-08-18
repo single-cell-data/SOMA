@@ -414,6 +414,7 @@ Summary of operations:
 | get is_sparse -> False     | Return the constant False.                                                     |
 | read                       | Read a slice of data from the SOMADenseNdArray.                                |
 | write                      | Write a slice of data to the SOMADenseNdArray.                                 |
+| reshape                    | Gives a new shape to the array.                                                |
 
 ### Operation: create()
 
@@ -495,6 +496,7 @@ Summary of operations:
 | get nnz -> uint            | Return the number of non-zero values in the array.                             |
 | read                       | Read a slice of data from the SOMASparseNdArray.                               |
 | write                      | Write a slice of data to the SOMASparseNdArray.                                |
+| reshape                    | Gives a new shape to the array.                                                |
 
 ### Operation: create()
 
