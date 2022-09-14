@@ -1,6 +1,6 @@
 # Introduction
 
-> **Status**: brainstorming, pre-proposal
+> **Status**: brainstorming, pre-proposal, in active development. Version: `0.1.0-dev`
 >
 > ℹ️ **Note** - this is an early draft and has not had any substantive review or circulation. It may contain controversial, undecided, or just plain wrong-headed ideas. I expect several major iterations will be required to converge the underlying primitives with use cases. Please see `issues` noted throughout the doc for a list of active discussions/debates. In particular, this doc has many known gaps identified throughout the with callouts.
 
@@ -647,7 +647,9 @@ get_storage_engine() -> string            # return underlying storage engine nam
 
 ### Method: get_SOMA_version
 
-This is a pre-release specification in active development. As defined by [semver](https://semver.org/), this API is defined as version `0.0.0-dev`.
+This is a pre-release specification in active development. As defined by [semver](https://semver.org/), this API is defined as version `0.1.0-dev`.
+
+_Note:_ this API was preceded by another (un-versioned) API draft, which is colloquially referred to as `0.0.0-dev`.
 
 ## Value Filters
 
