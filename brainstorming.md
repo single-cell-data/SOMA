@@ -35,7 +35,7 @@ The composed types are:
 
 - SOMAExperiment - a specialization and extension of SOMACollection, codifying a set of naming and indexing conventions to represent annotated, 2-D matrix of observations across _multiple_ sets of variables.
 
-In this document, the term `dataframe` implies something akin to an Arrow `RecordBatch`, R `data.frame` or Python `pandas.DataFrame`, where:
+In this document, the term `dataframe` implies something akin to an Arrow `Table` (or `RecordBatch`), R `data.frame` or Python `pandas.DataFrame`, where:
 
 - multiple columns may exist, each with a string column name
 - all columns are individually typed and contain simple data types (e.g., int64)
@@ -269,7 +269,7 @@ Parameters:
 
 ### Operation: read()
 
-Read a user-defined slice of data, optionally filtered, and return results as one or more Arrow.RecordBatch.
+Read a user-defined slice of data, optionally filtered, and return results as one or more Arrow.Table.
 
 Summary:
 
@@ -282,12 +282,12 @@ read(
     result_order,
     value_filter,
     platform_config,
-) -> delayed iterator over Arrow.RecordBatch
+) -> delayed iterator over Arrow.Table
 ```
 
 Parameters:
 
-- slices - the rows to read. Defaults to 'all'. Rows are addressable with a row offset (uint), a row-offset range (slice) or a list of both.
+- slices - the rows to read. Defaults to 'all'. Rows are addressable with a row offset (uint), a row-offset range (slice), an Arrow array or chunked array of row-offsets, or a list of both offsets and slices.
 - column_names - the named columns to read and return. Defaults to all. The pseudo-column `soma_rowid` may be included in this list.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
@@ -295,22 +295,23 @@ Parameters:
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter. The `soma_rowid` pseudo-column can not be filtered.
 - platform_config - optional storage-engine specific configuration
 
-The `read` operation will return a language-specific iterator over one or more Arrow RecordBatch objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
+The `read` operation will return a language-specific iterator over one or more Arrow Table objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 ### Operation: write()
 
-Write an Arrow.RecordBatch to the persistent object. Rows already present in the object are overwritten and new rows are added.
+Write an Arrow.RecordBatch or Arrow.Table to the persistent object. Rows already present in the object are overwritten and new rows are added.
 
 ```
 write(Arrow.RecordBatch values, platform_config)
+write(Arrow.Table values, platform_config)
 ```
 
 Parameters:
 
-- values - an Arrow.RecordBatch containing all columns, including the `soma_rowid` column. The schema for the values must match the schema for the SOMADataFrame.
+- values - an Arrow.RecordBatch or Arrow.Table containing all columns, including the `soma_rowid` column. The schema for the values must match the schema for the SOMADataFrame.
 - platform_config - optional storage-engine specific configuration
 
-The `values` Arrow RecordBatch must contain a `soma_rowid` (uint64) column, indicating which rows are being written.
+The `values` parameter must contain a `soma_rowid` (uint64) column, indicating which rows are being written.
 
 ## SOMAIndexedDataFrame
 
@@ -352,7 +353,7 @@ Parameters:
 
 ### Operation: read()
 
-Read a user-defined slice of data, optionally filtered, and return results as one or more Arrow.RecordBatch.
+Read a user-defined slice of data, optionally filtered, and return results as one or more Arrow.Table.
 
 Summary:
 
@@ -365,12 +366,12 @@ read(
     result_order,
     value_filter,
     platform_config,
-) -> delayed iterator over Arrow.RecordBatch
+) -> delayed iterator over Arrow.Table
 ```
 
 Parameters:
 
-- ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice) or a list of both.
+- ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice), an Arrow array of values, or a list of both.
 - column_names - the named columns to read and return. Defaults to all.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
@@ -378,22 +379,23 @@ Parameters:
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 - platform_config - optional storage-engine specific configuration
 
-The `read` operation will return a language-specific iterator over one or more Arrow RecordBatch objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
+The `read` operation will return a language-specific iterator over one or more Arrow Table objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 ### Operation: write()
 
-Write an Arrow.RecordBatch to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
+Write an Arrow.RecordBatch or Arrow.Table to the persistent object. As duplicate index values are not allowed, index values already present in the object are overwritten and new index values are added.
 
 ```
 write(Arrow.RecordBatch values, platform_config)
+write(Arrow.Table values, platform_config)
 ```
 
 Parameters:
 
-- values - an Arrow.RecordBatch containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
+- values - an parameter containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
 - platform_config - optional storage-engine specific configuration
 
-All index coordinates must be specified in the `values` RecordBatch.
+All index coordinates must be specified in the `values` parameter.
 
 ## SOMADenseNdArray
 
@@ -431,6 +433,15 @@ Parameters:
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
 - platform_config - optional storage-engine specific configuration
 
+### Operation: get schema
+
+Return the array schema as an Arrow.Schema object. This operation will return the schema of the Arrow.RecordBatch returned
+by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema
+will be:
+
+- `__dim_N`: the type of the Nth dimension. This will always be a `uint64`.
+- `data`: the user-specified type of the array elements, as specified in the `create` operation.
+
 ### Operation: read()
 
 Read a user-specified subset of the object and return as one or more read batches.
@@ -448,7 +459,7 @@ read(
 ) -> delayed iterator over ReadResult
 ```
 
-- slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
+- slice - per-dimension slice, expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major or column-major.
@@ -470,6 +481,7 @@ Values to write may be provided in a variety of formats:
 - Tensor: caller provides values as an Arrow.Tensor, and the coordinates at which the dense tensor is written.
 - SparseTensor: caller provides a Arrow COO, CSC or CSR SparseTensor
 - RecordBatch: caller provides COO-encoded coordinates & data as an Arrow.RecordBatch
+- Table: caller provides COO-encoded coordinates & data as an Arrow.Table
 
 Parameters:
 
@@ -513,6 +525,15 @@ Parameters:
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
 - platform_config - optional storage-engine specific configuration
 
+### Operation: get schema
+
+Return the array schema as an Arrow.Schema object. This operation will return the schema of the Arrow.RecordBatch returned
+by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema
+will be:
+
+- `__dim_N`: the type of the Nth dimension. This will always be a `uint64`.
+- `data`: the user-specified type of the array elements, as specified in the `create` operation.
+
 ### Operation: read()
 
 Read a user-specified subset of the object, and return as one or more read batches.
@@ -530,7 +551,7 @@ read(
 ) -> delayed iterator over ReadResult
 ```
 
-- slice - per-dimension slice, expressed as a scalar, a range, or a list of both.
+- slice - per-dimension slice, expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
@@ -552,6 +573,7 @@ Values to write may be provided in a variety of formats:
 - Tensor: caller provides values as an Arrow.Tensor, and the coordinates at which the dense tensor is written.
 - SparseTensor: caller provides a Arrow COO, CSC or CSR SparseTensor
 - RecordBatch: caller provides COO-encoded coordinates & data as an Arrow.RecordBatch
+- Table: caller provides COO-encoded coordinates & data as an Arrow.Table
 
 Parameters:
 
@@ -585,8 +607,8 @@ Read operations on foundational types return an iterator over "batches" of data,
 
 | BatchSize type | Description                                                                                                                                         |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `count`        | Batch size defined by result count. For a SOMADataFrame this indicates row count returned per RecordBatch, or for an ND array the number of values. |
-| `size`         | Partition defined by size, in bytes, e.g., max RecordBatch size returned by SOMADataFRame read operation.                                           |
+| `count`        | Batch size defined by result count. For a SOMADataFrame this indicates row count returned per Arrow.Table, or for an ND array the number of values. |
+| `size`         | Partition defined by size, in bytes, e.g., max Arrow.Table size returned by SOMADataFRame read operation.                                           |
 | `auto`         | An automatically determined, "reasonable" default partition size. This is the default batch size.                                                   |
 
 ### SOMAReadPartitions
@@ -608,6 +630,7 @@ Array read operations can return results in a variety of formats. The `SOMABatch
 | `csr`          | Return an Arrow.SparseCSRTensor                                                                       |
 | `csc`          | Return an Arrow.SparseCSCTensor                                                                       |
 | `record-batch` | Return an Arrow.RecordBatch containing COO-encoded coordinates and values.                            |
+| `table`        | Return an Arrow.Table containing COO-encoded coordinates and values.                                  |
 
 ## General Utilities
 
@@ -689,3 +712,6 @@ Issues to be resolved:
 27. Various editorial clarifications
 28. Clarify distinction between soma_rowid pseudo-column and soma_joinid column.
 29. Split indexed/non-indexed dataframe into two types to clarify differing indexing/slicing semantics, and the existence of the soma_rowid pseudo-column only in non-indexed dataframes.
+30. Most use of Arrow RecordBatch updated to be a Table, as this allows for chunked arrays (larger objects).
+31. Clarify that read operations can accept a "list of scalar" in the form of an Arrow Array or ChunkedArray
+32. Clarify the return value of `get schema` operation for NdArray types.
