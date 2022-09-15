@@ -1,6 +1,6 @@
 # Introduction
 
-> **Status**: brainstorming, pre-proposal, in active development. Version: `0.1.0-dev`
+> **Status**: brainstorming, pre-proposal, in active development. Version: `0.2.0-dev`
 >
 > ℹ️ **Note** - this is an early draft and has not had any substantive review or circulation. It may contain controversial, undecided, or just plain wrong-headed ideas. I expect several major iterations will be required to converge the underlying primitives with use cases. Please see `issues` noted throughout the doc for a list of active discussions/debates. In particular, this doc has many known gaps identified throughout the with callouts.
 
@@ -392,7 +392,7 @@ write(Arrow.Table values, platform_config)
 
 Parameters:
 
-- values - an parameter containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
+- values - a parameter containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
 - platform_config - optional storage-engine specific configuration
 
 All index coordinates must be specified in the `values` parameter.
@@ -639,7 +639,7 @@ Array read operations can return results in a variety of formats. The `SOMABatch
 Summary:
 
 ```
-get_version() -> string                   # return semver-compatible version of the supported SOMA API
+get_SOMA_version() -> string              # return semver-compatible version of the supported SOMA API
 get_implementation() -> string            # return the implementation name, e.g., "R-tiledb"
 get_implementation_version() -> string    # return the package implementation version as a semver
 get_storage_engine() -> string            # return underlying storage engine name, e.g., "tiledb"
@@ -647,9 +647,9 @@ get_storage_engine() -> string            # return underlying storage engine nam
 
 ### Method: get_SOMA_version
 
-This is a pre-release specification in active development. As defined by [semver](https://semver.org/), this API is defined as version `0.1.0-dev`.
+This is a pre-release specification in active development. As defined by [semver](https://semver.org/), this API is defined as version `0.2.0-dev`.
 
-_Note:_ this API was preceded by another (un-versioned) API draft, which is colloquially referred to as `0.0.0-dev`.
+_Note:_ this API was preceded by another (un-versioned) API draft, which is colloquially referred to as `0.0.0-dev` and `0.1.0-dev`
 
 ## Value Filters
 
@@ -717,3 +717,4 @@ Issues to be resolved:
 30. Most use of Arrow RecordBatch updated to be a Table, as this allows for chunked arrays (larger objects).
 31. Clarify that read operations can accept a "list of scalar" in the form of an Arrow Array or ChunkedArray
 32. Clarify the return value of `get schema` operation for NdArray types.
+33. Clarified the function name returning the SOMA API version (`get_SOMA_version`), and bumped API version to `0.2.0-dev`
