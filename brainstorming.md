@@ -2,7 +2,7 @@
 
 > **Status**: brainstorming, pre-proposal, in active development. Version: `0.2.0-dev`
 >
-> ℹ️ **Note** - this is an early draft and has not had any substantive review or circulation. It may contain controversial, undecided, or just plain wrong-headed ideas. I expect several major iterations will be required to converge the underlying primitives with use cases. Please see `issues` noted throughout the doc for a list of active discussions/debates. In particular, this doc has many known gaps identified throughout the with callouts.
+> ℹ️ **Note** - this is an early working draft (WORK IN PROGRESS). It may contain controversial, undecided, or incomplete proposals - feedback is encouraged. It is expect that additional revisions will be required to converge the underlying primitives with use cases, and to incorporate lessons from initial implementation and early users. Please see `issues` and other call-outs throughout the doc for a list of active discussions/debates.
 
 The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible, and open-source API providing access to annotated, 2D matrix data stored in multiple underlying formats and systems. The vision for this API family includes:
 
