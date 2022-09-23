@@ -101,7 +101,7 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 
 ### SOMADenseNdArray
 
-`SOMADenseNdArray` is a dense, N-dimensional array of `simple` type, with offset (zero-based) integer indexing on each dimension. The `SOMADenseNdArray` has a user-defined schema, which includes:
+`SOMADenseNdArray` is a dense, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMADenseNdArray` has a user-defined schema, which includes:
 
 - type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
@@ -112,7 +112,7 @@ All dimensions must have a positive, non-zero length, and there must be 1 or mor
 
 ### SOMASparseNdArray
 
-`SOMASparseNdArray` is a sparse, N-dimensional array of `simple` type, with offset (zero-based) integer indexing on each dimension. The `SOMASparseNdArray` has a user-defined schema, which includes:
+`SOMASparseNdArray` is a sparse, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMASparseNdArray` has a user-defined schema, which includes:
 
 - type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
@@ -429,7 +429,7 @@ create(string uri, type, shape, platform_config) -> void
 Parameters:
 
 - uri - location at which to create the object
-- type - an Arrow type defining the type of each element in the array. If the type is unsupported, an error will be raised.
+- type - an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
 - platform_config - optional storage-engine specific configuration
 
@@ -521,7 +521,7 @@ create(string uri, type, shape, platform_config) -> void
 Parameters:
 
 - uri - location at which to create the object
-- type - an Arrow type defining the type of each element in the array. If the type is unsupported, an error will be raised.
+- type - an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
 - platform_config - optional storage-engine specific configuration
 
