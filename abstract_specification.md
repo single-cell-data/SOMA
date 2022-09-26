@@ -112,7 +112,7 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 
 All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions.
 
-The default "fill" value for `SOMADenseNdArray` is the zero value of the array type (e.g., Arrow.float32 defaults to 0.0).
+The default "fill" value for `SOMADenseNdArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
 
 > ℹ️ **Note** - on TileDB this is an dense array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
 
@@ -125,7 +125,7 @@ The default "fill" value for `SOMADenseNdArray` is the zero value of the array t
 
 All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Implicitly stored elements (ie, those not explicitly stored in the array) are assumed to have a value of zero.
 
-The default "fill" value for `SOMASparseNdArray` is the zero value of the array type (e.g., Arrow.float32 defaults to 0.0).
+The default "fill" value for `SOMASparseNdArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
 
 > ℹ️ **Note** - on TileDB this is an sparse array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
 
