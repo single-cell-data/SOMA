@@ -117,7 +117,7 @@ All dimensions must have a positive, non-zero length, and there must be 1 or mor
 - type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
 
-All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions.
+All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Implicitly stored elements (ie, those not explicitly stored in the array) are assumed to have a value of zero.
 
 > ℹ️ **Note** - on TileDB this is an sparse array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
 
@@ -505,7 +505,7 @@ Summary of operations:
 | get ndims -> int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
 | get is_sparse -> True      | Return the constant True.                                                      |
-| get nnz -> uint            | Return the number of non-zero values in the array.                             |
+| get nnz -> uint            | Return the number stored values in the array, including explicit zeros.        |
 | read                       | Read a slice of data from the SOMASparseNdArray.                               |
 | write                      | Write a slice of data to the SOMASparseNdArray.                                |
 | reshape                    | Gives a new shape to the array.                                                |
