@@ -299,7 +299,7 @@ Parameters:
 - column_names - the named columns to read and return. Defaults to all. The pseudo-column `soma_rowid` may be included in this list.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-- result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
+- result_order - order of read results. If dataframe is indexed, can be one of row-major, column-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter. The `soma_rowid` pseudo-column can not be filtered.
 - platform_config - optional storage-engine specific configuration
 
