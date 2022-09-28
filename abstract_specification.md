@@ -89,6 +89,8 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 
 `SOMADataFrame` must contain a column called `soma_joinid`, of type `uint64`. The `soma_joinid` column contains a unique value for each row in the `SOMADataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
 
+The default "fill" value for `SOMADataFrame` is the zero or null value of the respective column data type (e.g., Arrow.float32 defaults to 0.0, Arrow.string to "", etc).
+
 Most language-specific bindings will provide convertors between SOMADataFrame and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
 
 ### SOMAIndexedDataFrame
@@ -96,6 +98,8 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 `SOMAIndexedDataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`.
 
 All `SOMAIndexedDataFrame` must contain a column called `soma_joinid`, of type `uint64`. The `soma_joinid` column contains a unique value for each row in the `SOMAIndexedDataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
+
+The default "fill" value for `SOMAIndexedDataFrame` is the zero or null value of the respective column data type (e.g., Arrow.float32 defaults to 0.0, Arrow.string to "", etc).
 
 Most language-specific bindings will provide convertors between SOMADataFrame and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
 
@@ -108,6 +112,8 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 
 All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions.
 
+The default "fill" value for `SOMADenseNdArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
+
 > ℹ️ **Note** - on TileDB this is an dense array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
 
 ### SOMASparseNdArray
@@ -117,7 +123,9 @@ All dimensions must have a positive, non-zero length, and there must be 1 or mor
 - type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
 
-All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions.
+All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Implicitly stored elements (ie, those not explicitly stored in the array) are assumed to have a value of zero.
+
+The default "fill" value for `SOMASparseNdArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
 
 > ℹ️ **Note** - on TileDB this is an sparse array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
 
@@ -291,7 +299,7 @@ Parameters:
 - column_names - the named columns to read and return. Defaults to all. The pseudo-column `soma_rowid` may be included in this list.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-- result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
+- result_order - order of read results. If dataframe is indexed, can be one of row-major, column-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter. The `soma_rowid` pseudo-column can not be filtered.
 - platform_config - optional storage-engine specific configuration
 
@@ -505,7 +513,7 @@ Summary of operations:
 | get ndims -> int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
 | get is_sparse -> True      | Return the constant True.                                                      |
-| get nnz -> uint            | Return the number of non-zero values in the array.                             |
+| get nnz -> uint            | Return the number stored values in the array, including explicit zeros.        |
 | read                       | Read a slice of data from the SOMASparseNdArray.                               |
 | write                      | Write a slice of data to the SOMASparseNdArray.                                |
 | reshape                    | Gives a new shape to the array.                                                |
