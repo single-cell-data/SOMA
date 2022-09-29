@@ -422,8 +422,8 @@ Summary of operations:
 | get ndims -> int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema.                            |
 | get is_sparse -> False     | Return the constant False.                                                     |
-| read                       | Read a slice of data from the SOMADenseNdArray.                                |
-| write                      | Write a slice of data to the SOMADenseNdArray.                                 |
+| read                       | Read a subarray from the SOMADenseNdArray.                                     |
+| write                      | Write a subarray to the SOMADenseNdArray.                                      |
 | reshape                    | Gives a new shape to the array.                                                |
 
 ### Operation: create()
@@ -452,48 +452,45 @@ will be:
 
 ### Operation: read()
 
-Read a user-specified subset of the object and return as one or more read batches.
+Read a user-specified dense subarray from the object and return as an Arrow.Tensor.
 
 Summary:
 
 ```
 read(
-    [slice, ...],
+    coords,
     batch_size,
     partitions,
     result_order,
-    batch_format,
     platform_config,
-) -> delayed iterator over ReadResult
+) -> Arrow.Tensor
 ```
 
-- slice - per-dimension slice, expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
-- batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
+- coords - per-dimension slice, expressed as a per-dimension list of scalar or range.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major or column-major.
-- batch_format - a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `dense`.
 - platform_config - optional storage-engine specific configuration
 
-The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
+The `read` operation will return an Arrow Tensor containing the requested subarray.
 
 ### Operation: write()
 
-Write values to the persistent object. As duplicate coordinates are not allowed, coordinates with values already present in the object are overwritten and new coordinates are added.
+Write an Arrow Tensor to a dense subarray of the persistent object.
 
 ```
-write(values, platform_config)
+write(
+    [slice, ...]
+    values,
+    platform_config
+)
 ```
 
-Values to write may be provided in a variety of formats:
-
-- Tensor: caller provides values as an Arrow.Tensor, and the coordinates at which the dense tensor is written.
-- SparseTensor: caller provides a Arrow COO, CSC or CSR SparseTensor
-- RecordBatch: caller provides COO-encoded coordinates & data as an Arrow.RecordBatch
-- Table: caller provides COO-encoded coordinates & data as an Arrow.Table
+Values are specified as an Arrow Tensor.
 
 Parameters:
 
-- values - values to be written. The type of elements in `values` must match the type of the SOMADenseNdArray.
+- coords - per-dimension slice, expressed as a per-dimension list of scalar or range.
+- values - values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNdArray.
 - platform_config - optional storage-engine specific configuration
 
 ## SOMASparseNdArray
