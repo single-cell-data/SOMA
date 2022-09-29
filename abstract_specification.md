@@ -452,7 +452,7 @@ will be:
 
 ### Operation: read()
 
-Read a user-specified dense subarray from object and return as an Arrow.Tensor.
+Read a user-specified dense subarray from the object and return as an Arrow.Tensor.
 
 Summary:
 
