@@ -1,0 +1,8 @@
+[build-system]
+requires = ["setuptools"]
+build_backend = "setuptools.build_meta"
+
+[project]
+name = "somabase"
+description = "Python-language API specification and base utilities for implementation of the SOMA system."
+version = "0.0.0"
