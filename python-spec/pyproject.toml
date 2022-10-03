@@ -1,8 +1,18 @@
 [build-system]
-requires = ["setuptools"]
-build_backend = "setuptools.build_meta"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "somabase"
 description = "Python-language API specification and base utilities for implementation of the SOMA system."
 version = "0.0.0"
+readme = "./README.md"
+
+[project.optional-dependencies]
+dev = ["black", "isort"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+force_single_line = true
+single_line_exclusions = ["typing"]
