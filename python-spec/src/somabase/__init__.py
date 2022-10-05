@@ -20,5 +20,4 @@ __all__ = (
 
     "IOfN",
     "BatchSize",
-    "BatchFormat",
 )

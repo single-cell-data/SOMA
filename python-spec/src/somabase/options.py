@@ -1,9 +1,9 @@
 """Enums and other types used as options across methods of many types.
 
-These types are *concrete* and should be accepted as inputs
+These types are *concrete* and should be used as-is as inputs to the various
+SOMA types that require them, not reimplemented by the implementing package.
 """
 
-import enum
 from typing import Optional
 
 import attrs
@@ -71,25 +71,3 @@ class BatchSize:
             raise ValueError(f"If set, '{attr.name}' must be positive")
         if self.count and self.bytes:
             raise ValueError("Either 'count' or 'bytes' may be set, not both")
-
-
-class BatchFormat(enum.Enum):
-    """The format that will be returned from an array read operation."""
-    DENSE = "dense"
-    """Returns the coordinates of the slice and a :class:`pyarrow.Tensor`."""
-    COO = "coo"
-    """Returns a :class:`pyarrow.SparseCOOTensor`."""
-    CSC = "csc"
-    """Returns a :class:`pyarrow.SparseCSCMatrix`."""
-    CSR = "csr"
-    """Returns a :class:`pyarrow.SparseCSRMatrix`."""
-    RECORD_BATCH = "record-batch"
-    """Returns a :class:`pyarrow.RecordBatch`.
-
-    The returned data contains COO-encoded coordinates and values.
-    """
-    TABLE = "table"
-    """Returns a :class:`pyarrow.Table`.
-
-    The returned data contains COO-encoded coordinates and values.
-    """
