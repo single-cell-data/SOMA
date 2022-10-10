@@ -68,7 +68,7 @@ Numeric index types (eg, offset indexing into dense arrays) are specified with `
 
 SOMA is intended to be strongly typed. With one exception noted below, all requests for a given Arrow type must be fulfilled or generate an error based upon the capabilities of the underlying storage system. Silently casting to a less capable type (eg, float64 to float32) is _not_ permitted. All operations specifying or introspecting the type system must be self-consistent, eg, if object `create` accepts a given Arrow type or schema, the `get schema` operation must return the same types.
 
-SOMA _does_ permit one form of type promotion - variable length types (`sting`, `binary`) may be promoted to their 64-bit variants (`large_string`, `large_binary`) at the time of object creation. However, this promotion must be explicit and visible to the API user via the `get schema` operation.
+SOMA _does_ permit one form of type promotion - variable length types (`string`, `binary`) may be promoted to their 64-bit variants (`large_string`, `large_binary`) at the time of object creation. However, this promotion must be explicit and visible to the API user via the `get schema` operation.
 
 SOMA places no constraints on the underlying types used by the storage system, as long as the API-level representation is consistent across operations, and the supported types full match the Arrow definition of their type semantics.
 
