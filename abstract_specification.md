@@ -60,9 +60,17 @@ In the following doc:
 
 Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
+Numeric index types (eg, offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1)`. In other words, positive `int64` values are used for offset indexing.
+
 > ⚠️ **Issue** - are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (i.e., no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (e.g., RecordBatch, List, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
 
-> ⚠️ **Issue** - the above uses Arrow `string`. Should we be using `large_string` instead (no 2GB cap), or allowing both?
+### Type conformance and promotion
+
+SOMA is intended to be strongly typed. With one exception noted below, all requests for a given Arrow type must be fulfilled or generate an error based upon the capabilities of the underlying storage system. Silently casting to a less capable type (eg, float64 to float32) is _not_ permitted. All operations specifying or introspecting the type system must be self-consistent, eg, if object `create` accepts a given Arrow type or schema, the `get schema` operation must return the same types.
+
+SOMA _does_ permit one form of type promotion - variable length types (`sting`, `binary`) may be promoted to their 64-bit variants (`large_string`, `large_binary`) at the time of object creation. However, this promotion must be explicit and visible to the API user via the `get schema` operation.
+
+SOMA places no constraints on the underlying types used by the storage system, as long as the API-level representation is consistent across operations, and the supported types full match the Arrow definition of their type semantics.
 
 ## Metadata
 
@@ -85,9 +93,9 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 
 `SOMADataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`.
 
-`SOMADataFrame` contain a "pseudo-column" called `soma_rowid`, of type `uint64` and domain `[0, #rows)`. `soma_rowid` is the row offset (row id), and is a contiguous integer number beginning with zero.
+`SOMADataFrame` contain a "pseudo-column" called `soma_rowid`, of type `int64` and domain `[0, #rows)`. `soma_rowid` is the row offset (row id), and is a contiguous integer number beginning with zero.
 
-`SOMADataFrame` must contain a column called `soma_joinid`, of type `uint64`. The `soma_joinid` column contains a unique value for each row in the `SOMADataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
+`SOMADataFrame` must contain a column called `soma_joinid`, of type `int64` and domain `[0, 2^63-1)`. The `soma_joinid` column contains a unique value for each row in the `SOMADataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
 
 The default "fill" value for `SOMADataFrame` is the zero or null value of the respective column data type (e.g., Arrow.float32 defaults to 0.0, Arrow.string to "", etc).
 
@@ -97,7 +105,7 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 
 `SOMAIndexedDataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`.
 
-All `SOMAIndexedDataFrame` must contain a column called `soma_joinid`, of type `uint64`. The `soma_joinid` column contains a unique value for each row in the `SOMAIndexedDataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
+All `SOMAIndexedDataFrame` must contain a column called `soma_joinid`, of type `int64` and domain `[0, 2^63-1)`. The `soma_joinid` column contains a unique value for each row in the `SOMAIndexedDataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
 
 The default "fill" value for `SOMAIndexedDataFrame` is the zero or null value of the respective column data type (e.g., Arrow.float32 defaults to 0.0, Arrow.string to "", etc).
 
@@ -110,11 +118,11 @@ Most language-specific bindings will provide convertors between SOMADataFrame an
 - type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
 
-All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions.
+All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (eg, `soma_dim_0`), and elements are named `soma_data`.
 
 The default "fill" value for `SOMADenseNdArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
 
-> ℹ️ **Note** - on TileDB this is an dense array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
+> ℹ️ **Note** - on TileDB this is an dense array with `N` `int64` dimensions of domain [0, maxInt64), and a single attribute.
 
 ### SOMASparseNdArray
 
@@ -123,11 +131,11 @@ The default "fill" value for `SOMADenseNdArray` is the zero or null value of the
 - type - a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
 - shape - the shape of the array, i.e., number and length of each dimension
 
-All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Implicitly stored elements (ie, those not explicitly stored in the array) are assumed to have a value of zero.
+All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Implicitly stored elements (ie, those not explicitly stored in the array) are assumed to have a value of zero. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (eg, `soma_dim_0`), and elements are named `soma_data`.
 
 The default "fill" value for `SOMASparseNdArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
 
-> ℹ️ **Note** - on TileDB this is an sparse array with `N` uint64 dimensions of domain [0, maxUint64), and a single attribute.
+> ℹ️ **Note** - on TileDB this is an sparse array with `N` `int64` dimensions of domain [0, maxInt64), and a single attribute.
 
 ## Composed Types
 
@@ -265,6 +273,8 @@ A SOMADataFrame rows are offset addressed, ie, can be sliced the row id.
 
 Create a new SOMADataFrame with user-specified URI and schema.
 
+The schema parameter must define all user-specified columns. The schema may optionally include `soma_rowid` and `soma_joinid`, but an error will be raised if they are not of type Arrow.int64. If `soma_joinid` and `soma_rowid` are not specified, they will be added to the schema. All other column names beginning with `soma_` are reserved, and if present in the schema, will generate an error. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
+
 ```
 create(string uri, Arrow.Schema schema, platform_config) -> void
 ```
@@ -272,8 +282,12 @@ create(string uri, Arrow.Schema schema, platform_config) -> void
 Parameters:
 
 - uri - location at which to create the object
-- schema - an Arrow Schema defining the per-column schema. This schema must define all columns. All column names beginning with `soma_` are reserved. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
+- schema - an Arrow Schema defining the per-column schema.
 - platform_config - optional storage-engine specific configuration
+
+### get schema
+
+Return the SOMADataFrame schema as an Arrow schema object. The schema will include all user- and system-defined columns, including `soma_rowid` and `soma_joinid`.
 
 ### Operation: read()
 
@@ -296,7 +310,7 @@ read(
 Parameters:
 
 - slices - the rows to read. Defaults to 'all'. Rows are addressable with a row offset (uint), a row-offset range (slice), an Arrow array or chunked array of row-offsets, or a list of both offsets and slices.
-- column_names - the named columns to read and return. Defaults to all. The pseudo-column `soma_rowid` may be included in this list.
+- column_names - the named columns to read and return. Defaults to all. System-defined columns (`soma_rowid` and `soma_joinid`) may be included in this list.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, column-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
@@ -316,10 +330,10 @@ write(Arrow.Table values, platform_config)
 
 Parameters:
 
-- values - an Arrow.RecordBatch or Arrow.Table containing all columns, including the `soma_rowid` column. The schema for the values must match the schema for the SOMADataFrame.
+- values - an Arrow.RecordBatch or Arrow.Table containing all columns, including `soma_rowid` and `soma_joinid`. The schema for the values must match the schema for the SOMADataFrame.
 - platform_config - optional storage-engine specific configuration
 
-The `values` parameter must contain a `soma_rowid` (uint64) column, indicating which rows are being written.
+The `values` parameter must contain a `soma_rowid` (`int64` in range `[0, 2^63-1)`) column, indicating which rows are being written.
 
 ## SOMAIndexedDataFrame
 
@@ -348,6 +362,8 @@ SOMAIndexedDataFrame rows require unique coordinates. In other words, the read a
 
 Create a new SOMAIndexedDataFrame with user-specified URI and schema.
 
+The schema parameter must define all user-specified columns. The schema may optionally include `soma_joinid`, but an error will be raised if it is not of type Arrow.int64. If `soma_joinid` is not specified, it will be added to the schema. All other column names beginning with `soma_` are reserved, and if present in the schema, will generate an error. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
+
 ```
 create(string uri, Arrow.Schema schema, string[] index_column_names, platform_config) -> void
 ```
@@ -355,9 +371,17 @@ create(string uri, Arrow.Schema schema, string[] index_column_names, platform_co
 Parameters:
 
 - uri - location at which to create the object
-- schema - an Arrow Schema defining the per-column schema. This schema must define all columns, including columns to be named as index columns. All column names beginning with `soma_` are reserved. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
+- schema - an Arrow Schema defining the per-column schema.
 - index_column_names - an list of column names to use as index columns, aka "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). The `soma_joinid` column may be indexed.
 - platform_config - optional storage-engine specific configuration
+
+### get schema
+
+Return the SOMADataFrame schema as an Arrow schema object. The schema will include all user- and system-defined columns, including `soma_joinid`.
+
+### get index column names
+
+Return a list of all column names which index the dataframe.
 
 ### Operation: read()
 
@@ -380,7 +404,7 @@ read(
 Parameters:
 
 - ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice), an Arrow array of values, or a list of both.
-- column_names - the named columns to read and return. Defaults to all.
+- column_names - the named columns to read and return. Defaults to all. System-defined columns (`soma_joinid`) may be included in this list.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
@@ -403,7 +427,7 @@ Parameters:
 - values - a parameter containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
 - platform_config - optional storage-engine specific configuration
 
-All index coordinates must be specified in the `values` parameter.
+All columns, including index columns and `soma_joinid` must be specified in the `values` parameter.
 
 ## SOMADenseNdArray
 
@@ -424,7 +448,6 @@ Summary of operations:
 | get is_sparse -> False     | Return the constant False.                                                     |
 | read                       | Read a subarray from the SOMADenseNdArray.                                     |
 | write                      | Write a subarray to the SOMADenseNdArray.                                      |
-| reshape                    | Gives a new shape to the array.                                                |
 
 ### Operation: create()
 
@@ -438,7 +461,7 @@ Parameters:
 
 - uri - location at which to create the object
 - type - an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
-- shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
+- shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1)`.
 - platform_config - optional storage-engine specific configuration
 
 ### Operation: get schema
@@ -447,8 +470,8 @@ Return the array schema as an Arrow.Schema object. This operation will return th
 by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema
 will be:
 
-- `__dim_N`: the type of the Nth dimension. This will always be a `uint64`.
-- `data`: the user-specified type of the array elements, as specified in the `create` operation.
+- `soma_dim_N`: the type of the Nth dimension. This will always be an `int64` in the range `[0, 2^63-1)`.
+- `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
 
 ### Operation: read()
 
@@ -472,6 +495,8 @@ read(
 - platform_config - optional storage-engine specific configuration
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
+
+> ⚠️ **Issue** - support for other formats, such as Arrow Table, is under discussion.
 
 ### Operation: write()
 
@@ -513,7 +538,6 @@ Summary of operations:
 | get nnz -> uint            | Return the number stored values in the array, including explicit zeros.        |
 | read                       | Read a slice of data from the SOMASparseNdArray.                               |
 | write                      | Write a slice of data to the SOMASparseNdArray.                                |
-| reshape                    | Gives a new shape to the array.                                                |
 
 ### Operation: create()
 
@@ -527,7 +551,7 @@ Parameters:
 
 - uri - location at which to create the object
 - type - an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
-- shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the uint64 range.
+- shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1)`.
 - platform_config - optional storage-engine specific configuration
 
 ### Operation: get schema
@@ -536,8 +560,8 @@ Return the array schema as an Arrow.Schema object. This operation will return th
 by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema
 will be:
 
-- `__dim_N`: the type of the Nth dimension. This will always be a `uint64`.
-- `data`: the user-specified type of the array elements, as specified in the `create` operation.
+- `soma_dim_N`: the type of the Nth dimension. This will always be a `int64` in the range `[0, 2^63-1)`.
+- `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
 
 ### Operation: read()
 
@@ -646,9 +670,11 @@ Summary:
 ```
 get_SOMA_version() -> string              # return semver-compatible version of the supported SOMA API
 get_implementation() -> string            # return the implementation name, e.g., "R-tiledb"
-get_implementation_version() -> string    # return the package implementation version as a semver
+get_implementation_version() -> string    # return the package implementation version as a semver-compatible string
 get_storage_engine() -> string            # return underlying storage engine name, e.g., "tiledb"
 ```
+
+Semver compatible strings comply with the specification at [semver.org](https://semver.org).
 
 ### Method: get_SOMA_version
 
@@ -723,3 +749,8 @@ Issues to be resolved:
 31. Clarify that read operations can accept a "list of scalar" in the form of an Arrow Array or ChunkedArray
 32. Clarify the return value of `get schema` operation for NdArray types.
 33. Clarified the function name returning the SOMA API version (`get_SOMA_version`), and bumped API version to `0.2.0-dev`
+34. All offset types (soma_rowid, soma_joinid) changed from uint64 to positive int64.
+35. Remove `reshape` operation from the NdArray types.
+36. Clarify type conformance and promotion
+37. NdArray COO column names - add `soma` prefix to move all names into the reserved namespace.
+38. Clarify explicit nature of soma_rowid/soma_joinid handling throughout.
