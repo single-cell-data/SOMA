@@ -310,7 +310,7 @@ read(
 Parameters:
 
 - slices - the rows to read. Defaults to 'all'. Rows are addressable with a row offset (uint), a row-offset range (slice), an Arrow array or chunked array of row-offsets, or a list of both offsets and slices.
-- column_names - the named columns to read and return. Defaults to all. System-defined columns (`soma_rowid` and `soma_joinid`) may be included in this list.
+- column_names - the named columns to read and return. Defaults to all, including system-defined columns (`soma_rowid` and `soma_joinid`).
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, column-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
@@ -404,7 +404,7 @@ read(
 Parameters:
 
 - ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice), an Arrow array of values, or a list of both.
-- column_names - the named columns to read and return. Defaults to all. System-defined columns (`soma_joinid`) may be included in this list.
+- column_names - the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
