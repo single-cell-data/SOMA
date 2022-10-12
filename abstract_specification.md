@@ -222,7 +222,7 @@ Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined
 | delete(uri)         | Delete the SOMACollection specified with the URI. Does not delete the objects within the collection. |
 | exists(uri) -> bool | Return true if object exists and is a SOMACollection.                                                |
 | get metadata        | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping)                       |
-| get type            | Returns the constant "SOMACollection"                                                                |
+| get soma_type       | Returns the constant "SOMACollection"                                                                |
 
 In addition, SOMACollection supports operations to manage the contents of the collection:
 
@@ -260,7 +260,7 @@ Summary of operations:
 | delete(uri)                  | Delete the SOMADataFrame specified with the URI.                               |
 | exists(uri) -> bool          | Return true if object exists and is a SOMADataFrame.                           |
 | get metadata                 | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get type                     | Returns the constant "SOMADataFrame"                                           |
+| get soma_type                | Returns the constant "SOMADataFrame"                                           |
 | get schema -> Arrow.Schema   | Return data schema, in the form of an Arrow Schema                             |
 | get is_indexed -> false      | Return false.                                                                  |
 | get index_column_names -> [] | Return an empty list.                                                          |
@@ -347,7 +347,7 @@ The `values` parameter must contain a `soma_rowid` (`int64` in range `[0, 2^63-1
 | delete(uri)                             | Delete the SOMAIndexedDataFrame specified with the URI.                        |
 | exists(uri) -> bool                     | Return true if object exists and is a SOMAIndexedDataFrame.                    |
 | get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get type                                | Returns the constant "SOMAIndexedDataFrame"                                    |
+| get soma_type                           | Returns the constant "SOMAIndexedDataFrame"                                    |
 | get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                             |
 | get is_indexed -> bool                  | Return true.                                                                   |
 | get index_column_names -> [string, ...] | Return index (dimension) column names.                                         |
@@ -441,7 +441,7 @@ Summary of operations:
 | delete(uri)                | Delete the SOMADenseNdArray specified with the URI.                            |
 | exists(uri) -> bool        | Return true if object exists and is a SOMADenseNdArray.                        |
 | get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get type                   | Returns the constant "SOMADenseNdArray".                                       |
+| get soma_type              | Returns the constant "SOMADenseNdArray".                                       |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`.              |
 | get ndims -> int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema.                            |
@@ -530,7 +530,7 @@ Summary of operations:
 | delete(uri)                | Delete the SOMASparseNdArray specified with the URI.                           |
 | exists(uri) -> bool        | Return true if object exists and is a SOMASparseNdArray.                       |
 | get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get type                   | Returns the constant "SOMASparseNdArray"                                       |
+| get soma_type              | Returns the constant "SOMASparseNdArray"                                       |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`.              |
 | get ndims -> int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
@@ -754,3 +754,4 @@ Issues to be resolved:
 36. Clarify type conformance and promotion
 37. NdArray COO column names - add `soma` prefix to move all names into the reserved namespace.
 38. Clarify explicit nature of soma_rowid/soma_joinid handling throughout.
+39. Renamed `type` fields to `soma_type`.
