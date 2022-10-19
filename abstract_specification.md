@@ -243,7 +243,7 @@ create(string uri, platform_config) -> void
 Parameters:
 
 - uri - location at which to create the object.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 ## SOMADataFrame
 
@@ -282,7 +282,7 @@ Parameters:
 - uri - location at which to create the object
 - schema - an Arrow Schema defining the per-column schema.
 - index_column_names - an list of column names to use as index columns, aka "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). The `soma_joinid` column may be indexed.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 ### get schema
 
@@ -318,7 +318,7 @@ Parameters:
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 The `read` operation will return a language-specific iterator over one or more Arrow Table objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
@@ -334,7 +334,7 @@ write(Arrow.Table values, platform_config)
 Parameters:
 
 - values - a parameter containing all columns, including the index columns. The schema for the values must match the schema for the SOMADataFrame.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 All columns, including index columns and `soma_joinid` must be specified in the `values` parameter.
 
@@ -371,7 +371,7 @@ Parameters:
 - uri - location at which to create the object
 - type - an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1)`.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 ### Operation: get schema
 
@@ -401,7 +401,7 @@ read(
 - coords - per-dimension slice, expressed as a per-dimension list of scalar or range.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major or column-major.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
 
@@ -425,7 +425,7 @@ Parameters:
 
 - coords - per-dimension slice, expressed as a per-dimension list of scalar or range.
 - values - values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNdArray.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 ## SOMASparseNdArray
 
@@ -461,7 +461,7 @@ Parameters:
 - uri - location at which to create the object
 - type - an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - shape - the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1)`.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 ### Operation: get schema
 
@@ -494,7 +494,7 @@ read(
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
 - batch_format - a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
 
@@ -516,7 +516,7 @@ Values to write may be provided in a variety of formats:
 Parameters:
 
 - values - values to be written. The type of elements in `values` must match the type of the SOMASparseNdArray.
-- platform_config - optional storage-engine specific configuration
+- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 ## Common Interfaces
 
@@ -612,6 +612,52 @@ Examples, using a pseudo-syntax:
 - `col_A > 0`
 - `(col_A > 0) AND (col_B != "deleted")`
 
+## Platform-Specific Configuration
+
+Many operations include a `platform_config` parameter. This parameter provides a generic way to pass storage-platform–specific hints to the backend implementation that cannot effectively be exposed in SOMA’s generic, platform-agnostic API. End users and libraries can use these to tune or otherwise adjust the behavior of individual operations without needing to know exactly which backend is being used, or directly depending upon the storage platform implementation in question.
+
+The `platform_config` parameter is defined as a key–value mapping from strings to configuration data. Each **key** in the mapping corresponds to the name of a particular SOMA implementation (i.e., the same string returned by the `get_storage_engine` call). The value stored in each is implementation defined. For example, a Python library that handles SOMA dataframes would make a call that looks roughly like this:
+
+```python
+def process(df: somabase.DataFrame) -> ...:
+    # ...
+    results = df.read(
+        ...,
+        platform_config={
+            "tiledb": {
+                # TileDB-specific read config settings go here.
+            },
+            "otherimpl": {
+                # OtherImpl-specific read config settings go here.
+            },
+        },
+    )
+```
+
+When a SOMA DataFrame is passed into this code, the function does not need to care whether the dataframe in question is TileDB-based, OtherImpl-based, or otherwise; each platform will read the configuration necessary to tune its own reading process (and in other cases, the storage backend will simply use the default settings).
+
+> TODO: Add discussion of a Context type and how that will fit in with the `platform_config`.
+
+### Configuration data structure
+
+The exact contents of each platform’s entry in the configuration mapping are fully specified by that platform’s implementation itself, but it should conform to certain conventions. While the specification or its generic implementation cannot *enforce* these guidelines, following them will ensure that API users have a consistent and predictable interface.
+
+- At the top level, each individual platform’s configuration should be a string-keyed mapping.
+  - In Python, these keys should be `snake_case`.
+- The contents of these configuration entries should be represented declaratively, using built-in data structures from the host language to the extent possible (for example, strings, dicts, lists and tuples, etc. in Python). This allows libraries that use SOMA objects to provide configuration data to multiple platforms without having to depend upon implementation it *may* want to use.
+  - An implementation may also use objects and types from libraries that the generic SOMA interface specification uses, like Arrow types.
+  - For highly-specialized cases, a storage platform implementation may also accept its internal object types. However, to the extent possible, using platform-specific objects should be an option *in addition to* a fully delcarative structure, and should *not* be the *only* way to provide configuration data.
+- In situations where a configuration setting of the same name, but with different type, semantics, or values will be used across operations, a separate string key should be provided for that setting for each operation. This allows for the same `platform_config` data to be reused across multiple operations by the user.
+  - For example, a storage backend may provide a way to read and write data in a given block size. However, the performance characteristics of these operations may be very different. The implementation should provide `read_block_size` and `write_block_size` parameters (or use some similar disambiguation strategy) rather than only allowing a single `shard_size` parameter.
+
+### Implementation and usage guidelines
+
+The configuration passed in the `platform_config` object is intended for operation-specific tuning (though it may make sense for user code to use the same `platform_config` across multiple operations). A `platform_config` should only be used for the operation it was provided to (and to directly dependent operations); it should not be stored for later calls. Environmental configuration (like login credentials or backend storage region) should be provided via the (to-be-defined) Context object.
+
+Operations should not *require* a `platform_config` entry to complete; the platform should use a sensible default if a given configuration value is not provided. Required environmental data generally belongs in the Context object.
+
+A platform should only ever examine its own entry in the `platform_config` mapping. Since the structure and contents of each entry is wholly implementation-defined, one platform cannot make any assumptions at all about another’s configuration, and for predictability should avoid even trying to extract any information from any other configuration entries.
+
 # ⚠️ Other Issues (open issues with this doc)
 
 Issues to be resolved:
@@ -665,3 +711,4 @@ Issues to be resolved:
 38. Clarify explicit nature of soma_rowid/soma_joinid handling throughout.
 39. Renamed `type` fields to `soma_type`.
 40. Remove SOMADataFrame; rename SOMAIndexedDataFame to SOMADataFrame
+41. Add description of `platform_config` objects.
