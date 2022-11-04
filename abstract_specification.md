@@ -18,6 +18,15 @@ SOMA is an abstract _API specification_, with the goal of enabling multiple conc
 
 This document is attempting to codify the abstract, language-neutral SOMA data model and functional operations. Other specifications will document specific language bindings and particular storage system implementations. Where the term `language-specific SOMA specification` is used below, it implies a specification of the SOMA API as it is presented in a given language or computing environment (e.g., the SOMA Python API), common across all storage engine implementations in that language.
 
+# Lifecycle Stages
+
+The SOMA API uses [RStudio's lifecycle stage model](https://lifecycle.r-lib.org) to indicate the maturity of its classes and methods. The lifecycle stages are:
+
+- `experimental`: Under active development and may undergo significant and breaking changes.
+- `maturing`: Under active development but the interface and behavior have stabilized and are unlikely to change significantly but breaking changes are still possible.
+- `stable`: The interface is considered stable and breaking changes will be avoided where possible. Breaking changes that cannot be avoided will be accompanied by a major version bump.
+- `deprecated`: The API is no longer recommended for use and may be removed in a future release.
+
 # Data Model
 
 The data model is comprised of two layers:
