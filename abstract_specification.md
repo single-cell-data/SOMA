@@ -28,7 +28,7 @@ The data model is comprised of two layers:
 The foundational types are:
 
 - SOMACollection - a string-keyed container (key-value map) of other SOMA data types, e.g., SOMADataFrame, SOMADataMatrix and SOMACollection.
-- SOMADataFrame - a multi-column table -- essentially a dataframe, available in types which support offset indexing/slicing, or indexing based upon user-defined columns.
+- SOMADataFrame - a multi-column table -- essentially a dataframe with indexing on user-specified columns.
 - SOMADenseNdArray and SOMASparseNdArray- an offset addressed (zero-based), single-type N-D array, available in either sparse or dense instantiations
 
 The composed types are:
