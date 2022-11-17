@@ -244,7 +244,7 @@ Parameters:
 
 | Operation                               | Description                                                                    |
 | --------------------------------------- | ------------------------------------------------------------------------------ |
-| create(uri, ...)                        | Create a SOMADataFrame       .                                                 |
+| create(uri, ...)                        | Create a SOMADataFrame.                                                        |
 | delete(uri)                             | Delete the SOMADataFrame specified with the URI.                               |
 | exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                           |
 | get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
