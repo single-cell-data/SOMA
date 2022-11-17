@@ -28,7 +28,7 @@ The data model is comprised of two layers:
 The foundational types are:
 
 - SOMACollection - a string-keyed container (key-value map) of other SOMA data types, e.g., SOMADataFrame, SOMADataMatrix and SOMACollection.
-- SOMADataFrame and SOMAIndexedDataFrame - a multi-column table -- essentially a dataframe, available in types which support offset indexing/slicing, or indexing based upon user-defined columns.
+- SOMADataFrame - a multi-column table -- essentially a dataframe with indexing on user-specified columns.
 - SOMADenseNdArray and SOMASparseNdArray- an offset addressed (zero-based), single-type N-D array, available in either sparse or dense instantiations
 
 The composed types are:
@@ -40,7 +40,7 @@ In this document, the term `dataframe` implies something akin to an Arrow `Table
 - multiple columns may exist, each with a string column name
 - all columns are individually typed and contain simple data types (e.g., int64)
 - all columns are of equal length
-- rows are addressed by offset (SOMADataFrame), or by one or more dataframe columns (SOMAIndexedDataFrame)
+- rows are addressed by one or more dataframe columns
 
 All SOMA data objects are named with URIs.
 
@@ -76,7 +76,7 @@ SOMA places no constraints on the underlying types used by the storage system, a
 
 All SOMA objects may be annotated with a small amounts of simple metadata. Metadata for any SOMA object is a `string`-keyed map of values. Metadata values are Arrow primitive types and Arrow strings. The metadata lifecycle is the same as its containing object, e.g., it will be deleted when the containing object is deleted.
 
-> ℹ️ **Note** - larger or more complex types should be stored using SOMADataFrame, SOMAIndexedDataFrame, SOMADenseNdArray or SOMASparseNdArray and added to a SOMACollection .
+> ℹ️ **Note** - larger or more complex types should be stored using SOMADataFrame, SOMADenseNdArray or SOMASparseNdArray and added to a SOMACollection .
 
 ## Foundational Types
 
@@ -93,21 +93,9 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 
 `SOMADataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`.
 
-`SOMADataFrame` contain a "pseudo-column" called `soma_rowid`, of type `int64` and domain `[0, #rows)`. `soma_rowid` is the row offset (row id), and is a contiguous integer number beginning with zero.
-
-`SOMADataFrame` must contain a column called `soma_joinid`, of type `int64` and domain `[0, 2^63-1)`. The `soma_joinid` column contains a unique value for each row in the `SOMADataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
+All `SOMADataFrame` must contain a column called `soma_joinid`, of type `int64` and domain `[0, 2^63-1)`. The `soma_joinid` column contains a unique value for each row in the `SOMADataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
 
 The default "fill" value for `SOMADataFrame` is the zero or null value of the respective column data type (e.g., Arrow.float32 defaults to 0.0, Arrow.string to "", etc).
-
-Most language-specific bindings will provide convertors between SOMADataFrame and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
-
-### SOMAIndexedDataFrame
-
-`SOMAIndexedDataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`.
-
-All `SOMAIndexedDataFrame` must contain a column called `soma_joinid`, of type `int64` and domain `[0, 2^63-1)`. The `soma_joinid` column contains a unique value for each row in the `SOMAIndexedDataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNdArray`.
-
-The default "fill" value for `SOMAIndexedDataFrame` is the zero or null value of the respective column data type (e.g., Arrow.float32 defaults to 0.0, Arrow.string to "", etc).
 
 Most language-specific bindings will provide convertors between SOMADataFrame and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
 
@@ -147,8 +135,8 @@ Composed types are defined as a composition of foundational types, adding name, 
 
 The `SOMAExperiment` and `SOMAMeasurement` types compose [foundational types](#foundational-types):
 
-- `SOMAExperiment` - a well defined set of annotated observations defined by a `SOMADataFrame` or `SOMAIndexedDataFrame`, and one or more "measurement" on those observations.
-- `SOMAMeasurement` - for all observables, a common set of annotated variables (defined by a `SOMADataFrame` or `SOMAIndexedDataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdMatrix` and `SOMASparseNdMatrix`.
+- `SOMAExperiment` - a well defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations.
+- `SOMAMeasurement` - for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdMatrix` and `SOMASparseNdMatrix`.
 
 In other words, all `SOMAMeasurement` have a distinct set of variables (features), and inherit common observables from their parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
 
@@ -169,14 +157,14 @@ The pre-defined fields of a `SOMAExperiment` object are:
 
 | Field name | Field type                                | Field description                                                                                                                                                                                                               |
 | ---------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `obs`      | `SOMADataFrame` or `SOMAIndexedDataFrame` | Primary annotations on the _observation_ axis. The contents of the `soma_joinid` pseudo-column define the _observation_ index domain, aka `obsid`. All observations for the SOMAExperiment _must_ be defined in this dataframe. |
+| `obs`      | `SOMADataFrame`                           | Primary annotations on the _observation_ axis. The contents of the `soma_joinid` pseudo-column define the _observation_ index domain, aka `obsid`. All observations for the SOMAExperiment _must_ be defined in this dataframe. |
 | `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurements.                                                                                                                                                                                             |
 
 The `SOMAMeasurement` is a sub-element of a SOMAExperiment, and is otherwise a specialized SOMACollection with pre-defined fields:
 
 | Field name | Field type                                                    | Field description                                                                                                                                                                                                                                                                        |
 | ---------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `var`      | `SOMADataFrame` or `SOMAIndexedDataFrame`                     | Primary annotations on the _variable_ axis, for variables in this measurement (i.e., annotates columns of `X`). The contents of the `soma_joinid` pseudo-column define the _variable_ index domain, aka `varid`. All variables for this measurement _must_ be defined in this dataframe. |
+| `var`      | `SOMADataFrame`                                               | Primary annotations on the _variable_ axis, for variables in this measurement (i.e., annotates columns of `X`). The contents of the `soma_joinid` pseudo-column define the _variable_ index domain, aka `varid`. All variables for this measurement _must_ be defined in this dataframe. |
 | `X`        | `SOMACollection[string, SOMASparseNdArray\|SOMADenseNdArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                     |
 | `obsm`     | `SOMACollection[string, SOMADenseNdArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                       |
 | `obsp`     | `SOMACollection[string, SOMASparseNdArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                    |
@@ -191,7 +179,7 @@ The following naming and indexing constraints are defined for the `SOMAExperimen
 
 | Field name                     | Field constraints                                                                                                                                                        |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `obs`, `var`                   | Field type is a `SOMADataFrame` or `SOMAIndexedDataFrame`                                                                                                                |
+| `obs`, `var`                   | Field type is a `SOMADataFrame`                                                                                                                                          |
 | `X`                            | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray` or `SOMASparseNdArray`                                       |
 | `obsp`, `varp`                 | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMASparseNdArray`                                                             |
 | `obsm`, `varm`                 | Field type is a `SOMACollection`, and each element in the collection has a value of type `SOMADenseNdArray`                                                              |
@@ -251,116 +239,28 @@ Parameters:
 ## SOMADataFrame
 
 > ⚠️ **To be further specified** -- all methods need specification.
-
-Summary of operations:
-
-| Operation                    | Description                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------ |
-| create(uri, ...)             | Create a SOMADataFrame.                                                        |
-| delete(uri)                  | Delete the SOMADataFrame specified with the URI.                               |
-| exists(uri) -> bool          | Return true if object exists and is a SOMADataFrame.                           |
-| get metadata                 | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get soma_type                | Returns the constant "SOMADataFrame"                                           |
-| get schema -> Arrow.Schema   | Return data schema, in the form of an Arrow Schema                             |
-| get is_indexed -> false      | Return false.                                                                  |
-| get index_column_names -> [] | Return an empty list.                                                          |
-| read                         | Read a subset of data from the SOMADataFrame                                   |
-| write                        | Write a subset of data to the SOMADataFrame                                    |
-
-A SOMADataFrame rows are offset addressed, ie, can be sliced the row id.
-
-### Operation: create()
-
-Create a new SOMADataFrame with user-specified URI and schema.
-
-The schema parameter must define all user-specified columns. The schema may optionally include `soma_rowid` and `soma_joinid`, but an error will be raised if they are not of type Arrow.int64. If `soma_joinid` and `soma_rowid` are not specified, they will be added to the schema. All other column names beginning with `soma_` are reserved, and if present in the schema, will generate an error. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
-
-```
-create(string uri, Arrow.Schema schema, platform_config) -> void
-```
-
-Parameters:
-
-- uri - location at which to create the object
-- schema - an Arrow Schema defining the per-column schema.
-- platform_config - optional storage-engine specific configuration
-
-### get schema
-
-Return the SOMADataFrame schema as an Arrow schema object. The schema will include all user- and system-defined columns, including `soma_rowid` and `soma_joinid`.
-
-### Operation: read()
-
-Read a user-defined slice of data, optionally filtered, and return results as one or more Arrow.Table.
-
-Summary:
-
-```
-read(
-    slices=[row_slices, ...],
-    column_names=[`string`, ...]|all,
-    batch_size,
-    partitions,
-    result_order,
-    value_filter,
-    platform_config,
-) -> delayed iterator over Arrow.Table
-```
-
-Parameters:
-
-- slices - the rows to read. Defaults to 'all'. Rows are addressable with a row offset (uint), a row-offset range (slice), an Arrow array or chunked array of row-offsets, or a list of both offsets and slices.
-- column_names - the named columns to read and return. Defaults to all, including system-defined columns (`soma_rowid` and `soma_joinid`).
-- batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-- partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-- result_order - order of read results. If dataframe is indexed, can be one of row-major, column-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
-- value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter. The `soma_rowid` pseudo-column can not be filtered.
-- platform_config - optional storage-engine specific configuration
-
-The `read` operation will return a language-specific iterator over one or more Arrow Table objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
-
-### Operation: write()
-
-Write an Arrow.RecordBatch or Arrow.Table to the persistent object. Rows already present in the object are overwritten and new rows are added.
-
-```
-write(Arrow.RecordBatch values, platform_config)
-write(Arrow.Table values, platform_config)
-```
-
-Parameters:
-
-- values - an Arrow.RecordBatch or Arrow.Table containing all columns, including `soma_rowid` and `soma_joinid`. The schema for the values must match the schema for the SOMADataFrame.
-- platform_config - optional storage-engine specific configuration
-
-The `values` parameter must contain a `soma_rowid` (`int64` in range `[0, 2^63-1)`) column, indicating which rows are being written.
-
-## SOMAIndexedDataFrame
-
-> ⚠️ **To be further specified** -- all methods need specification.
 >
 > Summary of operations:
 
 | Operation                               | Description                                                                    |
 | --------------------------------------- | ------------------------------------------------------------------------------ |
-| create(uri, ...)                        | Create a SOMAIndexedDataFrame.                                                 |
-| delete(uri)                             | Delete the SOMAIndexedDataFrame specified with the URI.                        |
-| exists(uri) -> bool                     | Return true if object exists and is a SOMAIndexedDataFrame.                    |
+| create(uri, ...)                        | Create a SOMADataFrame.                                                        |
+| delete(uri)                             | Delete the SOMADataFrame specified with the URI.                               |
+| exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                           |
 | get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
-| get soma_type                           | Returns the constant "SOMAIndexedDataFrame"                                    |
+| get soma_type                           | Returns the constant "SOMADataFrame"                                           |
 | get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                             |
-| get is_indexed -> bool                  | Return true.                                                                   |
 | get index_column_names -> [string, ...] | Return index (dimension) column names.                                         |
-| read                                    | Read a subset of data from the SOMAIndexedDataFrame                            |
-| write                                   | Write a subset of data to the SOMAIndexedDataFrame                             |
+| read                                    | Read a subset of data from the SOMADataFrame                                   |
+| write                                   | Write a subset of data to the SOMADataFrame                                    |
 
-A SOMAIndexedDataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Slices are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
+A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Slices are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
 
-SOMAIndexedDataFrame rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
+SOMADataFrame rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
 
 ### Operation: create()
 
-Create a new SOMAIndexedDataFrame with user-specified URI and schema.
+Create a new SOMADataFrame with user-specified URI and schema.
 
 The schema parameter must define all user-specified columns. The schema may optionally include `soma_joinid`, but an error will be raised if it is not of type Arrow.int64. If `soma_joinid` is not specified, it will be added to the schema. All other column names beginning with `soma_` are reserved, and if present in the schema, will generate an error. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
 
@@ -755,3 +655,4 @@ Issues to be resolved:
 37. NdArray COO column names - add `soma` prefix to move all names into the reserved namespace.
 38. Clarify explicit nature of soma_rowid/soma_joinid handling throughout.
 39. Renamed `type` fields to `soma_type`.
+40. Remove SOMADataFrame; rename SOMAIndexedDataFame to SOMADataFrame
