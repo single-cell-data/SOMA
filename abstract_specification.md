@@ -40,7 +40,7 @@ In this document, the term `dataframe` implies something akin to an Arrow `Table
 - multiple columns may exist, each with a string column name
 - all columns are individually typed and contain simple data types (e.g., int64)
 - all columns are of equal length
-- rows are addressed by one or more dataframe columns (SOMADataFrame)
+- rows are addressed by one or more dataframe columns
 
 All SOMA data objects are named with URIs.
 
