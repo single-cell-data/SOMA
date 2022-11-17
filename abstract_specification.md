@@ -250,7 +250,6 @@ Parameters:
 | get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get soma_type                           | Returns the constant "SOMADataFrame"                                           |
 | get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                             |
-| get is_indexed -> bool                  | Return true.                                                                   |
 | get index_column_names -> [string, ...] | Return index (dimension) column names.                                         |
 | read                                    | Read a subset of data from the SOMADataFrame                                   |
 | write                                   | Write a subset of data to the SOMADataFrame                                    |
