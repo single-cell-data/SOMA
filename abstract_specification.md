@@ -263,7 +263,7 @@ Parameters:
 | read                                    | Read a subset of data from the SOMADataFrame                                   |
 | write                                   | Write a subset of data to the SOMADataFrame                                    |
 
-A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Slices are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
+A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Slices (see the _Slicing_ section below) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
 
 SOMADataFrame rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
 
@@ -312,7 +312,7 @@ read(
 
 Parameters:
 
-- ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice), an Arrow array of values, or a list of both.
+- ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the _Slicing_ section below), an Arrow array of values, or a list of both.
 - column_names - the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
@@ -398,7 +398,7 @@ read(
 ) -> Arrow.Tensor
 ```
 
-- coords - per-dimension slice, expressed as a per-dimension list of scalar or range.
+- coords - per-dimension slice (see the _Slicing_ section below), expressed as a per-dimension list of scalar or range.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major or column-major.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
@@ -489,7 +489,7 @@ read(
 ) -> delayed iterator over ReadResult
 ```
 
-- slice - per-dimension slice, expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
+- slice - per-dimension slice (see the _Slicing_ section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
@@ -590,6 +590,12 @@ Semver compatible strings comply with the specification at [semver.org](https://
 This is a pre-release specification in active development. As defined by [semver](https://semver.org/), this API is defined as version `0.2.0-dev`.
 
 _Note:_ this API was preceded by another (un-versioned) API draft, which is colloquially referred to as `0.0.0-dev` and `0.1.0-dev`
+
+## Slicing
+
+* Slices are doubly inclusive -- `slice(2,4)` includes array indices 2, 3, and 4.
+* Slices may be doubly open -- `slice(None)` means select all
+* Slices may be half-open -- `slice(2,None)` on a five-element array selects indices 2, 3, and 4; `slice(None, 2)` selects indices 0, 1, and 2.
 
 ## Value Filters
 
