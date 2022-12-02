@@ -161,8 +161,11 @@ These examples present a fictional `vsoma` implementation to represent what call
 # This creates the backing storage and structure for a new Experiment and
 # returns the experiment itself, opened for writing.
 #
-# For instance, this would create the `var`, `x`, `obsm`, `obsp`, `varm`,
-# etc. fields within this experiment.
+# For instance, this would create the backend collection itself and the `obs`
+# and `ms` sub-elements of the collections.
+#
+#     TODO: Should this method create the `obs` and `ms` elements, or should
+#     we have `create_obs(...)` and `create_ms(...)` methods?
 #
 # Because the somabase Experiment class is just a wrapper around a
 # SOMACollection (here embodied by the `vsoma.SOMACollection` implementation),
@@ -173,12 +176,18 @@ These examples present a fictional `vsoma` implementation to represent what call
 # `create_experiment`/`create_ndarray`/`create_dataframe`/etc. functions.
 new_exp = vsoma.create(
     somabase.Experiment,
-    "storage:///path/to/some/new/experiment",
+    "backend:///path/to/some/new/experiment",
     # Other options:
     # - platform_config
     # - context
     # - other platform-specific options
 )
+
+# new_exp is a somabase.Experiment with its `storage` being a vsoma
+# SOMACollection.
+
+# If we don't create the `obs` and `ms` collections directly in `.create`, here
+# would be calls to `new_exp.create_obs(...)` and `new_exp.create_ms(...)`.
 
 # Add a Measurement to the experiment. This again creates the storage skeleton
 # of a Measurement as a `vsoma.SOMACollection` and returns a
@@ -190,6 +199,8 @@ new_exp = vsoma.create(
 measure_a = new_exp.ms.create_measurement(
     "measure_a",
     # Other creation options, e.g. platform_config, etc.
+    # This can also include a `uri` parameter to allow for the case of where
+    # a backend needs to know what the URI to create the object is.
 )
 
 # You can similarly recurse into measure_a, adding X, obsm/varm/varp/etc. tables
@@ -209,7 +220,7 @@ new_exp.close()
 # Experiment, it will open a vsoma collection and wrap it in a
 # somabase.Experiment.
 my_exp = vsoma.open(
-    "storage:///path/to/my/soma/experiment",
+    "backend:///path/to/existing/experiment",
     # Other options:
     # - platform_config
     # - context
