@@ -87,14 +87,14 @@ A basic sketch of a Python implementation (to be provided by `somabase`) looks l
 
 ```python
 class Experiment:
-  # __init__ takes a SOMACollection and assigns it to self.storage
+  # __init__ takes a SOMACollection and assigns it to self.storage.
 
   @property
   def obs(self) -> DataFrame:
-    return self.storage["obs"]
+    return DataFrame(self.storage["obs"])
 
   @property
-  def ms(self) -> DataFrame:
+  def ms(self) -> Measurements:
     return Measurements(self.storage["ms"])
 
   def __getitem__(self, key: str) -> ...:
@@ -111,7 +111,7 @@ Likewise, the `Measurements` (note the `s`) type is a proxy over a `SOMACollecti
   - `[key: str] -> Measurement`: Returns a `Measurement` object wrapping the specific element of the collection.
   - `[key: str] = val: Measurement`: Sets the measurement, *if supported*.
   - `delete [key: str]`: Removes the measurement.
-  - `create_measurement(...)`: Creates a new child `Measurement` collection in backing storage. This would not apply to
+  - `create_measurement(...)`: Creates a new child `Measurement` collection in backing storage, if applicable.
 
 ```python
 class Measurements:
@@ -125,6 +125,7 @@ class Measurements:
   def __setitem__(self, key: str, value: Measurement):
     self.storage[key] = value.storage
 
+  # This could also be named `add`.
   def create_measurement(self, ...) -> Measurement:
     new_collection = self.storage.create_collection(...)
     # add necessary members to the collection with
@@ -149,3 +150,74 @@ class Measurement:
 ## Other notes
 
 `Density` is an enum `{SPARSE, DENSE}`.
+
+## Examples
+
+These examples present a fictional `vsoma` implementation to represent what calls to a general SOMA implementation will do.
+
+### Creating new SOMA objects in backing storage
+
+```python
+# This creates the backing storage and structure for a new Experiment and
+# returns the experiment itself, opened for writing.
+#
+# For instance, this would create the `var`, `x`, `obsm`, `obsp`, `varm`,
+# etc. fields within this experiment.
+#
+# Because the somabase Experiment class is just a wrapper around a
+# SOMACollection (here embodied by the `vsoma.SOMACollection` implementation),
+# we tell vsoma that we want to create an Experiment, and vsoma handles setting
+# up the structure for it.
+#
+# For languages where types are not first-class, this could be implemented as
+# `create_experiment`/`create_ndarray`/`create_dataframe`/etc. functions.
+new_exp = vsoma.create(
+    somabase.Experiment,
+    "storage:///path/to/some/new/experiment",
+    # Other options:
+    # - platform_config
+    # - context
+    # - other platform-specific options
+)
+
+# Add a Measurement to the experiment. This again creates the storage skeleton
+# of a Measurement as a `vsoma.SOMACollection` and returns a
+# `somabase.Measurement` whose `storage` points to that collection.
+#
+# The Context of this Measurement (and of new_exp.ms) is the same as the Context
+# of the new_exp, and measure_a is "owned" and its lifecycle is managed by
+# new_exp.ms (which is in turn owned by new_exp).
+measure_a = new_exp.ms.create_measurement(
+    "measure_a",
+    # Other creation options, e.g. platform_config, etc.
+)
+
+# You can similarly recurse into measure_a, adding X, obsm/varm/varp/etc. tables
+# and loading data into them. They all have the same Context as new_exp.
+
+# This closes all the
+new_exp.close()
+```
+
+### Opening an existing SOMA object
+
+```python
+# This locates and opens the named SOMA object, determines its type based on
+# the stored metadata, and returns the appropriate object.
+#
+# For instance, if it is given the path to something that looks like an
+# Experiment, it will open a vsoma collection and wrap it in a
+# somabase.Experiment.
+my_exp = vsoma.open(
+    "storage:///path/to/my/soma/experiment",
+    # Other options:
+    # - platform_config
+    # - context
+    # - timestamp
+    # - mode (default "r")
+)
+
+# Internally, this operates much like the above, but in read mode. This is how
+# you would run queries on the experiment/measurements/etc. using the existing
+# API we have already defined.
+```
