@@ -615,6 +615,10 @@ This is a pre-release specification in active development. As defined by [semver
 
 _Note:_ this API was preceded by another (un-versioned) API draft, which is colloquially referred to as `0.0.0-dev` and `0.1.0-dev`
 
+## Indexing and slicing
+
+* In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
+
 ## Value Filters
 
 > ⚠️ **To be further specified**
