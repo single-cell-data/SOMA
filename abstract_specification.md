@@ -20,12 +20,36 @@ This document is attempting to codify the abstract, language-neutral SOMA data m
 
 # Lifecycle Stages
 
-The SOMA API uses [RStudio's lifecycle stage model](https://lifecycle.r-lib.org) to indicate the maturity of its classes and methods. The lifecycle stages are:
+The SOMA API uses [RStudio's lifecycle stage model](https://lifecycle.r-lib.org) to indicate the maturity of its classes, methods and parameters. The lifecycle stages are:
 
 - `experimental`: Under active development and may undergo significant and breaking changes.
 - `maturing`: Under active development but the interface and behavior have stabilized and are unlikely to change significantly but breaking changes are still possible.
 - `stable`: The interface is considered stable and breaking changes will be avoided where possible. Breaking changes that cannot be avoided will be accompanied by a major version bump.
 - `deprecated`: The API is no longer recommended for use and may be removed in a future release.
+
+Lifecycle stages are indicated in the documentation for each class, method and parameter using a `[lifecycle: <stage>]` tag. For example:
+
+```python
+class DataFrame():
+    """
+    A multi-column table with indexing on user-specified columns [lifecycle: maturing].
+    """
+...
+    def create(
+        self,
+        schema: pa.Schema,
+    ) -> "DataFrame":
+        """
+        Create a SOMADataFrame from a `pyarrow.Schema` [lifecycle: maturing].
+
+        Parameters
+        ----------
+        schema : pyarrow.Schema
+            The schema of the DataFrame to create [lifecycle: stable].
+        """
+```
+
+If a class, method or parameter is not explicitly marked with a lifecycle stage, it is assumed to be `experimental`.
 
 # Data Model
 
@@ -591,8 +615,9 @@ This is a pre-release specification in active development. As defined by [semver
 
 _Note:_ this API was preceded by another (un-versioned) API draft, which is colloquially referred to as `0.0.0-dev` and `0.1.0-dev`
 
-## Slicing
+## Indexing and slicing
 
+* In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
 * Slices are doubly inclusive -- e.g. slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
 * Slices may be doubly open -- slicing with no bounds (e.g. Python's `[:]`) means select all
 * Slices may be half-open -- slicing with lower bound 2 and no upperbound selects indices 2 through the highest index present in the given data; slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4.
