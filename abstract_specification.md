@@ -593,9 +593,9 @@ _Note:_ this API was preceded by another (un-versioned) API draft, which is coll
 
 ## Slicing
 
-* Slices are doubly inclusive -- `slice(2,4)` includes array indices 2, 3, and 4.
-* Slices may be doubly open -- `slice(None)` means select all
-* Slices may be half-open -- `slice(2,None)` on a five-element array selects indices 2, 3, and 4; `slice(None, 2)` selects indices 0, 1, and 2.
+* Slices are doubly inclusive -- e.g. slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
+* Slices may be doubly open -- slicing with no bounds (e.g. Python's `[:]`) means select all
+* Slices may be half-open -- slicing with lower bound 2 and no upperbound selects indices 2 through the highest index present in the given data; slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4.
 
 ## Value Filters
 
