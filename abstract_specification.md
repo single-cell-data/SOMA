@@ -287,7 +287,7 @@ Parameters:
 | read                                    | Read a subset of data from the SOMADataFrame                                   |
 | write                                   | Write a subset of data to the SOMADataFrame                                    |
 
-A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. Slices are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
+A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. [Slices](#indexing-and-slicing) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
 
 SOMADataFrame rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
 
@@ -336,7 +336,7 @@ read(
 
 Parameters:
 
-- ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice), an Arrow array of values, or a list of both.
+- ids - the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
 - column_names - the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
@@ -422,7 +422,7 @@ read(
 ) -> Arrow.Tensor
 ```
 
-- coords - per-dimension slice, expressed as a per-dimension list of scalar or range.
+- coords - per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a per-dimension list of scalar or range.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major or column-major.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
@@ -513,7 +513,7 @@ read(
 ) -> delayed iterator over ReadResult
 ```
 
-- slice - per-dimension slice, expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
+- slice - per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - order of read results. Can be one of row-major, column-major and unordered.
@@ -618,6 +618,13 @@ _Note:_ this API was preceded by another (un-versioned) API draft, which is coll
 ## Indexing and slicing
 
 * In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
+* Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
+* Slices define a closed, i.e. are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
+* Slices may include the lower bound, upper bound, both, or neither:
+  * Slicing with neither (e.g. Python's `[:]`) means select all
+  * Slicing with lower bound 2 and no upper bound selects indices 2 through the highest index present in the given data
+  * Slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4
+* Slice steps, or stride,  if supported in the implementation language, may only be 1
 
 ## Value Filters
 
