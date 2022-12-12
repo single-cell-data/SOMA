@@ -287,7 +287,7 @@ Parameters:
 | read                                    | Read a subset of data from the SOMADataFrame                                   |
 | write                                   | Write a subset of data to the SOMADataFrame                                    |
 
-A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. [Slices](#slicing) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
+A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. [Slices](#indexing-and-slicing) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
 
 SOMADataFrame rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
 
