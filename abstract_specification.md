@@ -618,6 +618,7 @@ _Note:_ this API was preceded by another (un-versioned) API draft, which is coll
 ## Indexing and slicing
 
 * In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
+* Negative indices are not to be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
 * Slices are doubly inclusive -- e.g. slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
 * Slices may be doubly open -- slicing with no bounds (e.g. Python's `[:]`) means select all
 * Slices may be half-open -- slicing with lower bound 2 and no upperbound selects indices 2 through the highest index present in the given data; slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4.
