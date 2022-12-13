@@ -233,6 +233,16 @@ Any given storage "engine" upon which SOMA is implemented may have additional fe
 
 > ℹ️ **Note** - this section is just a sketch, and is primarily focused on defining abstract primitive operations that must exist on each type.
 
+## Common operations
+
+All SOMA objects share the following common operations, in addition to the type-specific operations specified in each type's section:
+
+| Operation     | Description                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| get metadata  | Access the metadata as a mutable [`SOMAMetadataMapping`](#somametadatamapping).                      |
+| get context   | Gets an implementation-specific [context value](#long-lived-context-data) for the given SOMA object. |
+| get soma_type | Returns a constant string describing the type of the object.                                         |
+
 ## SOMACollection
 
 Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined foundational or composed type, including SOMACollection, SOMADataFrame, SOMADenseNDArray, SOMASparseNDArray or SOMAExperiment:
@@ -242,7 +252,6 @@ Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined
 | create(uri)         | Create a SOMACollection named with the URI.                                                          |
 | delete(uri)         | Delete the SOMACollection specified with the URI. Does not delete the objects within the collection. |
 | exists(uri) -> bool | Return true if object exists and is a SOMACollection.                                                |
-| get metadata        | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping)                       |
 | get soma_type       | Returns the constant "SOMACollection"                                                                |
 
 In addition, SOMACollection supports operations to manage the contents of the collection:
@@ -280,7 +289,6 @@ Parameters:
 | create(uri, ...)                        | Create a SOMADataFrame.                                                        |
 | delete(uri)                             | Delete the SOMADataFrame specified with the URI.                               |
 | exists(uri) -> bool                     | Return true if object exists and is a SOMADataFrame.                           |
-| get metadata                            | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get soma_type                           | Returns the constant "SOMADataFrame"                                           |
 | get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                             |
 | get index_column_names -> [string, ...] | Return index (dimension) column names.                                         |
@@ -650,6 +658,12 @@ Examples, using a pseudo-syntax:
 
 ## Platform-Specific Configuration
 
+SOMA includes provisions for two separate ways to provide platform-specific configuration data to objects and operations.
+For configuration settings that affect a single operation, SOMA functions include a `platform_config` parameter, which can be used on a call-by-call basis to specify short-term behavior.
+For long-lived configuration settings, SOMA objects expose a `context` field that contains implementation-defined data that can be shared over an entire analysis session.
+
+### Per-call configuration
+
 Many operations include a `platform_config` parameter. This parameter provides a generic way to pass storage-platform–specific hints to the backend implementation that cannot effectively be exposed in SOMA’s generic, platform-agnostic API. End users and libraries can use these to tune or otherwise adjust the behavior of individual operations without needing to know exactly which backend is being used, or directly depending upon the storage platform implementation in question.
 
 The `platform_config` parameter is defined as a key–value mapping from strings to configuration data. Each **key** in the mapping corresponds to the name of a particular SOMA implementation (i.e., the same string returned by the `get_storage_engine` call). The value stored in each is implementation defined. For example, a Python library that handles SOMA dataframes would make a call that looks roughly like this:
@@ -672,9 +686,7 @@ def process(df: somacore.DataFrame) -> ...:
 
 When a SOMA DataFrame is passed into this code, the function does not need to care whether the dataframe in question is TileDB-based, OtherImpl-based, or otherwise; each platform will read the configuration necessary to tune its own reading process (and in other cases, the storage backend will simply use the default settings).
 
-> TODO: Add discussion of a Context type and how that will fit in with the `platform_config`.
-
-### Configuration data structure
+#### Configuration data structure
 
 The exact contents of each platform’s entry in the configuration mapping are fully specified by that platform’s implementation itself, but it should conform to certain conventions. While the specification or its generic implementation cannot *enforce* these guidelines, following them will ensure that API users have a consistent and predictable interface.
 
@@ -686,13 +698,29 @@ The exact contents of each platform’s entry in the configuration mapping are f
 - In situations where a configuration setting of the same name, but with different type, semantics, or values will be used across operations, a separate string key should be provided for that setting for each operation. This allows for the same `platform_config` data to be reused across multiple operations by the user.
   - For example, a storage backend may provide a way to read and write data in a given block size. However, the performance characteristics of these operations may be very different. The implementation should provide `read_block_size` and `write_block_size` parameters (or use some similar disambiguation strategy) rather than only allowing a single `shard_size` parameter.
 
-### Implementation and usage guidelines
+#### Implementation and usage guidelines
 
 The configuration passed in the `platform_config` object is intended for operation-specific tuning (though it may make sense for user code to use the same `platform_config` across multiple operations). A `platform_config` should only be used for the operation it was provided to (and to directly dependent operations); it should not be stored for later calls. Environmental configuration (like login credentials or backend storage region) should be provided via the (to-be-defined) Context object.
 
 Operations should not *require* a `platform_config` entry to complete; the platform should use a sensible default if a given configuration value is not provided. Required environmental data generally belongs in the Context object.
 
 A platform should only ever examine its own entry in the `platform_config` mapping. Since the structure and contents of each entry is wholly implementation-defined, one platform cannot make any assumptions at all about another’s configuration, and for predictability should avoid even trying to extract any information from any other configuration entries.
+
+### Long-lived context data
+
+In addition to the `platform_config` parameters described above, implementations can also store a value on the `context` field of a SOMA object.
+This read-only field should be used to store long-lived implementation-specific data that is used to access SOMA datasets.
+Examples of data that might belong in a context includes:
+
+- Storage credentials or API keys
+- Endpoint URLs
+- Database connections
+
+In other words, the `context` contains what is effectively the global state for a SOMA analysis session.
+
+The format and contents of a `context` object is completely implementation-defined.
+An implentation may provide a way to construct its specific context type, which can be used by user setup code to connect to the SOMA data store.
+However, client code should treat the `context` object on any instantiated SOMA objects as an opaque value, and only pass it directly as the context parameter when creating or opening other SOMA data.
 
 # ⚠️ Other Issues (open issues with this doc)
 
@@ -749,3 +777,5 @@ Issues to be resolved:
 40. Remove SOMADataFrame; rename SOMAIndexedDataFame to SOMADataFrame
 41. Add description of `platform_config` objects.
 42. Change `NdArray` to `NDArray`.
+43. Add `context` field.
+44. Pull description of common operations into its own section.
