@@ -5,10 +5,17 @@ unified namespace.
 """
 
 from somabase import base
+from somabase import data
 from somabase import options
 
 SOMAObject = base.SOMAObject
 Collection = base.Collection
+
+DataFrame = data.DataFrame
+NDArray = data.NDArray
+CoordsData = data.CoordsData
+DenseNDArray = data.DenseNDArray
+SparseNDArray = data.SparseNDArray
 
 IOfN = options.IOfN
 BatchSize = options.BatchSize
@@ -16,6 +23,11 @@ BatchSize = options.BatchSize
 __all__ = (
     "SOMAObject",
     "Collection",
+    "DataFrame",
+    "NDArray",
+    "CoordsData",
+    "DenseNDArray",
+    "SparseNDArray",
     "IOfN",
     "BatchSize",
 )

@@ -4,13 +4,19 @@ These types are *concrete* and should be used as-is as inputs to the various
 SOMA types that require them, not reimplemented by the implementing package.
 """
 
-from typing import Optional
+from typing import Any, Mapping, Optional
 
 import attrs
 
 
+class ReadPartitions:
+    """Sentinel base class for read-partition types."""
+
+    __slots__ = ()
+
+
 @attrs.define(frozen=True)
-class IOfN:
+class IOfN(ReadPartitions):
     """Specifies that a read should return partition ``i`` out of ``n`` total.
 
     For a read operation that returns ``n`` partitions, the read operation will
@@ -69,3 +75,16 @@ class BatchSize:
             raise ValueError(f"If set, '{attr.name}' must be positive")
         if self.count and self.bytes:
             raise ValueError("Either 'count' or 'bytes' may be set, not both")
+
+
+PlatformConfig = Mapping[str, Any]
+"""Type alias for the ``platform_config`` parameter.
+
+``platform_config`` allows platform-specific configuration data to be passed
+to individual calls. Keys are the name of a SOMA implementation, each value is
+an implementation-defined configuration structure.
+"""
+
+
+ResultOrder = Any
+"""Type alias for result order. TODO: Define me (strings? enum?)."""
