@@ -7,7 +7,7 @@ name = "somabase"
 description = "Python-language API specification and base utilities for implementation of the SOMA system."
 version = "0.0.0"
 readme = "./README.md"
-dependencies = ["attrs>=22.1", "typing_extensions"]
+dependencies = ["attrs>=22.1", "pyarrow", "typing_extensions"]
 requires-python = "~=3.7"
 
 [project.optional-dependencies]
