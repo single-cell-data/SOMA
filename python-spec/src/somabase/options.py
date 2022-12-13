@@ -18,8 +18,6 @@ class IOfN:
     approximately equal size.
     """
 
-    __slots__ = ()
-
     i: int = attrs.field()
     """Which partition to return (zero-indexed)."""
     n: int = attrs.field()
@@ -56,8 +54,6 @@ class BatchSize:
         BatchSize()
         # Will return automatically-sized batches.
     """
-
-    __slots__ = ()
 
     count: Optional[int] = attrs.field(default=None)
     """``arrow.Table``s with this number of rows will be returned."""

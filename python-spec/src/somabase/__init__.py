@@ -12,7 +12,6 @@ Collection = base.Collection
 
 IOfN = options.IOfN
 BatchSize = options.BatchSize
-BatchFormat = options.BatchFormat
 
 __all__ = (
     "SOMAObject",
