@@ -17,6 +17,7 @@ class IOfN:
     return the ``i``th partition (zero-indexed) out of ``n`` partitions of
     approximately equal size.
     """
+
     __slots__ = ()
 
     i: int = attrs.field()
@@ -55,6 +56,7 @@ class BatchSize:
         BatchSize()
         # Will return automatically-sized batches.
     """
+
     __slots__ = ()
 
     count: Optional[int] = attrs.field(default=None)
