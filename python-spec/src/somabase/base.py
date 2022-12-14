@@ -7,13 +7,13 @@ members will be exported to the ``somabase`` namespace.
 import abc
 from typing import Any, MutableMapping, TypeVar
 
-from typing_extensions import Literal, LiteralString
+from typing_extensions import Final, LiteralString
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
     """A sentinel interface indicating that this type is a SOMA object."""
 
-    __slots__ = ()
+    __slots__ = ("__weakref__",)
 
     @property
     def context(self) -> Any:
@@ -61,6 +61,4 @@ class Collection(SOMAObject, MutableMapping[str, _ST]):
 
     __slots__ = ()
 
-    @property
-    def soma_type(self) -> Literal["SOMACollection"]:
-        return "SOMACollection"
+    soma_type: Final = "SOMACollection"

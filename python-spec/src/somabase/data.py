@@ -8,7 +8,7 @@ import abc
 from typing import Tuple
 
 import pyarrow
-from typing_extensions import Literal
+from typing_extensions import Final
 
 from somabase import base
 
@@ -36,9 +36,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     # Basic operations
 
-    @property
-    def soma_type(self) -> Literal["SOMADataFrame"]:
-        return "SOMADataFrame"
+    soma_type: Final = "SOMADataFrame"
 
 
 class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -81,13 +79,8 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
 
     # TODO: Read/write.
 
-    @property
-    def is_sparse(self) -> Literal[False]:
-        return False
-
-    @property
-    def soma_type(self) -> Literal["SOMADenseNDArray"]:
-        return "SOMADenseNDArray"
+    is_sparse: Final = False
+    soma_type: Final = "SOMADenseNDArray"
 
 
 class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
@@ -105,10 +98,5 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    @property
-    def is_sparse(self) -> Literal[True]:
-        return True
-
-    @property
-    def soma_type(self) -> Literal["SOMASparseNDArray"]:
-        return "SOMASparseNDArray"
+    is_sparse: Final = True
+    soma_type: Final = "SOMASparseNDArray"
