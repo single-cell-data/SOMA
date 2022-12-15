@@ -5,12 +5,14 @@ members will be exported to the ``somabase`` namespace.
 """
 
 import abc
-from typing import Tuple
+from typing import Any, Iterable, Optional, Sequence, Tuple, Union
 
+import attrs
 import pyarrow
 from typing_extensions import Final
 
 from somabase import base
+from somabase import options
 
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -18,7 +20,31 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
-    # TODO: Read/write.
+    # Data operations
+
+    @abc.abstractmethod
+    def read(
+        self,
+        ids,  # TODO: Specify type
+        column_names: Optional[Sequence[str]] = None,
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: Optional[options.ResultOrder] = None,
+        value_filter: Optional[str] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> Iterable[pyarrow.Table]:
+        """Reads a user-defined slice of data into Arrow tables."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def write(
+        self,
+        values: Union[pyarrow.RecordBatch, pyarrow.Table],
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> None:
+        """Writes values to the data store."""
+        raise NotImplementedError()
 
     # Metadata operations
 
@@ -39,12 +65,75 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     soma_type: Final = "SOMADataFrame"
 
 
+@attrs.define(frozen=True)
+class CoordsData:
+    """A slice of data returned from a SOMA dense read."""
+
+    coords: Any  # TODO: Define type.
+    """The coordinates of the slice that was read."""
+
+    data: pyarrow.Tensor
+    """The data that was read."""
+
+
 class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     """Common behaviors of N-dimensional arrays of a single primitive type."""
 
     __slots__ = ()
 
-    # TODO: Read/write.
+    # Data operations (listed alphabetically)
+
+    @abc.abstractmethod
+    def read_coo(
+        self,
+        coords,  # TODO: Specify type.
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: Optional[options.ResultOrder] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> Iterable[pyarrow.SparseCOOTensor]:
+        """Reads a subset of this NDArray and returns result batches."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def read_csc(
+        self,
+        coords,  # TODO: Specify type.
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: Optional[options.ResultOrder] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> Iterable[pyarrow.SparseCSCMatrix]:
+        """Reads a subset of this NDArray and returns result batches."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def read_csr(
+        self,
+        coords,  # TODO: Specify type.
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: Optional[options.ResultOrder] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> Iterable[pyarrow.SparseCSRMatrix]:
+        """Reads a subset of this NDArray and returns result batches."""
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def read_dense(
+        self,
+        coords,  # TODO: Specify type.
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: Optional[options.ResultOrder] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> Iterable[CoordsData]:
+        """Reads a subset of this NDArray and returns result batches."""
+        raise NotImplementedError()
 
     # Metadata operations
 
@@ -77,7 +166,16 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
-    # TODO: Read/write.
+    @abc.abstractmethod
+    def write(
+        self,
+        coords,  # TODO: Specify type.
+        values: pyarrow.Tensor,
+        *,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> None:
+        """Writes a Tensor to a subarray of the persistent object."""
+        raise NotImplementedError()
 
     is_sparse: Final = False
     soma_type: Final = "SOMADenseNDArray"
@@ -88,7 +186,15 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
-    # TODO: Read/write.
+    @abc.abstractmethod
+    def write(
+        self,
+        values: pyarrow.Tensor,
+        *,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> None:
+        """Writes a Tensor to a subarray of the persistent object."""
+        raise NotImplementedError()
 
     @property
     def nnz(self) -> int:
