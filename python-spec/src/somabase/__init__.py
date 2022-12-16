@@ -13,7 +13,6 @@ Collection = base.Collection
 
 DataFrame = data.DataFrame
 NDArray = data.NDArray
-CoordsData = data.CoordsData
 DenseNDArray = data.DenseNDArray
 SparseNDArray = data.SparseNDArray
 
@@ -25,7 +24,6 @@ __all__ = (
     "Collection",
     "DataFrame",
     "NDArray",
-    "CoordsData",
     "DenseNDArray",
     "SparseNDArray",
     "IOfN",
