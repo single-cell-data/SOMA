@@ -7,7 +7,7 @@ members will be exported to the ``somabase`` namespace.
 import abc
 from typing import Any, MutableMapping, TypeVar
 
-from typing_extensions import Final, LiteralString
+from typing_extensions import LiteralString
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
@@ -61,4 +61,8 @@ class Collection(SOMAObject, MutableMapping[str, _ST]):
 
     __slots__ = ()
 
-    soma_type: Final = "SOMACollection"
+    # This is implemented as a property and not a literal so that it can be
+    # overridden with `Final` members in Collection specializations.
+    @property
+    def soma_type(self) -> LiteralString:
+        return "SOMACollection"
