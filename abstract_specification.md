@@ -284,6 +284,7 @@ Parameters:
 | get soma_type                           | Returns the constant "SOMADataFrame"                                           |
 | get schema -> Arrow.Schema              | Return data schema, in the form of an Arrow Schema                             |
 | get index_column_names -> [string, ...] | Return index (dimension) column names.                                         |
+| get count -> int                        | Return the number of rows in the SOMADataFrame.                                |
 | read                                    | Read a subset of data from the SOMADataFrame                                   |
 | write                                   | Write a subset of data to the SOMADataFrame                                    |
 
