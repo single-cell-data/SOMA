@@ -1,6 +1,6 @@
 # Introduction
 
-> **Status**: brainstorming, pre-proposal, in active development. Version: `0.2.0-dev`
+> **Status**: in active development. Version: `0.2.0-dev`
 >
 > ℹ️ **Note** - this is an early working draft (WORK IN PROGRESS). It may contain controversial, undecided, or incomplete proposals - feedback is encouraged. It is expect that additional revisions will be required to converge the underlying primitives with use cases, and to incorporate lessons from initial implementation and early users. Please see `issues` and other call-outs throughout the doc for a list of active discussions/debates.
 
