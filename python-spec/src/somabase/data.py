@@ -5,9 +5,8 @@ members will be exported to the ``somabase`` namespace.
 """
 
 import abc
-from typing import Any, Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Iterator, Optional, Sequence, Tuple, TypeVar, Union
 
-import attrs
 import pyarrow
 from typing_extensions import Final
 
@@ -33,8 +32,11 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         result_order: Optional[options.ResultOrder] = None,
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> Iterable[pyarrow.Table]:
-        """Reads a user-defined slice of data into Arrow tables."""
+    ) -> "ReadIter[pyarrow.Table]":
+        """Reads a user-defined slice of data into Arrow tables.
+
+        TODO: Further per-param documentation.
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -43,7 +45,10 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         values: Union[pyarrow.RecordBatch, pyarrow.Table],
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
-        """Writes values to the data store."""
+        """Writes values to the data store.
+
+        TODO: Further per-param documentation.
+        """
         raise NotImplementedError()
 
     # Metadata operations
@@ -65,75 +70,10 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     soma_type: Final = "SOMADataFrame"
 
 
-@attrs.define(frozen=True)
-class CoordsData:
-    """A slice of data returned from a SOMA dense read."""
-
-    coords: Any  # TODO: Define type.
-    """The coordinates of the slice that was read."""
-
-    data: pyarrow.Tensor
-    """The data that was read."""
-
-
 class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     """Common behaviors of N-dimensional arrays of a single primitive type."""
 
     __slots__ = ()
-
-    # Data operations (listed alphabetically)
-
-    @abc.abstractmethod
-    def read_coo(
-        self,
-        coords,  # TODO: Specify type.
-        *,
-        batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
-        result_order: Optional[options.ResultOrder] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> Iterable[pyarrow.SparseCOOTensor]:
-        """Reads a subset of this NDArray and returns result batches."""
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def read_csc(
-        self,
-        coords,  # TODO: Specify type.
-        *,
-        batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
-        result_order: Optional[options.ResultOrder] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> Iterable[pyarrow.SparseCSCMatrix]:
-        """Reads a subset of this NDArray and returns result batches."""
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def read_csr(
-        self,
-        coords,  # TODO: Specify type.
-        *,
-        batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
-        result_order: Optional[options.ResultOrder] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> Iterable[pyarrow.SparseCSRMatrix]:
-        """Reads a subset of this NDArray and returns result batches."""
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def read_dense(
-        self,
-        coords,  # TODO: Specify type.
-        *,
-        batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
-        result_order: Optional[options.ResultOrder] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> Iterable[CoordsData]:
-        """Reads a subset of this NDArray and returns result batches."""
-        raise NotImplementedError()
 
     # Metadata operations
 
@@ -167,14 +107,33 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
+    def read(
+        self,
+        coords: options.ReadCoords,
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrder = None,  # XXX: Set default
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> pyarrow.Tensor:
+        """Reads the specified subarray from this NDArray as a Tensor.
+
+        TODO: Additional per-param documentation.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def write(
         self,
-        coords,  # TODO: Specify type.
+        coords: options.ReadCoords,
         values: pyarrow.Tensor,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
-        """Writes a Tensor to a subarray of the persistent object."""
+        """Writes a Tensor to a subarray of the persistent object.
+
+        TODO: Additional per-param documentation.
+        """
         raise NotImplementedError()
 
     is_sparse: Final = False
@@ -187,13 +146,39 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
+    def read(
+        self,
+        slices: Any,  # TODO: Define this type.
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrder = None,  # XXX set default
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> "SparseRead":
+        """Reads a subset of the object in one or more batches.
+
+        Values returned are a :class:`SparseRead` object which can be converted
+        to any number of formats::
+
+            some_dense_array.read(...).tables()
+            # -> an iterator of Arrow Tables
+            some_dense_array.read(...).csrs().all()
+            # -> a single flattened sparse CSR matrix
+
+        TODO: Additional per-param documentation.
+        """
+
+    @abc.abstractmethod
     def write(
         self,
         values: pyarrow.Tensor,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
-        """Writes a Tensor to a subarray of the persistent object."""
+        """Writes a Tensor to a subarray of the persistent object.
+
+        TODO: Additional per-param documentation.
+        """
         raise NotImplementedError()
 
     @property
@@ -206,3 +191,55 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
     is_sparse: Final = True
     soma_type: Final = "SOMASparseNDArray"
+
+
+#
+# Read types
+#
+
+_T = TypeVar("_T")
+
+
+# Sparse reads are returned as an iterable structure:
+
+
+class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
+    """SparseRead result iterator allowing users to flatten the iteration."""
+
+    # __iter__ is already implemented as `return self` in Iterator
+    # SOMA implementations must implement __next__.
+
+    # XXX: Considering the name "flat" here too.
+    @abc.abstractmethod
+    def all(self) -> _T:
+        """Returns all the requested data in a single operation."""
+        raise NotImplementedError()
+
+
+class SparseRead(metaclass=abc.ABCMeta):
+    """Intermediate type to allow users to format when reading a sparse array."""
+
+    @abc.abstractmethod
+    def coos(self) -> ReadIter[pyarrow.SparseCOOTensor]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def cscs(self) -> ReadIter[pyarrow.SparseCSCMatrix]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def csrs(self) -> ReadIter[pyarrow.SparseCSRMatrix]:
+        raise NotImplementedError()
+
+    # XXX Does this need to return a ReadIter of Tuple[coordinates, Tensor]?
+    @abc.abstractmethod
+    def dense_tensors(self) -> ReadIter[pyarrow.Tensor]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def record_batches(self) -> ReadIter[pyarrow.RecordBatch]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def tables(self) -> ReadIter[pyarrow.Table]:
+        raise NotImplementedError()
