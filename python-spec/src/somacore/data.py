@@ -1,7 +1,7 @@
 """Definitions of data storage interfaces for SOMA implementations.
 
 SOMA users should ordinarily not need to import this module directly; relevant
-members will be exported to the ``somabase`` namespace.
+members will be exported to the ``somacore`` namespace.
 """
 
 import abc
@@ -10,8 +10,8 @@ from typing import Any, Iterator, Optional, Sequence, Tuple, TypeVar, Union
 import pyarrow
 from typing_extensions import Final
 
-from somabase import base
-from somabase import options
+from somacore import base
+from somacore import options
 
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):

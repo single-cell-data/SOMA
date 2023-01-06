@@ -17,7 +17,7 @@ from typing import (
 import attrs
 from typing_extensions import Final
 
-from somabase import base
+from somacore import base
 
 _ST = TypeVar("_ST", bound=base.SOMAObject)
 _T = TypeVar("_T")

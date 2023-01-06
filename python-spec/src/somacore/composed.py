@@ -2,9 +2,9 @@
 
 from typing_extensions import Final
 
-from somabase import _wrap
-from somabase import base
-from somabase import data
+from somacore import _wrap
+from somacore import base
+from somacore import data
 
 
 class Measurement(_wrap.CollectionProxy):

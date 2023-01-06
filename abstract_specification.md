@@ -655,7 +655,7 @@ Many operations include a `platform_config` parameter. This parameter provides a
 The `platform_config` parameter is defined as a key–value mapping from strings to configuration data. Each **key** in the mapping corresponds to the name of a particular SOMA implementation (i.e., the same string returned by the `get_storage_engine` call). The value stored in each is implementation defined. For example, a Python library that handles SOMA dataframes would make a call that looks roughly like this:
 
 ```python
-def process(df: somabase.DataFrame) -> ...:
+def process(df: somacore.DataFrame) -> ...:
     # ...
     results = df.read(
         ...,
