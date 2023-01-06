@@ -113,7 +113,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
-        result_order: options.ResultOrder = None,  # XXX: Set default
+        result_order: options.ResultOrder = None,  # TODO: Set default
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pyarrow.Tensor:
         """Reads the specified subarray from this NDArray as a Tensor.
@@ -152,7 +152,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
-        result_order: options.ResultOrder = None,  # XXX set default
+        result_order: options.ResultOrder = None,  # TODO: Set default
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SparseRead":
         """Reads a subset of the object in one or more batches.
@@ -206,40 +206,42 @@ _T = TypeVar("_T")
 class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
     """SparseRead result iterator allowing users to flatten the iteration."""
 
-    # __iter__ is already implemented as `return self` in Iterator
+    # __iter__ is already implemented as `return self` in Iterator.
     # SOMA implementations must implement __next__.
 
-    # XXX: Considering the name "flat" here too.
     @abc.abstractmethod
-    def all(self) -> _T:
-        """Returns all the requested data in a single operation."""
+    def concat(self) -> _T:
+        """Returns all the requested data in a single operation.
+
+        If some data has already been retrieved using ``next``, this will return
+        the rest of the data after that is already returned.
+        """
         raise NotImplementedError()
 
 
-class SparseRead(metaclass=abc.ABCMeta):
-    """Intermediate type to allow users to format when reading a sparse array."""
+class SparseRead:
+    """Intermediate type to choose result format when reading a sparse array.
 
-    @abc.abstractmethod
+    A query may not be able to return all of these formats. The concrete result
+    may raise a ``NotImplementedError`` or may choose to raise a different
+    exception (likely a ``TypeError``) containing more specific information
+    about why the given format is not supported.
+    """
+
     def coos(self) -> ReadIter[pyarrow.SparseCOOTensor]:
         raise NotImplementedError()
 
-    @abc.abstractmethod
     def cscs(self) -> ReadIter[pyarrow.SparseCSCMatrix]:
         raise NotImplementedError()
 
-    @abc.abstractmethod
     def csrs(self) -> ReadIter[pyarrow.SparseCSRMatrix]:
         raise NotImplementedError()
 
-    # XXX Does this need to return a ReadIter of Tuple[coordinates, Tensor]?
-    @abc.abstractmethod
     def dense_tensors(self) -> ReadIter[pyarrow.Tensor]:
         raise NotImplementedError()
 
-    @abc.abstractmethod
     def record_batches(self) -> ReadIter[pyarrow.RecordBatch]:
         raise NotImplementedError()
 
-    @abc.abstractmethod
     def tables(self) -> ReadIter[pyarrow.Table]:
         raise NotImplementedError()
