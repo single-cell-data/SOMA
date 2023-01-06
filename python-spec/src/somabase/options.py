@@ -88,3 +88,7 @@ an implementation-defined configuration structure.
 
 ResultOrder = Any
 """Type alias for result order. TODO: Define me (strings? enum?)."""
+
+
+ReadCoords = Any
+"""Type alias for specifying coordinates for reads. TODO: Define me."""
