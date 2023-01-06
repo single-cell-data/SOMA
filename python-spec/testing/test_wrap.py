@@ -1,50 +1,25 @@
 import unittest
 
 from somacore import _wrap
-from somacore import base
-
-
-class CollectionStub(base.Collection):
-    def __init__(self, data):
-        self._data = data
-
-    def __delitem__(self, item):
-        del self._data[item]
-
-    def __getitem__(self, item):
-        return self._data[item]
-
-    def __iter__(self):
-        return iter(self._data)
-
-    def __len__(self):
-        return len(self._data)
-
-    def __setitem__(self, item, value):
-        self._data[item] = value
-
-    @property
-    def metadata(self):
-        raise RuntimeError("[metadata stub]")
+from somacore import ephemeral
 
 
 class TestWrapper(unittest.TestCase):
     def test_sanity(self):
-        data = {}
-        stub = CollectionStub(data)
-        wrapped = _wrap.CollectionProxy(stub)
+        backing = ephemeral.SimpleCollection()
+        wrapped = _wrap.CollectionProxy(backing)
 
         wrapped["x"] = "y"
         self.assertIn("x", wrapped)
         self.assertEqual(wrapped["x"], "y")
-        self.assertEqual(data["x"], "y")
+        self.assertEqual(backing["x"], "y")
         self.assertEqual("y", wrapped.get("x", "z"))
         self.assertIsNone(wrapped.get("missing"))
         self.assertEqual("?", wrapped.get("missing", "?"))
 
         del wrapped["x"]
         self.assertNotIn("x", wrapped)
-        self.assertNotIn("x", data)
+        self.assertNotIn("x", backing)
 
         wrapped.update(a="b", c="d", e="f")
 
@@ -67,12 +42,12 @@ class TestWrapper(unittest.TestCase):
         wrapped.clear()
         self.assertEqual(len(wrapped), 0)
 
-        with self.assertRaisesRegex(RuntimeError, r"\[metadata stub\]"):
-            wrapped.metadata
+        wrapped.metadata["k"] = "v"
+        self.assertEqual({"k": "v"}, wrapped.metadata)
 
-        self.assertIs(stub, wrapped.unwrap())
+        self.assertIs(backing, wrapped.unwrap())
         double_wrap = _wrap.CollectionProxy(wrapped)
-        self.assertIs(stub, double_wrap.unwrap())
+        self.assertIs(backing, double_wrap.unwrap())
 
 
 class TestItem(unittest.TestCase):
