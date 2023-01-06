@@ -9,6 +9,8 @@ dynamic = ["version"]
 readme = "./README.md"
 dependencies = ["attrs>=22.1", "numpy>=1.21", "pyarrow", "typing-extensions"]
 requires-python = "~=3.7"
+urls = { repository = "https://github.com/single-cell-data/SOMA.git" }
+classifiers = ["License :: OSI Approved :: MIT License"]
 
 [project.optional-dependencies]
 dev = ["black", "isort", "setuptools-scm"]
