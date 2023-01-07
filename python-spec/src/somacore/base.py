@@ -1,7 +1,7 @@
 """Definitions of the most fundamental types used by the SOMA project.
 
 SOMA users should ordinarily not need to import this module directly; relevant
-members will be exported to the ``somabase`` namespace.
+members will be exported to the ``somacore`` namespace.
 """
 
 import abc

@@ -4,9 +4,9 @@ Types will be defined in their own modules and then imported here for a single
 unified namespace.
 """
 
-from somabase import base
-from somabase import data
-from somabase import options
+from somacore import base
+from somacore import data
+from somacore import options
 
 SOMAObject = base.SOMAObject
 Collection = base.Collection

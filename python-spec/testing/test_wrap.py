@@ -1,7 +1,7 @@
 import unittest
 
-from somabase import _wrap
-from somabase import base
+from somacore import _wrap
+from somacore import base
 
 
 class CollectionStub(base.Collection):

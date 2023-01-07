@@ -1,6 +1,6 @@
-# `somabase`: the Python version of the SOMA specification
+# `somacore`: the Python version of the SOMA specification
 
-`somabase` is a (currently in-development) Python interpretation of the
+`somacore` is a (currently in-development) Python interpretation of the
 [abstract SOMA specification](../abstract_specification.md). Like the abstract
 specification, it is still in flux and in progress, and we gladly accept
 feedback. This will evolve in tandem with the abstract spec itself as well as
