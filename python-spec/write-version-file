@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# Updates the `_version.py` file. Run this *before* building a package.
+# Make sure that you have `setuptools-scm` installed in your environment.
+#
+# When running `pip install`, pip gets the package directory and copies it out
+# to a temporary folder before executing anything related to setup (i.e., only
+# the contents of `python-spec/...`). This means that the `.git` folder, which
+# is in the parent directory, is absent, and thus setuptools-scm is not able to
+# detect the version at build time.
+#
+# To work around this, we just run this *before* doing any package related work
+# when running a build.
+
+set -ex
+cd "$(dirname "$0")"
+python -m setuptools_scm --config setuptools-scm.toml
