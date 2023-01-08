@@ -15,6 +15,8 @@ DataFrame = data.DataFrame
 NDArray = data.NDArray
 DenseNDArray = data.DenseNDArray
 SparseNDArray = data.SparseNDArray
+ReadIter = data.ReadIter
+SparseRead = data.SparseRead
 
 IOfN = options.IOfN
 BatchSize = options.BatchSize
@@ -28,4 +30,6 @@ __all__ = (
     "SparseNDArray",
     "IOfN",
     "BatchSize",
+    "ReadIter",
+    "SparseRead",
 )
