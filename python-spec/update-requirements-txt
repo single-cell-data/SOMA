@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Generates requirements-pyX.X.txt files based on a fresh install from PyPI.
+# Uses conda to install independent Pythons.
+
+set -ex
+cd "$(dirname "$0")"
+TEMPDIR="$(mktemp -d)"
+trap "trash $TEMPDIR" EXIT
+
+for PYVER in 3.7 3.8 3.9 3.10; do
+  CONDIR="$TEMPDIR/py-$PYVER"
+  conda create -y -p "$CONDIR" "python=$PYVER"
+  conda run -p "$CONDIR" pip install .
+  conda run -p "$CONDIR" pip freeze --exclude somacore >"requirements-py$PYVER.txt"
+done
