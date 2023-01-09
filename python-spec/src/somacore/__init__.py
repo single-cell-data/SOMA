@@ -32,8 +32,8 @@ __all__ = (
     "NDArray",
     "DenseNDArray",
     "SparseNDArray",
-    "IOfN",
-    "BatchSize",
     "ReadIter",
     "SparseRead",
+    "IOfN",
+    "BatchSize",
 )
