@@ -1,0 +1,9 @@
+# setuptools-scm specific data from a pyproject.toml file.
+# Used by `write-version-file`.
+
+[tool.setuptools_scm]
+root = ".."
+write_to = "python-spec/src/somacore/_generated_version.py"
+# Keep Python executable package versioning separate from the spec and R impl
+# by requiring `python-` at the start of the tag (e.g. `python-v1.2.3`).
+tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'

@@ -140,6 +140,15 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     soma_type: Final = "SOMADenseNDArray"
 
 
+SparseArrowData = Union[
+    pyarrow.SparseCSCMatrix,
+    pyarrow.SparseCSRMatrix,
+    pyarrow.SparseCOOTensor,
+    pyarrow.Table,
+]
+"""Any of the sparse data storages provided by Arrow."""
+
+
 class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     """A N-dimensional array stored sparsely."""
 
@@ -171,7 +180,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def write(
         self,
-        values: pyarrow.Tensor,
+        values: SparseArrowData,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:

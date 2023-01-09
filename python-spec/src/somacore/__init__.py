@@ -4,9 +4,13 @@ Types will be defined in their own modules and then imported here for a single
 unified namespace.
 """
 
+from somacore import _version
 from somacore import base
 from somacore import data
 from somacore import options
+
+__version__ = _version.version
+__version_tuple__ = _version.version_tuple
 
 SOMAObject = base.SOMAObject
 Collection = base.Collection
