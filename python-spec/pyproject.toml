@@ -13,8 +13,11 @@ requires-python = "~=3.7"
 [project.optional-dependencies]
 dev = ["black", "isort", "setuptools-scm"]
 
-[tool.setuptools.dynamic]
-version = { attr = "somacore._version.version" }
+[tool.setuptools]
+packages.find.where = ["src"]
+package-data.somacore = ["py.typed"]
+dynamic.version.attr = "somacore._version.version"
+
 
 [tool.isort]
 profile = "black"
