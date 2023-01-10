@@ -52,3 +52,20 @@ class Measurement(_wrap.CollectionProxy):
     """
 
     soma_type: Final = "SOMAMeasurement"
+
+
+class Experiment(_wrap.CollectionProxy):
+    """A set of observations defined by a DataFrame, with measurements."""
+
+    obs = _wrap.item(data.DataFrame)
+    """Primary observations on the observation axis.
+
+    The contents of the ``soma_joinid`` pseudo-column define the observation
+    index domain, i.e. ``obsid``. All observations for the experiment must be
+    defined here.
+    """
+
+    ms = _wrap.item(base.Collection[Measurement])
+    """A collection of named measurements."""
+
+    soma_type: Final = "SOMAExperiment"
