@@ -11,15 +11,27 @@ on:
 jobs:
   format-check:
     runs-on: ubuntu-latest
+    env:
+      PYTHON_VERSION: "3.7"
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
       - uses: psf/black@stable
         with:
           src: "./python-spec"
       - uses: isort/isort-action@v1
         with:
           sort-paths: "./python-spec"
+      - name: Install typing packages
+        run: |
+          pip install -r python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
+      - name: Run mypy
+        working-directory: ./python-spec
+        run: mypy ./src
 
   run-tests:
     runs-on: ubuntu-latest

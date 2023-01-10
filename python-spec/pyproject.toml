@@ -24,3 +24,8 @@ profile = "black"
 line_length = 88
 force_single_line = true
 single_line_exclusions = ["typing", "typing_extensions"]
+
+[[tool.mypy.overrides]]
+# pyarrow currently does not have canonical type stubs.
+module = ["pyarrow"]
+ignore_missing_imports = true

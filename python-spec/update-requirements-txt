@@ -8,9 +8,18 @@ cd "$(dirname "$0")"
 TEMPDIR="$(mktemp -d)"
 trap "trash $TEMPDIR" EXIT
 
+# The version of Python we want to run lints under.
+LINTVER=3.7
+
 for PYVER in 3.7 3.8 3.9 3.10; do
   CONDIR="$TEMPDIR/py-$PYVER"
   conda create -y -p "$CONDIR" "python=$PYVER"
   conda run -p "$CONDIR" pip install .
   conda run -p "$CONDIR" pip freeze --exclude somacore >"requirements-py$PYVER.txt"
 done
+
+CONDIR="$TEMPDIR/py-$LINTVER-lint"
+conda create -y -p "$CONDIR" "python=$LINTVER"
+conda run -p "$CONDIR" pip install . mypy
+conda run -p "$CONDIR" mypy --install-types --non-interactive ./src
+conda run -p "$CONDIR" pip freeze --exclude somacore >"requirements-py$LINTVER-lint.txt"
