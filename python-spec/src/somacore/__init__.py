@@ -27,6 +27,7 @@ SparseRead = data.SparseRead
 
 IOfN = options.IOfN
 BatchSize = options.BatchSize
+ResultOrder = options.ResultOrder
 
 __all__ = (
     "SOMAObject",

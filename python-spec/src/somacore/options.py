@@ -4,9 +4,13 @@ These types are *concrete* and should be used as-is as inputs to the various
 SOMA types that require them, not reimplemented by the implementing package.
 """
 
-from typing import Any, Mapping, Optional
+import enum
+from typing import Any, Mapping, Optional, Sequence, TypeVar, Union
 
 import attrs
+import numpy as np
+import numpy.typing as npt
+import pyarrow as pa
 
 
 class ReadPartitions:
@@ -85,10 +89,56 @@ to individual calls. Keys are the name of a SOMA implementation, each value is
 an implementation-defined configuration structure.
 """
 
+_ET = TypeVar("_ET", bound=enum.Enum)
+StrOr = Union[_ET, str]
+"""A string, or the named enum."""
 
-ResultOrder = Any
-"""Type alias for result order. TODO: Define me (strings? enum?)."""
+
+class ResultOrder(enum.Enum):
+    """The order results should be returned in."""
+
+    AUTO = "auto"
+    ROW_MAJOR = "row-major"
+    COLUMN_MAJOR = "column-major"
 
 
-ReadCoords = Any
-"""Type alias for specifying coordinates for reads. TODO: Define me."""
+DenseCoord = Union[int, slice]
+"""A single coordinate range for reading dense data."""
+DenseNDCoords = Sequence[DenseCoord]
+"""A sequence of ranges to read dense data."""
+
+# TODO: Add support for non-integer types.
+SparseDFCoord = Union[
+    None,
+    int,
+    slice,
+    Sequence[int],
+    pa.Array,
+    pa.ChunkedArray,
+    npt.NDArray[np.integer],
+]
+"""A single coordinate range for reading sparse dataframes.
+
+``None`` is included here since it is a valid value; parameters of this type
+are not ``Optional``, but may be ``None``.
+"""
+SparseDFCoords = Sequence[SparseDFCoord]
+"""A sequence of coordinate ranges for reading dense dataframes."""
+
+SparseNDCoords = Union[
+    None,
+    Sequence[
+        Union[
+            None,
+            DenseCoord,
+            Sequence[int],
+            npt.NDArray[np.integer],
+            pa.IntegerArray,
+        ]
+    ],
+]
+"""A sequence of coordinate ranges for reading sparse ndarrays.
+
+``None`` is included here since it is a valid value (for reading the entire
+ndarray); parameters of this type are not ``Optional`` but may be ``None``.
+"""
