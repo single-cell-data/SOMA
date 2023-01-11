@@ -1,10 +1,14 @@
 """Implementations of the composed SOMA data types."""
 
+from typing import Optional
+
 from typing_extensions import Final
 
 from somacore import _wrap
 from somacore import base
 from somacore import data
+from somacore.query import axis
+from somacore.query import query
 
 
 class Measurement(_wrap.CollectionProxy):
@@ -67,5 +71,18 @@ class Experiment(_wrap.CollectionProxy):
 
     ms = _wrap.item(base.Collection[Measurement])
     """A collection of named measurements."""
+
+    def axis_query(
+        self,
+        measurement_name: str,
+        *,
+        obs_query: Optional[axis.AxisQuery] = None,
+        var_query: Optional[axis.AxisQuery] = None,
+    ) -> query.ExperimentAxisQuery:
+        """Creates an axis query over this experiment.
+
+        See :class:`query.ExperimentAxisQuery` for details on usage.
+        """
+        raise NotImplementedError()
 
     soma_type: Final = "SOMAExperiment"
