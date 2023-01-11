@@ -2,6 +2,8 @@
 
 SOMA users should ordinarily not need to import this module directly; relevant
 members will be exported to the ``somacore`` namespace.
+
+Default values are provided here as a reference for implementors.
 """
 
 import abc
@@ -12,6 +14,8 @@ from typing_extensions import Final
 
 from somacore import base
 from somacore import options
+
+_RO_AUTO = options.ResultOrder.AUTO
 
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -29,7 +33,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
-        result_order: Optional[options.ResultOrder] = None,
+        result_order: options.StrOr[options.ResultOrder] = _RO_AUTO,
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "ReadIter[pyarrow.Table]":
@@ -109,11 +113,11 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        coords: options.ReadCoords,
+        coords: options.DenseNDCoords,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
-        result_order: options.ResultOrder = None,  # TODO: Set default
+        result_order: options.StrOr[options.ResultOrder] = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pyarrow.Tensor:
         """Reads the specified subarray from this NDArray as a Tensor.
@@ -125,7 +129,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def write(
         self,
-        coords: options.ReadCoords,
+        coords: options.DenseNDCoords,
         values: pyarrow.Tensor,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
@@ -161,7 +165,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
-        result_order: options.ResultOrder = None,  # TODO: Set default
+        result_order: options.StrOr[options.ResultOrder] = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SparseRead":
         """Reads a subset of the object in one or more batches.

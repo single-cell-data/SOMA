@@ -7,7 +7,7 @@ name = "somacore"
 description = "Python-language API specification and base utilities for implementation of the SOMA system."
 dynamic = ["version"]
 readme = "./README.md"
-dependencies = ["attrs>=22.1", "pyarrow", "typing-extensions"]
+dependencies = ["attrs>=22.1", "numpy", "pyarrow", "typing-extensions"]
 requires-python = "~=3.7"
 
 [project.optional-dependencies]
