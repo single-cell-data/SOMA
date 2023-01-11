@@ -9,6 +9,7 @@ from somacore import base
 from somacore import data
 from somacore import ephemeral
 from somacore import options
+from somacore.query import axis
 
 __version__ = _version.version
 __version_tuple__ = _version.version_tuple
@@ -29,6 +30,8 @@ IOfN = options.IOfN
 BatchSize = options.BatchSize
 ResultOrder = options.ResultOrder
 
+AxisQuery = axis.AxisQuery
+
 __all__ = (
     "SOMAObject",
     "Collection",
@@ -40,4 +43,6 @@ __all__ = (
     "SparseRead",
     "IOfN",
     "BatchSize",
+    "ResultOrder",
+    "AxisQuery",
 )
