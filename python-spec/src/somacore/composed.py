@@ -1,7 +1,5 @@
 """Implementations of the composed SOMA data types."""
 
-from typing import Optional
-
 from typing_extensions import Final
 
 from somacore import _wrap
@@ -76,13 +74,15 @@ class Experiment(_wrap.CollectionProxy):
         self,
         measurement_name: str,
         *,
-        obs_query: Optional[axis.AxisQuery] = None,
-        var_query: Optional[axis.AxisQuery] = None,
+        obs_query: axis.AxisQuery = axis.AxisQuery(),
+        var_query: axis.AxisQuery = axis.AxisQuery(),
     ) -> query.ExperimentAxisQuery:
         """Creates an axis query over this experiment.
 
         See :class:`query.ExperimentAxisQuery` for details on usage.
         """
-        raise NotImplementedError()
+        return query.ExperimentAxisQuery(
+            self, measurement_name, obs_query=obs_query, var_query=var_query
+        )
 
     soma_type: Final = "SOMAExperiment"
