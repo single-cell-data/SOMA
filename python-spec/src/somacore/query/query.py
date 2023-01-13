@@ -173,9 +173,14 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
 
         This method must be idempotent.
         """
-        if self._threadpool_:
-            self._threadpool_.shutdown()
-            self._threadpool_ = None
+        # Because this may be called during `__del__` when we might be getting
+        # disassembled, sometimes `_threadpool_` is simply missing.
+        # Only try to shut it down if it still exists.
+        pool = getattr(self, "_threadpool_", None)
+        if pool is None:
+            return
+        pool.shutdown()
+        self._threadpool_ = None
 
     def __exit__(self, *_: Any) -> None:
         self.close()
