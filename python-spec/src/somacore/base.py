@@ -66,3 +66,27 @@ class Collection(SOMAObject, MutableMapping[str, _ST]):
     @property
     def soma_type(self) -> LiteralString:
         return "SOMACollection"
+
+
+class Experiment(Collection[_ST]):
+    """
+    A specialized :class:`SOMACollection`, representing an annotated 2-D matrix of measurements.
+    """
+
+    # This is implemented as a property and not a literal so that it can be
+    # overridden with `Final` members in Experiment specializations.
+    @property
+    def soma_type(self) -> LiteralString:
+        return "SOMAExperiment"
+
+
+class Measurement(Collection[_ST]):
+    """
+    A set of measurements on a single set of variables (features) within a :class:`SOMAExperiment`.
+    """
+
+    # This is implemented as a property and not a literal so that it can be
+    # overridden with `Final` members in Measurement specializations.
+    @property
+    def soma_type(self) -> LiteralString:
+        return "SOMAMeasurement"
