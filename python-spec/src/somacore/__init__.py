@@ -15,6 +15,8 @@ __version_tuple__ = _version.version_tuple
 
 SOMAObject = base.SOMAObject
 Collection = base.Collection
+Experiment = base.Experiment
+Measurement = base.Measurement
 
 SimpleCollection = ephemeral.SimpleCollection
 
@@ -32,6 +34,8 @@ ResultOrder = options.ResultOrder
 __all__ = (
     "SOMAObject",
     "Collection",
+    "Experiment",
+    "Measurement",
     "DataFrame",
     "NDArray",
     "DenseNDArray",
