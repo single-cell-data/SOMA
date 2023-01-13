@@ -76,7 +76,7 @@ class Experiment(_wrap.CollectionProxy):
         *,
         obs_query: axis.AxisQuery = axis.AxisQuery(),
         var_query: axis.AxisQuery = axis.AxisQuery(),
-    ) -> query.ExperimentAxisQuery:
+    ) -> "query.ExperimentAxisQuery":
         """Creates an axis query over this experiment.
 
         See :class:`query.ExperimentAxisQuery` for details on usage.
