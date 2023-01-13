@@ -156,9 +156,9 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
         :param X_layers: Additional X layers to read and return
             in the ``layers`` slot.
         """
-        query_result = self.read(
+        query_result = self._read(
             X_name,
-            column_names=column_names,
+            column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
         )
 
@@ -188,13 +188,13 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
 
     # Internals
 
-    def read(
+    def _read(
         self,
         X_name: str,
         *,
-        column_names: Optional[AxisColumnNames] = None,
-        X_layers: Sequence[str] = (),
-    ) -> "AxisQueryResult":
+        column_names: AxisColumnNames,
+        X_layers: Sequence[str],
+    ) -> "_AxisQueryResult":
         """Reads the entire query result into in-memory Arrow tables.
 
         This is a low-level routine intended to be used by loaders for other
@@ -209,8 +209,7 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
             ``AnnData.layers`` slot
 
         """
-        column_names = column_names or AxisColumnNames(obs=None, var=None)
-        x_collection = self.experiment.ms[self.measurement_name].X
+        x_collection = self._ms.X
         all_x_names = [X_name] + list(X_layers)
         all_x_arrays: Dict[str, data.SparseNDArray] = {}
         for _xname in all_x_names:
@@ -235,7 +234,7 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
         }
 
         x = x_tables.pop(X_name)
-        return AxisQueryResult(obs=obs_table, var=var_table, X=x, X_layers=x_tables)
+        return _AxisQueryResult(obs=obs_table, var=var_table, X=x, X_layers=x_tables)
 
     def _read_both_axes(
         self,
@@ -350,8 +349,11 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
         return self._threadpool_
 
 
+# Private internal data structures
+
+
 @attrs.define(frozen=True)
-class AxisQueryResult:
+class _AxisQueryResult:
     """Return type for the ExperimentAxisQuery.read() method"""
 
     obs: pa.Table
@@ -382,9 +384,6 @@ class AxisQueryResult:
             for name, table in self.X_layers.items()
         }
         return anndata.AnnData(X=x, obs=obs, var=var, layers=(layers or None))
-
-
-# Private internal data structures
 
 
 class _Axis(enum.Enum):
@@ -492,7 +491,7 @@ class _AxisIndexer:
     def by_var(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
         return self._var_index.get_indexer(_to_numpy(coords))
 
-    def rewrite(self, qr: AxisQueryResult) -> AxisQueryResult:
+    def rewrite(self, qr: _AxisQueryResult) -> _AxisQueryResult:
         """Rewrite the result to prepare for AnnData positional indexing."""
         return attrs.evolve(
             qr,
