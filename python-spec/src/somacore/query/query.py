@@ -27,11 +27,11 @@ class AxisColumnNames(TypedDict, total=False):
 
 
 class ExperimentAxisQuery(contextlib.AbstractContextManager):
-    """Axis-based query against a SOMA Experiment.
+    """Axis-based query against a SOMA Experiment. [lifecycle: experimental]
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
     single soma.Measurement in a soma.Experiment, by obs/var (axis) coordinates
-    and/or value filter [lifecycle: experimental].
+    and/or value filter.
 
     The primary use for this class is slicing Experiment ``X`` layers by obs or
     var value and/or coordinates. Slicing on SparseNDArray ``X`` matrices is
@@ -79,7 +79,7 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
     def obs(
         self, *, column_names: Optional[Sequence[str]] = None
     ) -> data.ReadIter[pa.Table]:
-        """Returns ``obs`` as an Arrow table iterator."""
+        """Returns ``obs`` as an Arrow table iterator. [lifecycle: experimental]"""
         obs_query = self._matrix_axis_query.obs
         return self._obs_df.read(
             ids=obs_query.coords,
@@ -90,7 +90,7 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
     def var(
         self, *, column_names: Optional[Sequence[str]] = None
     ) -> data.ReadIter[pa.Table]:
-        """Returns ``var`` as an Arrow table iterator."""
+        """Returns ``var`` as an Arrow table iterator. [lifecycle: experimental]"""
         var_query = self._matrix_axis_query.var
         return self._var_df.read(
             ids=var_query.coords,
@@ -99,25 +99,25 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
         )
 
     def obs_joinids(self) -> pa.Array:
-        """Returns ``obs`` ``soma_joinids`` as an Arrow array."""
+        """Returns ``obs`` ``soma_joinids`` as an Arrow array. [lifecycle: experimental]"""
         return self._joinids.obs
 
     def var_joinids(self) -> pa.Array:
-        """Returns ``var`` ``soma_joinids`` as an Arrow array."""
+        """Returns ``var`` ``soma_joinids`` as an Arrow array. [lifecycle: experimental]"""
         return self._joinids.var
 
     @property
     def n_obs(self) -> int:
-        """The number of ``obs`` axis query results."""
+        """The number of ``obs`` axis query results. [lifecycle: experimental]"""
         return len(self.obs_joinids())
 
     @property
     def n_vars(self) -> int:
-        """The number of ``var`` axis query results."""
+        """The number of ``var`` axis query results. [lifecycle: experimental]"""
         return len(self.var_joinids())
 
     def X(self, layer_name: str) -> data.SparseRead:
-        """Returns an ``X`` layer as ``SparseRead`` data.
+        """Returns an ``X`` layer as ``SparseRead`` data. [lifecycle: experimental]
 
         :param layer_name: The X layer name to return.
         """
@@ -132,11 +132,11 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
         return x_layer.read((self._joinids.obs, self._joinids.var))
 
     def obsp(self, layer: str) -> data.SparseRead:
-        """Return an ``obsp`` layer as a SparseNDArrayRead"""
+        """Return an ``obsp`` layer as a sparse read. [lifecycle: experimental]"""
         return self._axisp_inner(_Axis.OBS, layer)
 
     def varp(self, layer: str) -> data.SparseRead:
-        """Return an ``varp`` layer as a SparseNDArrayRead"""
+        """Return an ``varp`` layer as a sparse read. [lifecycle: experimental]"""
         return self._axisp_inner(_Axis.VAR, layer)
 
     def to_anndata(
@@ -148,6 +148,7 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
     ) -> anndata.AnnData:
         """
         Execute the query and return result as an ``AnnData`` in-memory object.
+        [lifecycle: experimental]
 
         :param X_name: The name of the X layer to read and return
             in the ``X`` slot.
@@ -168,7 +169,7 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
     # Context management
 
     def close(self) -> None:
-        """Releases resources associated with this query.
+        """Releases resources associated with this query. [lifecycle: experimental]
 
         This method must be idempotent.
         """
