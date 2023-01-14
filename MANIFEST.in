@@ -1,0 +1,9 @@
+# Python package manifest. We have to do this manually because otherwise
+# setuptools-scm will try to include literally everything in the repo
+# and we only want to include the Python-specific stuff in our build.
+
+global-exclude *
+include pyproject.toml
+include MANIFEST.in
+recursive-include python-spec/README.md
+recursive-include python-spec/src *.py py.typed
