@@ -1,12 +1,15 @@
+# Build and release configuration for the Python version of core SOMA.
+# This lives at the root directory to save us lots of headaches with versioning.
+
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools", "setuptools-scm", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "somacore"
 description = "Python-language API specification and base utilities for implementation of the SOMA system."
 dynamic = ["version"]
-readme = "./README.md"
+readme = "./python-spec/README.md"
 dependencies = [
   "anndata",
   "attrs>=22.1",
@@ -22,14 +25,20 @@ classifiers = ["License :: OSI Approved :: MIT License"]
 dev = ["black", "isort", "setuptools-scm"]
 
 [tool.setuptools]
-packages.find.where = ["src"]
+packages.find.where = ["python-spec/src"]
 package-data.somacore = ["py.typed"]
-dynamic.version.attr = "somacore._version.version"
+
+[tool.setuptools_scm]
+write_to = "python-spec/src/somacore/_version.py"
+# Keep Python executable package versioning separate from the spec and R impl
+# by requiring `python-` at the start of the tag (e.g. `python-v1.2.3`).
+tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
 [tool.isort]
 profile = "black"
 line_length = 88
 force_single_line = true
+known_first_party = ["somacore"]
 single_line_exclusions = ["typing", "typing_extensions"]
 
 [[tool.mypy.overrides]]

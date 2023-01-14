@@ -1,2 +1,7 @@
 temp/
 tmp/
+**/__pycache__
+**/*.egg-info
+build/
+dist/
+python-spec/src/somacore/_version.py
