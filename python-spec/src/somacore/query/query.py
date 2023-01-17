@@ -1,4 +1,3 @@
-import contextlib
 import enum
 from concurrent import futures
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
@@ -26,7 +25,7 @@ class AxisColumnNames(TypedDict, total=False):
     """var columns to use. All columns if ``None`` or not present."""
 
 
-class ExperimentAxisQuery(contextlib.AbstractContextManager):
+class ExperimentAxisQuery:
     """Axis-based query against a SOMA Experiment. [lifecycle: experimental]
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
@@ -181,6 +180,10 @@ class ExperimentAxisQuery(contextlib.AbstractContextManager):
             return
         pool.shutdown()
         self._threadpool_ = None
+
+    # TODO: This should be "Self" once mypy supports that.
+    def __enter__(self) -> "ExperimentAxisQuery":
+        return self
 
     def __exit__(self, *_: Any) -> None:
         self.close()
