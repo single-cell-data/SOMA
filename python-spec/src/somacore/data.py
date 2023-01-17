@@ -7,7 +7,7 @@ Default values are provided here as a reference for implementors.
 """
 
 import abc
-from typing import Any, Iterator, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Iterator, Optional, Sequence, Tuple, TypeVar, Union
 
 import pyarrow
 from typing_extensions import Final
@@ -28,7 +28,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        ids,  # TODO: Specify type
+        coords: options.SparseDFCoords,
         column_names: Optional[Sequence[str]] = None,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
@@ -161,7 +161,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        slices: Any,  # TODO: Define this type.
+        coords: options.SparseNDCoords,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,

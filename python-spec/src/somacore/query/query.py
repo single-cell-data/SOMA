@@ -81,7 +81,7 @@ class ExperimentAxisQuery:
         """Returns ``obs`` as an Arrow table iterator. [lifecycle: experimental]"""
         obs_query = self._matrix_axis_query.obs
         return self._obs_df.read(
-            ids=obs_query.coords,
+            obs_query.coords,
             value_filter=obs_query.value_filter,
             column_names=column_names,
         )
@@ -92,7 +92,7 @@ class ExperimentAxisQuery:
         """Returns ``var`` as an Arrow table iterator. [lifecycle: experimental]"""
         var_query = self._matrix_axis_query.var
         return self._var_df.read(
-            ids=var_query.coords,
+            var_query.coords,
             value_filter=var_query.value_filter,
             column_names=column_names,
         )
@@ -295,7 +295,7 @@ class ExperimentAxisQuery:
 
         # Do the actual query.
         arrow_table = axis_df.read(
-            ids=axis_query.coords,
+            axis_query.coords,
             value_filter=axis_query.value_filter,
             column_names=query_columns,
         ).concat()
@@ -463,7 +463,7 @@ class _JoinIDCache:
 
 def _load_joinids(df: data.DataFrame, axq: axis.AxisQuery) -> pa.Array:
     tbl = df.read(
-        ids=axq.coords,
+        axq.coords,
         value_filter=axq.value_filter,
         column_names=["soma_joinid"],
     ).concat()
