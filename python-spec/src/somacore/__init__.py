@@ -9,6 +9,7 @@ from somacore import data
 from somacore import ephemeral
 from somacore import options
 from somacore.query import axis
+from somacore.query import query
 
 try:
     # This trips up mypy since it's a generated file:
@@ -37,6 +38,7 @@ BatchSize = options.BatchSize
 ResultOrder = options.ResultOrder
 
 AxisQuery = axis.AxisQuery
+ExperimentAxisQuery = query.ExperimentAxisQuery
 
 __all__ = (
     "SOMAObject",

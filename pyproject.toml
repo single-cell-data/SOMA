@@ -14,7 +14,9 @@ dependencies = [
   "anndata",
   "attrs>=22.1",
   "numpy>=1.21",
+  "pandas",
   "pyarrow",
+  "scipy",
   "typing-extensions",
 ]
 requires-python = "~=3.7"
@@ -43,5 +45,5 @@ single_line_exclusions = ["typing", "typing_extensions"]
 
 [[tool.mypy.overrides]]
 # These dependencies do not currently have canonical type stubs.
-module = ["anndata", "pyarrow"]
+module = ["anndata", "pandas", "pyarrow", "scipy"]
 ignore_missing_imports = true
