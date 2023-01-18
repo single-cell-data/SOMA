@@ -4,7 +4,7 @@ from typing import Iterator, Optional, TypeVar
 _T = TypeVar("_T")
 
 
-class EagerIterator(Iterator[_T]):
+class _EagerIterator(Iterator[_T]):
     def __init__(
         self,
         iterator: Iterator[_T],

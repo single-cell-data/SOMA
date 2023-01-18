@@ -1,6 +1,6 @@
-import concurrent.futures as futures
 import os
-from typing import List, Tuple, Type, cast
+from concurrent import futures
+from typing import List, NamedTuple, Tuple, Type, cast
 
 import numba
 import numpy as np
@@ -9,95 +9,21 @@ import pandas as pd
 import pyarrow as pa
 from scipy import sparse
 
-from somacore.data import SparseNDArray
+from somacore import data as scd
 
-from .eager_iter import EagerIterator
-
-
-@numba.jit(nopython=True, nogil=True)  # type: ignore
-def _accum_row_length(row_length, row_ind):
-    for i in range(len(row_ind)):
-        row_length[row_ind[i]] += 1
-    return None
+from .eager_iter import _EagerIterator
 
 
-@numba.jit(nopython=True, nogil=True)  # type: ignore
-def _copy_chunk_range(
-    data_chunk,
-    row_ind_chunk,
-    col_ind_chunk,
-    data,
-    indices,
-    indptr,
-    row_rng_mask,
-    row_rng_val,
-):
-    for n in range(len(data_chunk)):
-        row = row_ind_chunk[n]
-        if (row & row_rng_mask) != row_rng_val:
-            continue
-        ptr = indptr[row]
-        indices[ptr] = col_ind_chunk[n]
-        data[ptr] = data_chunk[n]
-        indptr[row] += 1
-    return None
-
-
-@numba.jit(nopython=True, nogil=True)  # type: ignore
-def _copy_chunklist_range(
-    chunk_list: numba.typed.List,
-    data,
-    indices,
-    indptr,
-    row_rng_mask_bits,
-    job,
-):
-    row_rng_mask = (2**64 - 1) >> row_rng_mask_bits << row_rng_mask_bits
-    row_rng_val = job << row_rng_mask_bits
-    for data_chunk, row_ind_chunk, col_ind_chunk in chunk_list:
-        _copy_chunk_range(
-            data_chunk,
-            row_ind_chunk,
-            col_ind_chunk,
-            data,
-            indices,
-            indptr,
-            row_rng_mask,
-            row_rng_val,
-        )
-    return None
-
-
-@numba.jit(nopython=True, nogil=True)  # type: ignore
-def _finalize_indptr(indptr):
-    prev = 0
-    for r in range(len(indptr)):
-        t = indptr[r]
-        indptr[r] = prev
-        prev = t
-    return None
-
-
-def _select_dtype(
-    maxval: int,
-) -> Type[np.signedinteger]:
+class CSRAccumulatorFinalResult(NamedTuple):
     """
-    Ascertain the "best" dtype for a zero-based index. Given our
-    goal of minimizing memory use, "best" is currently defined as
-    smallest.
+    Return type for the CSRAccumulator.finalize method.
+    Contains a sparse CSR consituent elements
     """
-    if maxval > np.iinfo(np.int32).max:
-        return np.int64
-    else:
-        return np.int32
 
-
-def _reindex_and_cast(
-    index: pd.Index, ids: npt.NDArray[np.int64], target_dtype: npt.DTypeLike
-) -> npt.NDArray[np.int64]:
-    return cast(
-        npt.NDArray[np.int64], index.get_indexer(ids).astype(target_dtype, copy=False)
-    )
+    data: npt.NDArray[np.number]
+    indptr: npt.NDArray[np.integer]
+    indices: npt.NDArray[np.integer]
+    shape: Tuple[int, int]
 
 
 class CSRAccumulator:
@@ -158,20 +84,18 @@ class CSRAccumulator:
         self.coo_chunks.append((data.to_numpy(), row_ind, col_ind))
         _accum_row_length(self.row_length, row_ind)
 
-    def finalize(
-        self,
-    ) -> Tuple[
-        npt.NDArray[np.number],  # data
-        npt.NDArray[np.integer],  # indptr
-        npt.NDArray[np.integer],  # indices
-        Tuple[int, int],  # shape
-    ]:
+    def finalize(self) -> CSRAccumulatorFinalResult:
         nnz = sum(len(chunk[0]) for chunk in self.coo_chunks)
         index_dtype = _select_dtype(nnz)
         if nnz == 0:
             # no way to infer matrix dtype, so use default and return empty matrix
             empty = sparse.csr_matrix((0, 0))
-            return empty.data, empty.indptr, empty.indices, (0, 0)
+            return CSRAccumulatorFinalResult(
+                data=empty.data,
+                indptr=empty.indptr,
+                indices=empty.indices,
+                shape=(0, 0),
+            )
 
         # cumsum row lengths to get indptr
         indptr = np.empty((self.shape[0] + 1,), dtype=index_dtype)
@@ -196,22 +120,108 @@ class CSRAccumulator:
                     row_rng_mask_bits,
                     job,
                 )
-                for job in range(0, n_jobs)
+                for job in range(n_jobs)
             ]
         )
         _finalize_indptr(indptr)
-        return data, indptr, indices, self.shape
+        return CSRAccumulatorFinalResult(
+            data=data, indptr=indptr, indices=indices, shape=self.shape
+        )
+
+
+@numba.jit(nopython=True, nogil=True)  # type: ignore
+def _accum_row_length(
+    row_length: npt.NDArray[np.int64], row_ind: npt.NDArray[np.int64]
+) -> None:
+    for rind in row_ind:
+        row_length[rind] += 1
+
+
+@numba.jit(nopython=True, nogil=True)  # type: ignore
+def _copy_chunk_range(
+    data_chunk: npt.NDArray[np.number],
+    row_ind_chunk: npt.NDArray[np.signedinteger],
+    col_ind_chunk: npt.NDArray[np.signedinteger],
+    data: npt.NDArray[np.number],
+    indices: npt.NDArray[np.signedinteger],
+    indptr: npt.NDArray[np.signedinteger],
+    row_rng_mask: int,
+    row_rng_val: int,
+):
+    for n in range(len(data_chunk)):
+        row = row_ind_chunk[n]
+        if (row & row_rng_mask) != row_rng_val:
+            continue
+        ptr = indptr[row]
+        indices[ptr] = col_ind_chunk[n]
+        data[ptr] = data_chunk[n]
+        indptr[row] += 1
+
+
+@numba.jit(nopython=True, nogil=True)  # type: ignore
+def _copy_chunklist_range(
+    chunk_list: numba.typed.List,
+    data: npt.NDArray[np.number],
+    indices: npt.NDArray[np.signedinteger],
+    indptr: npt.NDArray[np.signedinteger],
+    row_rng_mask_bits: int,
+    job: int,
+):
+    row_rng_mask = (2**64 - 1) >> row_rng_mask_bits << row_rng_mask_bits
+    row_rng_val = job << row_rng_mask_bits
+    for data_chunk, row_ind_chunk, col_ind_chunk in chunk_list:
+        _copy_chunk_range(
+            data_chunk,
+            row_ind_chunk,
+            col_ind_chunk,
+            data,
+            indices,
+            indptr,
+            row_rng_mask,
+            row_rng_val,
+        )
+
+
+@numba.jit(nopython=True, nogil=True)  # type: ignore
+def _finalize_indptr(indptr: npt.NDArray[np.signedinteger]):
+    prev = 0
+    for r in range(len(indptr)):
+        t = indptr[r]
+        indptr[r] = prev
+        prev = t
+
+
+def _select_dtype(
+    maxval: int,
+) -> Type[np.signedinteger]:
+    """
+    Ascertain the "best" dtype for a zero-based index. Given our
+    goal of minimizing memory use, "best" is currently defined as
+    smallest.
+    """
+    if maxval > np.iinfo(np.int32).max:
+        return np.int64
+    else:
+        return np.int32
+
+
+def _reindex_and_cast(
+    index: pd.Index, ids: npt.NDArray[np.int64], target_dtype: npt.DTypeLike
+) -> npt.NDArray[np.int64]:
+    return cast(
+        npt.NDArray[np.int64], index.get_indexer(ids).astype(target_dtype, copy=False)
+    )
 
 
 def _read_csr(
-    matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> Tuple[
     npt.NDArray[np.number],  # data
     npt.NDArray[np.integer],  # indptr
     npt.NDArray[np.integer],  # indices
     Tuple[int, int],  # shape
 ]:
-    if not isinstance(matrix, SparseNDArray) or matrix.ndim != 2:
+    if not isinstance(matrix, scd.SparseNDArray) or matrix.ndim != 2:
         raise TypeError("read_scipy_csr can only read from a 2D SparseNDArray")
 
     max_workers = (os.cpu_count() or 4) + 2
@@ -219,7 +229,7 @@ def _read_csr(
         acc = CSRAccumulator(
             obs_joinids=obs_joinids, var_joinids=var_joinids, pool=pool
         )
-        for tbl in EagerIterator(
+        for tbl in _EagerIterator(
             matrix.read((obs_joinids, var_joinids)).tables(),
             pool=pool,
         ):
@@ -231,19 +241,19 @@ def _read_csr(
 
 
 def read_scipy_csr(
-    matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> sparse.csr_matrix:
     """
     Given a 2D SparseNDArray and joinids for the two dimensions, read the
     slice and return it as an SciPy sparse.csr_matrix.
     """
     data, indptr, indices, shape = _read_csr(matrix, obs_joinids, var_joinids)
-    csr = fast_create_scipy_csr_matrix(data, indices, indptr, shape=shape)
+    csr = _create_scipy_csr_matrix(data, indices, indptr, shape=shape)
     return csr
 
 
 def read_arrow_csr(
-    matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> pa.SparseCSRMatrix:
     """
     Given a 2D SparseNDArray and joinids for the two dimensions, read the
@@ -254,7 +264,7 @@ def read_arrow_csr(
     return csr
 
 
-def fast_create_scipy_csr_matrix(
+def _create_scipy_csr_matrix(
     data: npt.NDArray[np.number],
     indices: npt.NDArray[np.integer],
     indptr: npt.NDArray[np.integer],
@@ -279,7 +289,7 @@ def fast_create_scipy_csr_matrix(
     return matrix
 
 
-def fast_SparseCSRMatrix_to_scipy(csr: pa.SparseCSRMatrix) -> sparse.csr_matrix:
+def _SparseCSRMatrix_to_scipy(csr: pa.SparseCSRMatrix) -> sparse.csr_matrix:
     """
     Convert Arrow SparseCSRMatrix to scipy.sparse.csr_matrix. Semantically the same
     as ``csr.to_scipy()``, but without the performance penalty/bug noted in
@@ -287,5 +297,5 @@ def fast_SparseCSRMatrix_to_scipy(csr: pa.SparseCSRMatrix) -> sparse.csr_matrix:
     """
     data, indptr, indices = csr.to_numpy()
     data, indptr, indices = data.ravel(), indptr.ravel(), indices.ravel()
-    matrix = fast_create_scipy_csr_matrix(data, indices, indptr, csr.shape)
+    matrix = _create_scipy_csr_matrix(data, indices, indptr, csr.shape)
     return matrix
