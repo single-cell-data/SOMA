@@ -1,6 +1,6 @@
 import concurrent.futures as futures
 import os
-from typing import Any, List, Tuple, Type, cast
+from typing import List, Tuple, Type, cast
 
 import numba
 import numpy as np
@@ -80,7 +80,7 @@ def _finalize_indptr(indptr):
 
 def _select_dtype(
     maxval: int,
-) -> Type[np.signedinteger[Any]]:
+) -> Type[np.signedinteger]:
     """
     Ascertain the "best" dtype for a zero-based index. Given our
     goal of minimizing memory use, "best" is currently defined as
@@ -125,9 +125,9 @@ class CSRAccumulator:
         # COO accumulated chunks, stored as list of triples (data, row_ind, col_ind)
         self.coo_chunks: List[
             Tuple[
-                npt.NDArray[np.number[Any]],
-                npt.NDArray[np.integer[Any]],
-                npt.NDArray[np.integer[Any]],
+                npt.NDArray[np.number],
+                npt.NDArray[np.integer],
+                npt.NDArray[np.integer],
             ]
         ] = []
 
@@ -161,9 +161,9 @@ class CSRAccumulator:
     def finalize(
         self,
     ) -> Tuple[
-        npt.NDArray[np.number[Any]],  # data
-        npt.NDArray[np.integer[Any]],  # indptr
-        npt.NDArray[np.integer[Any]],  # indices
+        npt.NDArray[np.number],  # data
+        npt.NDArray[np.integer],  # indptr
+        npt.NDArray[np.integer],  # indices
         Tuple[int, int],  # shape
     ]:
         nnz = sum(len(chunk[0]) for chunk in self.coo_chunks)
@@ -206,9 +206,9 @@ class CSRAccumulator:
 def _read_csr(
     matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> Tuple[
-    npt.NDArray[np.number[Any]],  # data
-    npt.NDArray[np.integer[Any]],  # indptr
-    npt.NDArray[np.integer[Any]],  # indices
+    npt.NDArray[np.number],  # data
+    npt.NDArray[np.integer],  # indptr
+    npt.NDArray[np.integer],  # indices
     Tuple[int, int],  # shape
 ]:
     if not isinstance(matrix, SparseNDArray) or matrix.ndim != 2:
@@ -255,9 +255,9 @@ def read_arrow_csr(
 
 
 def fast_create_scipy_csr_matrix(
-    data: npt.NDArray[np.number[Any]],
-    indices: npt.NDArray[np.integer[Any]],
-    indptr: npt.NDArray[np.integer[Any]],
+    data: npt.NDArray[np.number],
+    indices: npt.NDArray[np.integer],
+    indptr: npt.NDArray[np.integer],
     shape: Tuple[int, int],
 ) -> sparse.csr_matrix:
     """
