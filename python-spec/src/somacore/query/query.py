@@ -158,15 +158,6 @@ class ExperimentAxisQuery:
         :param X_layers: Additional X layers to read and return
             in the ``layers`` slot.
         """
-        # query_result = self._read(
-        #     X_name,
-        #     column_names=column_names or AxisColumnNames(obs=None, var=None),
-        #     X_layers=X_layers,
-        # )
-
-        # # AnnData uses positional indexing
-        # return self._indexer.rewrite(query_result).to_anndata()
-
         return self._read(
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),

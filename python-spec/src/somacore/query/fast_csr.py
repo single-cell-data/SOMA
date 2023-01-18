@@ -13,9 +13,9 @@ import somacore.data as scd
 from somacore.query import eager_iter
 
 
-class CSRAccumulatorFinalResult(NamedTuple):
+class _CSRAccumulatorFinalResult(NamedTuple):
     """
-    Return type for the CSRAccumulator.finalize method.
+    Return type for the _CSRAccumulator.finalize method.
     Contains a sparse CSR consituent elements
     """
 
@@ -25,7 +25,7 @@ class CSRAccumulatorFinalResult(NamedTuple):
     shape: Tuple[int, int]
 
 
-class CSRAccumulator:
+class _CSRAccumulator:
     """
     Fast accumulator of a CSR, based upon COO input.
     """
@@ -83,13 +83,13 @@ class CSRAccumulator:
         self.coo_chunks.append((data.to_numpy(), row_ind, col_ind))
         _accum_row_length(self.row_length, row_ind)
 
-    def finalize(self) -> CSRAccumulatorFinalResult:
+    def finalize(self) -> _CSRAccumulatorFinalResult:
         nnz = sum(len(chunk[0]) for chunk in self.coo_chunks)
         index_dtype = _select_dtype(nnz)
         if nnz == 0:
             # no way to infer matrix dtype, so use default and return empty matrix
             empty = sparse.csr_matrix((0, 0))
-            return CSRAccumulatorFinalResult(
+            return _CSRAccumulatorFinalResult(
                 data=empty.data,
                 indptr=empty.indptr,
                 indices=empty.indices,
@@ -123,7 +123,7 @@ class CSRAccumulator:
             ]
         )
         _finalize_indptr(indptr)
-        return CSRAccumulatorFinalResult(
+        return _CSRAccumulatorFinalResult(
             data=data, indptr=indptr, indices=indices, shape=self.shape
         )
 
@@ -225,7 +225,7 @@ def _read_csr(
 
     max_workers = (os.cpu_count() or 4) + 2
     with futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
-        acc = CSRAccumulator(
+        acc = _CSRAccumulator(
             obs_joinids=obs_joinids, var_joinids=var_joinids, pool=pool
         )
         for tbl in eager_iter._EagerIterator(
@@ -270,13 +270,12 @@ def _create_scipy_csr_matrix(
     shape: Tuple[int, int],
 ) -> sparse.csr_matrix:
     """
-    Create a Scipy sparse.csr_matrix from
+    Create a Scipy sparse.csr_matrix from component elements. Conceptually this
+    is identical to:
+        sparse.csr_matrix((data, indices, indptr), shape=shape)
 
     This ugliness is to bypass the O(N) scan that scipy.sparse._cs_matrix.__init__
-    does when a new compressed matrix is created. Given valid inputs, this code is
-    equivalent to:
-        sparse.csr_matrix((data, indices, indptr), shape=shape)
-    without the overhead of the scan.
+    does when a new compressed matrix is created.
 
     See https://github.com/scipy/scipy/issues/11496 for details on the bug.
     """
