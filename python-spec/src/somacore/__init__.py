@@ -4,6 +4,8 @@ Types will be defined in their own modules and then imported here for a single
 unified namespace.
 """
 
+from typing import Tuple, Union
+
 from somacore import base
 from somacore import data
 from somacore import ephemeral
@@ -15,8 +17,8 @@ try:
     # This trips up mypy since it's a generated file:
     from somacore import _version  # type: ignore[attr-defined]
 
-    __version__ = _version.version
-    __version_tuple__ = _version.version_tuple
+    __version__: str = _version.version
+    __version_tuple__: Tuple[Union[int, str], ...] = _version.version_tuple
 except ImportError:
     __version__ = "0.0.0.dev+invalid"
     __version_tuple__ = (0, 0, 0, "dev", "invalid")
