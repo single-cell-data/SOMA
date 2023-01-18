@@ -89,7 +89,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     def ndim(self) -> int:
-        """The Number of Dimensions in this array."""
+        """The number of dimensions in this array."""
         return len(self.shape)
 
     @property

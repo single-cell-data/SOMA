@@ -376,8 +376,8 @@ Summary of operations:
 | exists(uri) -> bool        | Return true if object exists and is a SOMADenseNDArray.                        |
 | get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get soma_type              | Returns the constant "SOMADenseNDArray".                                       |
-| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`.              |
-| get ndims -> int           | Return number of dimensions.                                                   |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndim`.               |
+| get ndim -> int            | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema.                            |
 | get is_sparse -> False     | Return the constant False.                                                     |
 | read                       | Read a subarray from the SOMADenseNDArray.                                     |
@@ -465,8 +465,8 @@ Summary of operations:
 | exists(uri) -> bool        | Return true if object exists and is a SOMASparseNDArray.                       |
 | get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get soma_type              | Returns the constant "SOMASparseNDArray"                                       |
-| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndims`.              |
-| get ndims -> int           | Return number of dimensions.                                                   |
+| get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndim`.               |
+| get ndim ->  int           | Return number of dimensions.                                                   |
 | get schema -> Arrow.Schema | Return data schema, in the form of an Arrow Schema                             |
 | get is_sparse -> True      | Return the constant True.                                                      |
 | get nnz -> uint            | Return the number stored values in the array, including explicit zeros.        |
