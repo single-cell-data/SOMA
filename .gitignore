@@ -5,3 +5,4 @@ tmp/
 build/
 dist/
 python-spec/src/somacore/_version.py
+**/venv
