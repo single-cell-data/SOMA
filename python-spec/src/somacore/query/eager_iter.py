@@ -14,12 +14,12 @@ class _EagerIterator(Iterator[_T]):
         self.iterator = iterator
         self._pool = pool or futures.ThreadPoolExecutor()
         self._own_pool = pool is None
-        self.future: futures.Future[_T] = self._pool.submit(next, self.iterator)  # type: ignore
+        self._future: futures.Future[_T] = self._pool.submit(next, self.iterator)  # type: ignore
 
     def __next__(self) -> _T:
         try:
-            res: _T = self.future.result()
-            self.future = self._pool.submit(next, self.iterator)  # type: ignore
+            res: _T = self._future.result()
+            self._future = self._pool.submit(next, self.iterator)  # type: ignore
             return res
         except StopIteration:
             self._cleanup()
