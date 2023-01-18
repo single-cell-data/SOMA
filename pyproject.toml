@@ -46,5 +46,5 @@ single_line_exclusions = ["typing", "typing_extensions"]
 
 [[tool.mypy.overrides]]
 # These dependencies do not currently have canonical type stubs.
-module = ["anndata", "pandas", "pyarrow", "scipy"]
+module = ["anndata", "numba", "pandas", "pyarrow", "scipy"]
 ignore_missing_imports = true
