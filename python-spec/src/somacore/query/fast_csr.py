@@ -9,9 +9,8 @@ import pandas as pd
 import pyarrow as pa
 from scipy import sparse
 
-from somacore import data as scd
-
-from .eager_iter import _EagerIterator
+import somacore.data as scd
+from somacore.query import eager_iter
 
 
 class CSRAccumulatorFinalResult(NamedTuple):
@@ -229,7 +228,7 @@ def _read_csr(
         acc = CSRAccumulator(
             obs_joinids=obs_joinids, var_joinids=var_joinids, pool=pool
         )
-        for tbl in _EagerIterator(
+        for tbl in eager_iter._EagerIterator(
             matrix.read((obs_joinids, var_joinids)).tables(),
             pool=pool,
         ):
