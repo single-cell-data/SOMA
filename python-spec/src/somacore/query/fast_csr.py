@@ -9,9 +9,8 @@ import pandas as pd
 import pyarrow as pa
 from scipy import sparse
 
-from somacore.data import SparseNDArray
-
-from .eager_iter import EagerIterator
+import somacore.data as scd
+from somacore.query import eager_iter
 
 
 @numba.jit(nopython=True, nogil=True)  # type: ignore
@@ -204,14 +203,14 @@ class CSRAccumulator:
 
 
 def _read_csr(
-    matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> Tuple[
     npt.NDArray[np.number],  # data
     npt.NDArray[np.integer],  # indptr
     npt.NDArray[np.integer],  # indices
     Tuple[int, int],  # shape
 ]:
-    if not isinstance(matrix, SparseNDArray) or matrix.ndim != 2:
+    if not isinstance(matrix, scd.SparseNDArray) or matrix.ndim != 2:
         raise TypeError("read_scipy_csr can only read from a 2D SparseNDArray")
 
     max_workers = (os.cpu_count() or 4) + 2
@@ -219,7 +218,7 @@ def _read_csr(
         acc = CSRAccumulator(
             obs_joinids=obs_joinids, var_joinids=var_joinids, pool=pool
         )
-        for tbl in EagerIterator(
+        for tbl in eager_iter.EagerIterator(
             matrix.read((obs_joinids, var_joinids)).tables(),
             pool=pool,
         ):
@@ -231,7 +230,7 @@ def _read_csr(
 
 
 def read_scipy_csr(
-    matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> sparse.csr_matrix:
     """
     Given a 2D SparseNDArray and joinids for the two dimensions, read the
@@ -243,7 +242,7 @@ def read_scipy_csr(
 
 
 def read_arrow_csr(
-    matrix: SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
 ) -> pa.SparseCSRMatrix:
     """
     Given a 2D SparseNDArray and joinids for the two dimensions, read the
