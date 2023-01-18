@@ -10,6 +10,7 @@ import pyarrow as pa
 from scipy import sparse
 
 from somacore.data import SparseNDArray
+
 from .eager_iter import EagerIterator
 
 
