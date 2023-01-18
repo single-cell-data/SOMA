@@ -88,8 +88,9 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
-    def ndims(self) -> int:
-        """The Number of Dimensions in this array."""
+    @abc.abstractmethod
+    def ndim(self) -> int:
+        """The number of dimensions in this array."""
         return len(self.shape)
 
     @property
