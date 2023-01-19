@@ -30,9 +30,10 @@ class _EagerIterator(Iterator[_T]):
             self._pool.shutdown()
 
     def __del__(self) -> None:
+        # Ensure the threadpool is cleaned up in the case where the
+        # iterator is not exhausted. For more information on __del__:
+        # https://docs.python.org/3/reference/datamodel.html#object.__del__
+
         super_del = getattr(super(), "__del__", lambda: None)
         super_del()
-
-        # admit the condition where the iterator was abandoned without
-        # completely exhausting the iterator
         self._cleanup()

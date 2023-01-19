@@ -13,8 +13,34 @@ import somacore.data as scd
 from somacore.query import eager_iter
 
 
+def read_scipy_csr(
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+) -> sparse.csr_matrix:
+    """
+    Given a 2D SparseNDArray and joinids for the two dimensions, read the
+    slice and return it as an SciPy sparse.csr_matrix.
+    """
+    data, indptr, indices, shape = _read_csr(matrix, obs_joinids, var_joinids)
+    csr = _create_scipy_csr_matrix(data, indices, indptr, shape=shape)
+    return csr
+
+
+def read_arrow_csr(
+    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
+) -> pa.SparseCSRMatrix:
+    """
+    Given a 2D SparseNDArray and joinids for the two dimensions, read the
+    slice and return it as a pyarrow.SparseCSRMatrix.
+    """
+    data, indptr, indices, shape = _read_csr(matrix, obs_joinids, var_joinids)
+    csr = pa.SparseCSRMatrix.from_numpy(data, indptr, indices, shape=shape)
+    return csr
+
+
 class _CSRAccumulatorFinalResult(NamedTuple):
     """
+    Private.
+
     Return type for the _CSRAccumulator.finalize method.
     Contains a sparse CSR consituent elements
     """
@@ -47,17 +73,20 @@ class _CSRAccumulator:
             (self.shape[0],), dtype=_select_dtype(self.shape[1])
         )
 
-        # COO accumulated chunks, stored as list of triples (data, row_ind, col_ind)
+        # COO accumulated chunks, stored as list of triples (row_ind, col_ind, data)
         self.coo_chunks: List[
             Tuple[
-                npt.NDArray[np.number],
-                npt.NDArray[np.integer],
-                npt.NDArray[np.integer],
+                npt.NDArray[np.integer],  # row_ind
+                npt.NDArray[np.integer],  # col_ind
+                npt.NDArray[np.number],  # data
             ]
         ] = []
 
     def append(
-        self, data: pa.Array, row_joinids: pa.Array, col_joinids: pa.Array
+        self,
+        row_joinids: pa.Array,
+        col_joinids: pa.Array,
+        data: pa.Array,
     ) -> None:
         """
         At accumulation time, do several things:
@@ -80,11 +109,11 @@ class _CSRAccumulator:
         )
         row_ind = rows_future.result()
         col_ind = cols_future.result()
-        self.coo_chunks.append((data.to_numpy(), row_ind, col_ind))
+        self.coo_chunks.append((row_ind, col_ind, data.to_numpy()))
         _accum_row_length(self.row_length, row_ind)
 
     def finalize(self) -> _CSRAccumulatorFinalResult:
-        nnz = sum(len(chunk[0]) for chunk in self.coo_chunks)
+        nnz = sum(len(chunk[2]) for chunk in self.coo_chunks)
         index_dtype = _select_dtype(nnz)
         if nnz == 0:
             # no way to infer matrix dtype, so use default and return empty matrix
@@ -103,9 +132,14 @@ class _CSRAccumulator:
 
         # Parallel copy of data and column indices
         indices = np.empty((nnz,), dtype=index_dtype)
-        data = np.empty((nnz,), dtype=self.coo_chunks[0][0].dtype)
+        data = np.empty((nnz,), dtype=self.coo_chunks[0][2].dtype)
 
+        # empirically determined value. Needs to be large enough for reasonable
+        # concurrency, without excessive write cache conflict. Controls the
+        # number of rows that are processed in a single thread, and therefore
+        # is the primary tuning parameter related to concurrency.
         row_rng_mask_bits = 18
+
         n_jobs = (self.shape[0] >> row_rng_mask_bits) + 1
         chunk_list = numba.typed.List(self.coo_chunks)
         futures.wait(
@@ -138,9 +172,9 @@ def _accum_row_length(
 
 @numba.jit(nopython=True, nogil=True)  # type: ignore
 def _copy_chunk_range(
-    data_chunk: npt.NDArray[np.number],
     row_ind_chunk: npt.NDArray[np.signedinteger],
     col_ind_chunk: npt.NDArray[np.signedinteger],
+    data_chunk: npt.NDArray[np.number],
     data: npt.NDArray[np.number],
     indices: npt.NDArray[np.signedinteger],
     indptr: npt.NDArray[np.signedinteger],
@@ -166,13 +200,14 @@ def _copy_chunklist_range(
     row_rng_mask_bits: int,
     job: int,
 ):
+    assert row_rng_mask_bits >= 1 and row_rng_mask_bits < 64
     row_rng_mask = (2**64 - 1) >> row_rng_mask_bits << row_rng_mask_bits
     row_rng_val = job << row_rng_mask_bits
-    for data_chunk, row_ind_chunk, col_ind_chunk in chunk_list:
+    for row_ind_chunk, col_ind_chunk, data_chunk in chunk_list:
         _copy_chunk_range(
-            data_chunk,
             row_ind_chunk,
             col_ind_chunk,
+            data_chunk,
             data,
             indices,
             indptr,
@@ -221,7 +256,7 @@ def _read_csr(
     Tuple[int, int],  # shape
 ]:
     if not isinstance(matrix, scd.SparseNDArray) or matrix.ndim != 2:
-        raise TypeError("read_scipy_csr can only read from a 2D SparseNDArray")
+        raise TypeError("Can only read from a 2D SparseNDArray")
 
     max_workers = (os.cpu_count() or 4) + 2
     with futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
@@ -232,35 +267,11 @@ def _read_csr(
             matrix.read((obs_joinids, var_joinids)).tables(),
             pool=pool,
         ):
-            acc.append(tbl["soma_data"], tbl["soma_dim_0"], tbl["soma_dim_1"])
+            acc.append(tbl["soma_dim_0"], tbl["soma_dim_1"], tbl["soma_data"])
 
         data, indptr, indices, shape = acc.finalize()
 
     return data, indptr, indices, shape
-
-
-def read_scipy_csr(
-    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
-) -> sparse.csr_matrix:
-    """
-    Given a 2D SparseNDArray and joinids for the two dimensions, read the
-    slice and return it as an SciPy sparse.csr_matrix.
-    """
-    data, indptr, indices, shape = _read_csr(matrix, obs_joinids, var_joinids)
-    csr = _create_scipy_csr_matrix(data, indices, indptr, shape=shape)
-    return csr
-
-
-def read_arrow_csr(
-    matrix: scd.SparseNDArray, obs_joinids: pa.Array, var_joinids: pa.Array
-) -> pa.SparseCSRMatrix:
-    """
-    Given a 2D SparseNDArray and joinids for the two dimensions, read the
-    slice and return it as an SciPy sparse.csr_matrix.
-    """
-    data, indptr, indices, shape = _read_csr(matrix, obs_joinids, var_joinids)
-    csr = pa.SparseCSRMatrix.from_numpy(data, indptr, indices, shape=shape)
-    return csr
 
 
 def _create_scipy_csr_matrix(
@@ -289,7 +300,7 @@ def _create_scipy_csr_matrix(
 
 def _SparseCSRMatrix_to_scipy(csr: pa.SparseCSRMatrix) -> sparse.csr_matrix:
     """
-    Convert Arrow SparseCSRMatrix to scipy.sparse.csr_matrix. Semantically the same
+    Convert pyarrow.SparseCSRMatrix to scipy.sparse.csr_matrix. Semantically the same
     as ``csr.to_scipy()``, but without the performance penalty/bug noted in
     https://github.com/scipy/scipy/issues/11496
     """
