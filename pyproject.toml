@@ -13,6 +13,7 @@ readme = "./python-spec/README.md"
 dependencies = [
   "anndata",
   "attrs>=22.1",
+  "numba",
   "numpy>=1.21",
   "pandas",
   "pyarrow",
@@ -45,5 +46,5 @@ single_line_exclusions = ["typing", "typing_extensions"]
 
 [[tool.mypy.overrides]]
 # These dependencies do not currently have canonical type stubs.
-module = ["anndata", "pandas", "pyarrow", "scipy"]
+module = ["anndata", "numba", "pandas", "pyarrow", "scipy"]
 ignore_missing_imports = true

@@ -15,6 +15,8 @@ from somacore import composed
 from somacore import data
 from somacore.query import axis
 
+from .fast_csr import read_scipy_csr
+
 
 class AxisColumnNames(TypedDict, total=False):
     """Specifies column names for experiment axis query read operations."""
@@ -156,14 +158,11 @@ class ExperimentAxisQuery:
         :param X_layers: Additional X layers to read and return
             in the ``layers`` slot.
         """
-        query_result = self._read(
+        return self._read(
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
-        )
-
-        # AnnData uses positional indexing
-        return self._indexer.rewrite(query_result).to_anndata()
+        ).to_anndata()
 
     # Context management
 
@@ -233,17 +232,15 @@ class ExperimentAxisQuery:
 
         obs_table, var_table = self._read_both_axes(column_names)
 
-        x_tables = {
-            # TODO: could also be done concurrently
-            _xname: all_x_arrays[_xname]
-            .read((self.obs_joinids(), self.var_joinids()))
-            .tables()
-            .concat()
+        x_matrices = {
+            _xname: read_scipy_csr(
+                all_x_arrays[_xname], self.obs_joinids(), self.var_joinids()
+            )
             for _xname in all_x_arrays
         }
 
-        x = x_tables.pop(X_name)
-        return _AxisQueryResult(obs=obs_table, var=var_table, X=x, X_layers=x_tables)
+        x = x_matrices.pop(X_name)
+        return _AxisQueryResult(obs=obs_table, var=var_table, X=x, X_layers=x_matrices)
 
     def _read_both_axes(
         self,
@@ -369,10 +366,10 @@ class _AxisQueryResult:
     """Experiment.obs query slice, as an Arrow Table"""
     var: pa.Table
     """Experiment.ms[...].var query slice, as an Arrow Table"""
-    X: pa.Table
-    """Experiment.ms[...].X[...] query slice, as an Arrow Table"""
-    X_layers: Dict[str, pa.Table] = attrs.field(factory=dict)
-    """Any additional X layers requested, as Arrow Table(s)"""
+    X: sparse.csr_matrix
+    """Experiment.ms[...].X[...] query slice, as an SciPy sparse.csr_matrix """
+    X_layers: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
+    """Any additional X layers requested, as SciPy sparse.csr_matrix(s)"""
 
     def to_anndata(self) -> anndata.AnnData:
         """Convert to AnnData"""
@@ -382,17 +379,9 @@ class _AxisQueryResult:
         var = self.var.to_pandas()
         var.index = var.index.map(str)
 
-        shape = (len(obs), len(var))
-
-        x = self.X
-        if x is not None:
-            x = _arrow_to_scipy_csr(x, shape)
-
-        layers = {
-            name: _arrow_to_scipy_csr(table, shape)
-            for name, table in self.X_layers.items()
-        }
-        return anndata.AnnData(X=x, obs=obs, var=var, layers=(layers or None))
+        return anndata.AnnData(
+            X=self.X, obs=obs, var=var, layers=(self.X_layers or None)
+        )
 
 
 class _Axis(enum.Enum):
@@ -500,71 +489,8 @@ class _AxisIndexer:
     def by_var(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
         return self._var_index.get_indexer(_to_numpy(coords))
 
-    def rewrite(self, qr: _AxisQueryResult) -> _AxisQueryResult:
-        """Rewrite the result to prepare for AnnData positional indexing."""
-        return attrs.evolve(
-            qr,
-            X=self._rewrite_matrix(qr.X),
-            X_layers={
-                name: self._rewrite_matrix(matrix)
-                for name, matrix in qr.X_layers.items()
-            },
-        )
-
-    def _rewrite_matrix(self, x_table: pa.Table) -> pa.Table:
-        """
-        Private convenience function to convert axis dataframe to X matrix joins
-        from ``soma_joinid``-based joins to positionally indexed joins
-        (like AnnData uses).
-
-        Input is organized as:
-            obs[i] annotates X[ obs[i].soma_joinid, : ]
-        and
-            var[j] annotates X[ :, var[j].soma_joinid ]
-
-        Output is organized as:
-            obs[i] annotates X[i, :]
-        and
-            var[j] annotates X[:, j]
-
-        In addition, the ``soma_joinid`` column is dropped from axis dataframes.
-        """
-
-        return pa.Table.from_arrays(
-            (
-                self.by_obs(x_table["soma_dim_0"]),
-                self.by_var(x_table["soma_dim_1"]),
-                # This consolidates chunks as a side effect.
-                x_table["soma_data"].to_numpy(),
-            ),
-            names=("_dim_0", "_dim_1", "soma_data"),
-        )
-
 
 def _to_numpy(it: _Numpyable) -> np.ndarray:
     if isinstance(it, np.ndarray):
         return it
     return it.to_numpy()
-
-
-def _arrow_to_scipy_csr(
-    arrow_table: pa.Table, shape: Tuple[int, int]
-) -> sparse.csr_matrix:
-    """
-    Private utility which converts a table repesentation of X to a CSR matrix.
-
-    IMPORTANT: by convention, assumes that the data is positionally indexed (hence
-    the use of _dim_{n} rather than soma_dim{n}).
-
-    See query.py::_rewrite_X_for_positional_indexing for more info.
-    """
-    assert "_dim_0" in arrow_table.column_names, "X must be positionally indexed"
-    assert "_dim_1" in arrow_table.column_names, "X must be positionally indexed"
-
-    return sparse.csr_matrix(
-        (
-            arrow_table["soma_data"].to_numpy(),
-            (arrow_table["_dim_0"].to_numpy(), arrow_table["_dim_1"].to_numpy()),
-        ),
-        shape=shape,
-    )
