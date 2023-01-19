@@ -134,7 +134,7 @@ class _CSRAccumulator:
         indices = np.empty((nnz,), dtype=index_dtype)
         data = np.empty((nnz,), dtype=self.coo_chunks[0][2].dtype)
 
-        # empirically determined value. Needs to be large enough for reasonable
+        # Empirically determined value. Needs to be large enough for reasonable
         # concurrency, without excessive write cache conflict. Controls the
         # number of rows that are processed in a single thread, and therefore
         # is the primary tuning parameter related to concurrency.
