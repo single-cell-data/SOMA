@@ -280,6 +280,7 @@ class ExperimentAxisQuery:
         # If we can cache join IDs, prepare to add them to the cache.
         joinids_cached = self._joinids._is_cached(axis)
         query_columns = column_names
+        added_soma_joinid_to_columns = False
         if (
             not joinids_cached
             and column_names is not None
@@ -289,6 +290,7 @@ class ExperimentAxisQuery:
             # soma_joinid column so that it is included in the results.
             # We'll filter it out later.
             query_columns = ["soma_joinid"] + list(column_names)
+            added_soma_joinid_to_columns = True
 
         # Do the actual query.
         arrow_table = axis_df.read(
@@ -307,10 +309,10 @@ class ExperimentAxisQuery:
                 arrow_table.column("soma_joinid").combine_chunks(),
             )
 
-        # Ensure that we return the exact columns the caller was expecting,
-        # even if we added our own above.
-        if column_names is not None:
-            arrow_table = arrow_table.select(column_names)
+        # Drop soma_joinid column if we added it soley for use in filling
+        # the joinid cache.
+        if added_soma_joinid_to_columns:
+            arrow_table = arrow_table.drop(["soma_joinid"])
         return arrow_table
 
     def _axisp_inner(
