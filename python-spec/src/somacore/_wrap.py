@@ -18,6 +18,7 @@ import attrs
 from typing_extensions import Final
 
 from somacore import base
+from somacore import options
 
 _ST = TypeVar("_ST", bound=base.SOMAObject)
 _T = TypeVar("_T")
@@ -53,6 +54,21 @@ class CollectionProxy(base.Collection[_ST]):
         while isinstance(inst, CollectionProxy):
             inst = inst._backing
         return inst
+
+    def add(
+        self,
+        key: str,
+        cls: Type[_ST],
+        *,
+        uri: Optional[str] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> _ST:
+        return self._backing.add(key, cls, uri=uri, platform_config=platform_config)
+
+    def set(
+        self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
+    ) -> None:
+        self._backing.set(key, value, use_relative_uri=use_relative_uri)
 
     # Sized
 
