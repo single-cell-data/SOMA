@@ -309,7 +309,7 @@ class ExperimentAxisQuery:
                 arrow_table.column("soma_joinid").combine_chunks(),
             )
 
-        # Drop soma_joinid column if we added it soley for use in filling
+        # Drop soma_joinid column if we added it solely for use in filling
         # the joinid cache.
         if added_soma_joinid_to_columns:
             arrow_table = arrow_table.drop(["soma_joinid"])
