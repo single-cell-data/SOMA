@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from pytest import mark
 
+import somacore
 from somacore import options
-from somacore.query import axis
 
 
 @mark.parametrize(
@@ -29,12 +29,12 @@ from somacore.query import axis
 def test_canonicalization(
     coords: options.SparseDFCoords, want: Tuple[options.SparseDFCoord, ...]
 ) -> None:
-    axq = axis.AxisQuery(coords=coords)
+    axq = somacore.AxisQuery(coords=coords)
     assert want == axq.coords
 
 
 def test_canonicalization_nparray() -> None:
-    axq = axis.AxisQuery(coords=(1, np.array([1, 2, 3])))
+    axq = somacore.AxisQuery(coords=(1, np.array([1, 2, 3])))
 
     one, arr = axq.coords
     assert one == 1
@@ -51,4 +51,4 @@ def test_canonicalization_nparray() -> None:
 )
 def test_canonicalization_bad(coords) -> None:
     with pytest.raises(TypeError):
-        axis.AxisQuery(coords=coords)
+        somacore.AxisQuery(coords=coords)

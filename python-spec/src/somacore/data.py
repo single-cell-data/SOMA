@@ -12,8 +12,8 @@ from typing import Iterator, Optional, Sequence, Tuple, TypeVar, Union
 import pyarrow
 from typing_extensions import Final
 
-from somacore import base
-from somacore import options
+from . import base
+from . import options
 
 _RO_AUTO = options.ResultOrder.AUTO
 

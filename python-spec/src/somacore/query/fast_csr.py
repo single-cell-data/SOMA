@@ -3,14 +3,15 @@ from concurrent import futures
 from typing import List, NamedTuple, Tuple, Type, cast
 
 import numba
+import numba.typed
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
 from scipy import sparse
 
-import somacore.data as scd
-from somacore.query import eager_iter
+from .. import data as scd
+from . import eager_iter
 
 
 def read_scipy_csr(

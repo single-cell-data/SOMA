@@ -6,16 +6,15 @@ unified namespace.
 
 from typing import Tuple, Union
 
-from somacore import base
-from somacore import data
-from somacore import ephemeral
-from somacore import options
-from somacore.query import axis
-from somacore.query import query
+from . import base
+from . import data
+from . import ephemeral
+from . import options
+from . import query
 
 try:
     # This trips up mypy since it's a generated file:
-    from somacore import _version  # type: ignore[attr-defined]
+    from . import _version  # type: ignore[attr-defined]
 
     __version__: str = _version.version
     __version_tuple__: Tuple[Union[int, str], ...] = _version.version_tuple
@@ -39,7 +38,7 @@ IOfN = options.IOfN
 BatchSize = options.BatchSize
 ResultOrder = options.ResultOrder
 
-AxisQuery = axis.AxisQuery
+AxisQuery = query.AxisQuery
 ExperimentAxisQuery = query.ExperimentAxisQuery
 
 __all__ = (

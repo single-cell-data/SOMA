@@ -5,7 +5,7 @@ import numpy as np
 import pyarrow as pa
 from typing_extensions import TypeGuard
 
-from somacore import options
+from .. import options
 
 
 def _canonicalize_coords(
