@@ -33,6 +33,10 @@ class SimpleCollection(base.Collection[_ST]):
         self._metadata: Dict[str, Any] = {}
 
     @property
+    def uri(self) -> str:
+        return f"somacore:simple-collection:{id(self):x}"
+
+    @property
     def metadata(self) -> Dict[str, Any]:
         return self._metadata
 

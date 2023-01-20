@@ -18,6 +18,12 @@ class SOMAObject(metaclass=abc.ABCMeta):
     __slots__ = ("__weakref__",)
 
     @property
+    @abc.abstractmethod
+    def uri(self) -> str:
+        """Returns the URI of this SOMA object."""
+        raise NotImplementedError()
+
+    @property
     def context(self) -> Any:
         """A value storing implementation-specific configuration information.
 
