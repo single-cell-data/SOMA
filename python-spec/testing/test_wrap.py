@@ -9,6 +9,9 @@ class TestWrapper(unittest.TestCase):
         backing = ephemeral.SimpleCollection()
         wrapped = _wrap.CollectionProxy(backing)
 
+        backing_repr = repr(backing)
+        self.assertEqual(f"CollectionProxy({backing_repr})", repr(wrapped))
+
         wrapped["x"] = "y"
         self.assertIn("x", wrapped)
         self.assertEqual(wrapped["x"], "y")

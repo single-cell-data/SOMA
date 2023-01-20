@@ -42,18 +42,22 @@ class CollectionProxy(base.Collection[_ST]):
         self._backing: Final = backing
         """The object that actually provides the indexing for this object."""
 
-    # SOMA methods
-
-    @property
-    def metadata(self) -> MutableMapping[str, str]:
-        return self._backing.metadata
-
     def unwrap(self) -> base.Collection[_ST]:
         """Unwrap gets the actual collection backed by this proxy."""
         inst: base.Collection[_ST] = self
         while isinstance(inst, CollectionProxy):
             inst = inst._backing
         return inst
+
+    # SOMA methods
+
+    @property
+    def metadata(self) -> MutableMapping[str, str]:
+        return self._backing.metadata
+
+    @property
+    def uri(self) -> str:
+        return self._backing.uri
 
     def add(
         self,
@@ -146,6 +150,11 @@ class CollectionProxy(base.Collection[_ST]):
         default: _ST = None,  # type: ignore[assignment]
     ) -> _ST:
         return self._backing.setdefault(key, default)  # type: ignore[arg-type]
+
+    # Generic Python methods
+
+    def __repr__(self) -> str:
+        return f"{type(self).__qualname__}({repr(self._backing)})"
 
 
 @attrs.define()
