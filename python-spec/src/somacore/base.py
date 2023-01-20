@@ -97,7 +97,7 @@ class Collection(SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMeta):
         For instance, adding sub-element ``data`` to a Collection located at
         ``file:///path/to/coll`` should by default use
         ``file:///path/to/coll/data`` as its URI if possible. If this is not
-        possible
+        possible, the collection may construct a new non-relative URI.
 
         :param key: The key that this child should live at (i.e., it will be
             accessed via ``the_collection[key]``).
@@ -110,7 +110,14 @@ class Collection(SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def __setitem__(self, key: str, value: _ST) -> None:
-        """Sets an entry into this collection.
+        """Sets an entry into this collection. See :meth:`set` for details."""
+        self.set(key, value)
+
+    @abc.abstractmethod
+    def set(
+        self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
+    ) -> None:
+        """Sets an entry of this collection.
 
         Important note: Because parent objects may need to share
         implementation-internal state with children, when you set an item in a
@@ -122,21 +129,15 @@ class Collection(SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMeta):
             my_soma_object is added_soma_object  # could be False
 
         The two objects *will* refer to the same stored data.
-        """
-        self.set(key, value)
-
-    @abc.abstractmethod
-    def set(
-        self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
-    ) -> None:
-        """Sets an entry of this collection.
 
         :param use_relative_uri: Determines whether to store the collection
             entry with a relative URI (provided the storage engine supports it).
             If ``None`` (the default), will automatically determine whether to
             use an absolute or relative URI based on their relative location
             (if supported by the storage engine).
-            If ``True``, will always use a relative URI.
+            If ``True``, will always use a relative URI. If the new child does
+            not share a relative URI base, or use of relative URIs is not
+            possible at all, the collection should throw an exception.
             If ``False``, will always use an absolute URI.
         """
         raise NotImplementedError()
