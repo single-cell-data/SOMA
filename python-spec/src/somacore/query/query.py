@@ -117,6 +117,11 @@ class ExperimentAxisQuery:
         """The number of ``var`` axis query results. [lifecycle: experimental]"""
         return len(self.var_joinids())
 
+    @property
+    def indexer(self) -> "_AxisIndexer":
+        """Returns a ``soma_joinid`` indexer for both ``obs`` and ``var`` axes."""
+        return self._indexer
+
     def X(self, layer_name: str) -> data.SparseRead:
         """Returns an ``X`` layer as ``SparseRead`` data. [lifecycle: experimental]
 
@@ -475,20 +480,28 @@ class _AxisIndexer:
 
     @property
     def _obs_index(self) -> pd.Index:
+        """Private. Return an index for the ``obs`` axis."""
         if self._cached_obs is None:
             self._cached_obs = pd.Index(data=self.query.obs_joinids().to_numpy())
         return self._cached_obs
 
     @property
     def _var_index(self) -> pd.Index:
+        """Private. Return an index for the ``var`` axis."""
         if self._cached_var is None:
             self._cached_var = pd.Index(data=self.query.var_joinids().to_numpy())
         return self._cached_var
 
     def by_obs(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
+        """
+        Reindex the coords (soma_joinids) over the ``obs`` axis.
+        """
         return self._obs_index.get_indexer(_to_numpy(coords))
 
     def by_var(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
+        """
+        Reindex for the coords (soma_joinids) over the ``var`` axis.
+        """
         return self._var_index.get_indexer(_to_numpy(coords))
 
 
