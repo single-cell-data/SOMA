@@ -110,6 +110,19 @@ class Collection(SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def __setitem__(self, key: str, value: _ST) -> None:
+        """Sets an entry into this collection.
+
+        Important note: Because parent objects may need to share
+        implementation-internal state with children, when you set an item in a
+        collection, it is not guaranteed that the SOMAObject instance available
+        by accessing the collection is the same as the one that was set::
+
+            some_collection["thing"] = my_soma_object
+            added_soma_object = some_collection["thing"]
+            my_soma_object is added_soma_object  # could be False
+
+        The two objects *will* refer to the same stored data.
+        """
         self.set(key, value)
 
     @abc.abstractmethod
