@@ -11,7 +11,7 @@ import pyarrow as pa
 from scipy import sparse
 
 from .. import data as scd
-from . import eager_iter
+from . import _eager_iter
 
 
 def read_scipy_csr(
@@ -264,7 +264,7 @@ def _read_csr(
         acc = _CSRAccumulator(
             obs_joinids=obs_joinids, var_joinids=var_joinids, pool=pool
         )
-        for tbl in eager_iter._EagerIterator(
+        for tbl in _eager_iter.EagerIterator(
             matrix.read((obs_joinids, var_joinids)).tables(),
             pool=pool,
         ):
