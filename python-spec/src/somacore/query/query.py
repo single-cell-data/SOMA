@@ -13,8 +13,8 @@ from typing_extensions import Literal, TypedDict, assert_never
 
 from .. import composed
 from .. import data
+from . import _fast_csr
 from . import axis
-from . import fast_csr
 
 
 class AxisColumnNames(TypedDict, total=False):
@@ -73,7 +73,7 @@ class ExperimentAxisQuery:
 
         self._matrix_axis_query = _MatrixAxisQuery(obs=obs_query, var=var_query)
         self._joinids = _JoinIDCache(self)
-        self._indexer = _AxisIndexer(self)
+        self._indexer = AxisIndexer(self)
         self._threadpool_: Optional[futures.ThreadPoolExecutor] = None
 
     def obs(
@@ -121,7 +121,7 @@ class ExperimentAxisQuery:
         return len(self.var_joinids())
 
     @property
-    def indexer(self) -> "_AxisIndexer":
+    def indexer(self) -> "AxisIndexer":
         """Returns a ``soma_joinid`` indexer for both ``obs`` and ``var`` axes."""
         return self._indexer
 
@@ -241,7 +241,7 @@ class ExperimentAxisQuery:
         obs_table, var_table = self._read_both_axes(column_names)
 
         x_matrices = {
-            _xname: fast_csr.read_scipy_csr(
+            _xname: _fast_csr.read_scipy_csr(
                 all_x_arrays[_xname], self.obs_joinids(), self.var_joinids()
             )
             for _xname in all_x_arrays
@@ -474,7 +474,7 @@ _Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 
 
 @attrs.define
-class _AxisIndexer:
+class AxisIndexer:
     """Given a query, providing index-bulding services for obs/var axis."""
 
     query: ExperimentAxisQuery

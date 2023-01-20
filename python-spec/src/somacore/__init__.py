@@ -11,6 +11,7 @@ from . import data
 from . import ephemeral
 from . import options
 from . import query
+from .query import axis
 
 try:
     # This trips up mypy since it's a generated file:
@@ -38,7 +39,7 @@ IOfN = options.IOfN
 BatchSize = options.BatchSize
 ResultOrder = options.ResultOrder
 
-AxisQuery = query.AxisQuery
+AxisQuery = axis.AxisQuery
 ExperimentAxisQuery = query.ExperimentAxisQuery
 
 __all__ = (
