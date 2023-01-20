@@ -2,11 +2,11 @@
 
 from typing_extensions import Final
 
-from somacore import _wrap
-from somacore import base
-from somacore import data
-from somacore.query import axis
-from somacore.query import query
+from . import _wrap
+from . import base
+from . import data
+from . import query
+from .query import axis
 
 
 class Measurement(_wrap.CollectionProxy):

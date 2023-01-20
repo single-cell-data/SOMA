@@ -11,11 +11,10 @@ import pyarrow as pa
 from scipy import sparse
 from typing_extensions import Literal, TypedDict, assert_never
 
-from somacore import composed
-from somacore import data
-from somacore.query import axis
-
-from .fast_csr import read_scipy_csr
+from .. import composed
+from .. import data
+from . import axis
+from . import fast_csr
 
 
 class AxisColumnNames(TypedDict, total=False):
@@ -242,7 +241,7 @@ class ExperimentAxisQuery:
         obs_table, var_table = self._read_both_axes(column_names)
 
         x_matrices = {
-            _xname: read_scipy_csr(
+            _xname: fast_csr.read_scipy_csr(
                 all_x_arrays[_xname], self.obs_joinids(), self.var_joinids()
             )
             for _xname in all_x_arrays

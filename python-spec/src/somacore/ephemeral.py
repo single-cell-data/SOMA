@@ -4,8 +4,8 @@ from typing import Any, Dict, Iterator, Optional, Type, TypeVar
 
 from typing_extensions import final
 
-from somacore import base
-from somacore import options
+from . import base
+from . import options
 
 _ST = TypeVar("_ST", bound=base.Collection)
 
