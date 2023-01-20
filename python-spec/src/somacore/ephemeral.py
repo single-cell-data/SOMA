@@ -1,14 +1,17 @@
 """Contains a Collection implementation that is only stored in memory."""
 
-from typing import Any, Dict, Iterator
+from typing import Any, Dict, Iterator, Optional, Type, TypeVar
 
 from typing_extensions import final
 
 from somacore import base
+from somacore import options
+
+_ST = TypeVar("_ST", bound=base.Collection)
 
 
 @final
-class SimpleCollection(base.Collection):
+class SimpleCollection(base.Collection[_ST]):
     """A memory-backed SOMA Collection for ad-hoc collection building.
 
     This Collection implementation exists purely in memory. It can be used to
@@ -21,26 +24,45 @@ class SimpleCollection(base.Collection):
     collection has no ``context`` and ``close``ing it does nothing.
     """
 
-    def __init__(self, *args: Any, **kwargs: base.SOMAObject):
+    def __init__(self, *args: Any, **kwargs: _ST):
         """Creates a new Collection.
 
         Arguments and kwargs are provided as in the ``dict`` constructor.
         """
-        self._entries: Dict[str, base.SOMAObject] = dict(*args, **kwargs)
+        self._entries: Dict[str, _ST] = dict(*args, **kwargs)
         self._metadata: Dict[str, Any] = {}
 
     @property
     def metadata(self) -> Dict[str, Any]:
         return self._metadata
 
-    def __getitem__(self, item: str) -> base.SOMAObject:
-        return self._entries[item]
+    def add(
+        self,
+        key: str,
+        cls: Type[_ST],
+        *,
+        uri: Optional[str] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> _ST:
+        del key, cls, uri, platform_config  # All unused
+        # TODO: Should we be willing to create Collection-based child elements,
+        # like Measurement and Experiment?
+        raise TypeError(
+            "A SimpleCollection cannot create its own children;"
+            " only existing SOMA objects may be added."
+        )
 
-    def __setitem__(self, item: str, value: base.SOMAObject) -> None:
-        self._entries[item] = value
+    def set(
+        self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
+    ) -> None:
+        del use_relative_uri  # Ignored.
+        self._entries[key] = value
 
-    def __delitem__(self, item: str) -> None:
-        del self._entries[item]
+    def __getitem__(self, key: str) -> _ST:
+        return self._entries[key]
+
+    def __delitem__(self, key: str) -> None:
+        del self._entries[key]
 
     def __iter__(self) -> Iterator[str]:
         return iter(self._entries)
