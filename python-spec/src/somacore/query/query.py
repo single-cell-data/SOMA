@@ -100,11 +100,15 @@ class ExperimentAxisQuery:
         )
 
     def obs_joinids(self) -> pa.Array:
-        """Returns ``obs`` ``soma_joinids`` as an Arrow array. [lifecycle: experimental]"""
+        """Returns ``obs`` ``soma_joinids`` as an Arrow array.
+        [lifecycle: experimental]
+        """
         return self._joinids.obs
 
     def var_joinids(self) -> pa.Array:
-        """Returns ``var`` ``soma_joinids`` as an Arrow array. [lifecycle: experimental]"""
+        """Returns ``var`` ``soma_joinids`` as an Arrow array.
+        [lifecycle: experimental]
+        """
         return self._joinids.var
 
     @property
