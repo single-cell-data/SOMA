@@ -11,6 +11,10 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 import pyarrow as pa
+from typing_extensions import Final
+
+SOMA_JOINID: Final = "soma_joinid"
+"""Global constant for the SOMA join ID."""
 
 
 class ReadPartitions:
