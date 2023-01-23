@@ -1,12 +1,12 @@
 import unittest
 
 from somacore import _wrap
-from somacore import ephemeral
+from somacore import collection
 
 
 class TestWrapper(unittest.TestCase):
     def test_sanity(self):
-        backing = ephemeral.SimpleCollection()
+        backing = collection.SimpleCollection()
         wrapped = _wrap.CollectionProxy(backing)
 
         backing_repr = repr(backing)

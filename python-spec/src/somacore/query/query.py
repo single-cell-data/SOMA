@@ -11,7 +11,7 @@ import pyarrow as pa
 from scipy import sparse
 from typing_extensions import Literal, Protocol, TypedDict, assert_never
 
-from .. import base
+from .. import collection
 from .. import data
 from .. import measurement
 from . import _fast_csr
@@ -522,5 +522,5 @@ def _to_numpy(it: _Numpyable) -> np.ndarray:
 class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
-    ms: base.Collection[measurement.Measurement]
+    ms: collection.Collection[measurement.Measurement]
     obs: data.DataFrame

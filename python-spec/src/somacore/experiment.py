@@ -3,7 +3,7 @@ from typing import TypeVar
 from typing_extensions import Final
 
 from . import _wrap
-from . import base
+from . import collection
 from . import data
 from . import measurement
 from . import query
@@ -22,7 +22,7 @@ class Experiment(_wrap.CollectionProxy):
     defined here.
     """
 
-    ms = _wrap.item(base.Collection[measurement.Measurement])
+    ms = _wrap.item(collection.Collection[measurement.Measurement])
     """A collection of named measurements."""
 
     def axis_query(
