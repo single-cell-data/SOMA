@@ -1,18 +1,35 @@
 """Implementations of the composed SOMA data types."""
 
+from typing import MutableMapping, TypeVar
+
 from typing_extensions import Final
 
-from . import _wrap
+from . import _mixin
+from . import base
 from . import collection
 from . import data
 
+_ST = TypeVar("_ST", bound=base.SOMAObject)
 
-class Measurement(_wrap.CollectionProxy):
-    """A set of annotated variables and values for a single measurement."""
+
+class Measurement(MutableMapping[str, _ST]):
+    """A set of observations defined by a DataFrame, with measurements."""
+
+    # This class is implemented as a mixin to be used with SOMA classes:
+    #
+    #     # in a SOMA implementation:
+    #     class Measurement(somacore.Measurement, ImplBaseCollection):
+    #         pass
+    #
+    # Measurement should always appear *first* in the base class list.
+    # MutableMapping is listed as the parent type instead of Collection here
+    # to avoid the interpreter being unable to pick the right base class:
+    #
+    #     TypeError: multiple bases have instance lay-out conflict
 
     __slots__ = ()
 
-    var = _wrap.item(data.DataFrame)
+    var = _mixin.item(data.DataFrame)
     """Primary annotations on the variable axis for vars on this meansurement.
 
     This annotates _columns_ of the ``X`` arrays. The contents of the
@@ -20,35 +37,39 @@ class Measurement(_wrap.CollectionProxy):
     All variables for this measurement _must_ be defined in this dataframe.
     """
 
-    X = _wrap.item(collection.Collection[data.NDArray])
+    X = _mixin.item(collection.Collection[data.NDArray])
     """A collection of matrices containing feature values.
 
     Each matrix is indexed by ``[obsid, varid]``. Sparse and dense 2D arrays may
     both be used in any combination in ``X``.
     """
 
-    obsm = _wrap.item(collection.Collection[data.DenseNDArray])
+    obsm = _mixin.item(collection.Collection[data.DenseNDArray])
     """Matrices containing annotations of each ``obs`` row.
 
     This has the same shape as ``obs`` and is indexed with ``obsid``.
     """
 
-    obsp = _wrap.item(collection.Collection[data.SparseNDArray])
+    obsp = _mixin.item(collection.Collection[data.SparseNDArray])
     """Matrices containg pairwise annotations of each ``obs`` row.
 
     This is indexed by ``[obsid_1, obsid_2]``.
     """
 
-    varm = _wrap.item(collection.Collection[data.DenseNDArray])
+    varm = _mixin.item(collection.Collection[data.DenseNDArray])
     """Matrices containing annotations of each ``var`` row.
 
     This has the same shape as ``var`` and is indexed with ``varid``.
     """
 
-    varp = _wrap.item(collection.Collection[data.SparseNDArray])
+    varp = _mixin.item(collection.Collection[data.SparseNDArray])
     """Matrices containg pairwise annotations of each ``var`` row.
 
     This is indexed by ``[varid_1, varid_2]``.
     """
 
     soma_type: Final = "SOMAMeasurement"
+
+
+class SimpleMeasurement(Measurement, collection.SimpleCollection):
+    """An in-memory Collection with Measurement semantics."""

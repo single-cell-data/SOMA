@@ -1,20 +1,36 @@
-from typing import TypeVar
+from typing import MutableMapping, TypeVar
 
 from typing_extensions import Final
 
-from . import _wrap
+from . import _mixin
+from . import base
 from . import collection
 from . import data
 from . import measurement
 from . import query
 
 _Self = TypeVar("_Self", bound="Experiment")
+_ST = TypeVar("_ST", bound=base.SOMAObject)
 
 
-class Experiment(_wrap.CollectionProxy):
-    """A set of observations defined by a DataFrame, with measurements."""
+class Experiment(MutableMapping[str, _ST]):
+    """Mixin for Experiment types."""
 
-    obs = _wrap.item(data.DataFrame)
+    # This class is implemented as a mixin to be used with SOMA classes:
+    #
+    #     # in a SOMA implementation:
+    #     class Experiment(somacore.Experiment, ImplsBaseCollection):
+    #         pass
+    #
+    # Experiment should always appear *first* in the base class list.
+    # MutableMapping is listed as the parent type instead of Collection here
+    # to avoid the interpreter being unable to pick the right base class:
+    #
+    #     TypeError: multiple bases have instance lay-out conflict
+
+    __slots__ = ()
+
+    obs = _mixin.item(data.DataFrame)
     """Primary observations on the observation axis.
 
     The contents of the ``soma_joinid`` pseudo-column define the observation
@@ -22,7 +38,9 @@ class Experiment(_wrap.CollectionProxy):
     defined here.
     """
 
-    ms = _wrap.item(collection.Collection[measurement.Measurement])
+    ms = _mixin.item(
+        collection.Collection[measurement.Measurement]  # type: ignore[type-var]
+    )
     """A collection of named measurements."""
 
     def axis_query(
@@ -43,3 +61,7 @@ class Experiment(_wrap.CollectionProxy):
         )
 
     soma_type: Final = "SOMAExperiment"
+
+
+class SimpleExperiment(Experiment, collection.SimpleCollection):
+    """An in-memory Collection with Experiment semantics."""

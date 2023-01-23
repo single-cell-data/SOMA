@@ -1,6 +1,8 @@
 import unittest
 
 from somacore import collection
+from somacore import experiment
+from somacore import measurement
 
 
 class SimpleCollectionTest(unittest.TestCase):
@@ -19,3 +21,12 @@ class SimpleCollectionTest(unittest.TestCase):
         md["hello"] = "world"
 
         self.assertEqual("world", coll.metadata["hello"])
+
+    def test_mro(self):
+        # Ensures that constant definitions interact correctly with the
+        # method resolution order.
+
+        m = measurement.SimpleMeasurement()
+        self.assertEqual("SOMAMeasurement", m.soma_type)
+        exp = experiment.SimpleExperiment()
+        self.assertEqual("SOMAExperiment", exp.soma_type)
