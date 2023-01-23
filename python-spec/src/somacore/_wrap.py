@@ -18,6 +18,7 @@ import attrs
 from typing_extensions import Final
 
 from . import base
+from . import collection
 from . import options
 
 _ST = TypeVar("_ST", bound=base.SOMAObject)
@@ -26,7 +27,7 @@ _T = TypeVar("_T")
 _SENTINEL = object()
 
 
-class CollectionProxy(base.Collection[_ST]):
+class CollectionProxy(collection.Collection[_ST]):
     """Base class to forward SOMA collection methods to a "real" SOMA object.
 
     This is intended for use as a mixin for SOMA objects that decorate standard
@@ -37,14 +38,14 @@ class CollectionProxy(base.Collection[_ST]):
 
     __slots__ = ("_backing",)
 
-    def __init__(self, backing: base.Collection[_ST]):
+    def __init__(self, backing: collection.Collection[_ST]):
         """Creates a new CollectionProxy backed by the given collection."""
         self._backing: Final = backing
         """The object that actually provides the indexing for this object."""
 
-    def unwrap(self) -> base.Collection[_ST]:
+    def unwrap(self) -> collection.Collection[_ST]:
         """Unwrap gets the actual collection backed by this proxy."""
-        inst: base.Collection[_ST] = self
+        inst: collection.Collection[_ST] = self
         while isinstance(inst, CollectionProxy):
             inst = inst._backing
         return inst

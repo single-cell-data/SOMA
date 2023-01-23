@@ -1,6 +1,6 @@
 import unittest
 
-from somacore import ephemeral
+from somacore import collection
 
 
 class SimpleCollectionTest(unittest.TestCase):
@@ -8,8 +8,8 @@ class SimpleCollectionTest(unittest.TestCase):
         # Since the SimpleCollection implementation is straightforward this is
         # just to ensure that we actually fulfill everything.
 
-        coll = ephemeral.SimpleCollection()
-        entry_a = ephemeral.SimpleCollection()
+        coll = collection.SimpleCollection()
+        entry_a = collection.SimpleCollection()
         coll["a"] = entry_a
         self.assertIs(entry_a, coll["a"])
         del coll["a"]

@@ -7,8 +7,8 @@ unified namespace.
 from typing import Tuple, Union
 
 from . import base
+from . import collection
 from . import data
-from . import ephemeral
 from . import options
 from . import query
 from .query import axis
@@ -24,9 +24,9 @@ except ImportError:
     __version_tuple__ = (0, 0, 0, "dev", "invalid")
 
 SOMAObject = base.SOMAObject
-Collection = base.Collection
 
-SimpleCollection = ephemeral.SimpleCollection
+Collection = collection.Collection
+SimpleCollection = collection.SimpleCollection
 
 DataFrame = data.DataFrame
 NDArray = data.NDArray
@@ -45,6 +45,7 @@ ExperimentAxisQuery = query.ExperimentAxisQuery
 __all__ = (
     "SOMAObject",
     "Collection",
+    "SimpleCollection",
     "DataFrame",
     "NDArray",
     "DenseNDArray",
