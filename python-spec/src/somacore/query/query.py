@@ -1,6 +1,6 @@
 import enum
 from concurrent import futures
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Generic, Optional, Sequence, Tuple, TypeVar, Union
 
 import anndata
 import attrs
@@ -9,10 +9,11 @@ import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
 from scipy import sparse
-from typing_extensions import Literal, TypedDict, assert_never
+from typing_extensions import Literal, Protocol, TypedDict, assert_never
 
-from .. import composed
+from .. import base
 from .. import data
+from .. import measurement
 from . import _fast_csr
 from . import axis
 
@@ -26,7 +27,11 @@ class AxisColumnNames(TypedDict, total=False):
     """var columns to use. All columns if ``None`` or not present."""
 
 
-class ExperimentAxisQuery:
+_ET = TypeVar("_ET", bound="_Experimentish")
+"""TypeVar for the concrete type of an experiment-like object."""
+
+
+class ExperimentAxisQuery(Generic[_ET]):
     """Axis-based query against a SOMA Experiment. [lifecycle: experimental]
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
@@ -59,7 +64,7 @@ class ExperimentAxisQuery:
 
     def __init__(
         self,
-        experiment: "composed.Experiment",
+        experiment: _ET,
         measurement_name: str,
         *,
         obs_query: axis.AxisQuery = axis.AxisQuery(),
@@ -347,7 +352,7 @@ class ExperimentAxisQuery:
         return self.experiment.obs
 
     @property
-    def _ms(self) -> composed.Measurement:
+    def _ms(self) -> measurement.Measurement:
         return self.experiment.ms[self.measurement_name]
 
     @property
@@ -512,3 +517,10 @@ def _to_numpy(it: _Numpyable) -> np.ndarray:
     if isinstance(it, np.ndarray):
         return it
     return it.to_numpy()
+
+
+class _Experimentish(Protocol):
+    """The API we need from an Experiment."""
+
+    ms: base.Collection[measurement.Measurement]
+    obs: data.DataFrame

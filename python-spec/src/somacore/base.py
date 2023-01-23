@@ -9,7 +9,7 @@ from typing import Any, MutableMapping, Optional, Type, TypeVar
 
 from typing_extensions import LiteralString
 
-from somacore import options
+from . import options
 
 
 class SOMAObject(metaclass=abc.ABCMeta):

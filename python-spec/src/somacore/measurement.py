@@ -5,8 +5,6 @@ from typing_extensions import Final
 from . import _wrap
 from . import base
 from . import data
-from . import query
-from .query import axis
 
 
 class Measurement(_wrap.CollectionProxy):
@@ -54,35 +52,3 @@ class Measurement(_wrap.CollectionProxy):
     """
 
     soma_type: Final = "SOMAMeasurement"
-
-
-class Experiment(_wrap.CollectionProxy):
-    """A set of observations defined by a DataFrame, with measurements."""
-
-    obs = _wrap.item(data.DataFrame)
-    """Primary observations on the observation axis.
-
-    The contents of the ``soma_joinid`` pseudo-column define the observation
-    index domain, i.e. ``obsid``. All observations for the experiment must be
-    defined here.
-    """
-
-    ms = _wrap.item(base.Collection[Measurement])
-    """A collection of named measurements."""
-
-    def axis_query(
-        self,
-        measurement_name: str,
-        *,
-        obs_query: axis.AxisQuery = axis.AxisQuery(),
-        var_query: axis.AxisQuery = axis.AxisQuery(),
-    ) -> "query.ExperimentAxisQuery":
-        """Creates an axis query over this experiment.
-
-        See :class:`query.ExperimentAxisQuery` for details on usage.
-        """
-        return query.ExperimentAxisQuery(
-            self, measurement_name, obs_query=obs_query, var_query=var_query
-        )
-
-    soma_type: Final = "SOMAExperiment"
