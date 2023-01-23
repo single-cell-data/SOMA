@@ -1,6 +1,16 @@
 import enum
 from concurrent import futures
-from typing import Any, Dict, Generic, Optional, Sequence, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 import anndata
 import attrs
@@ -11,7 +21,6 @@ import pyarrow as pa
 from scipy import sparse
 from typing_extensions import Literal, Protocol, TypedDict, assert_never
 
-from .. import collection
 from .. import data
 from .. import measurement
 from . import _fast_csr
@@ -522,5 +531,5 @@ def _to_numpy(it: _Numpyable) -> np.ndarray:
 class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
-    ms: collection.Collection[measurement.Measurement]
+    ms: Mapping[str, measurement.Measurement]
     obs: data.DataFrame

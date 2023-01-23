@@ -1,7 +1,7 @@
 import abc
 from typing import Any, Dict, Iterator, MutableMapping, Optional, Type, TypeVar
 
-from typing_extensions import LiteralString, final
+from typing_extensions import LiteralString
 
 from . import base
 from . import options
@@ -106,7 +106,6 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
         return "SOMACollection"
 
 
-@final
 class SimpleCollection(Collection[_ST]):
     """A memory-backed SOMA Collection for ad-hoc collection building.
 
