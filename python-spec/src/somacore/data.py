@@ -7,9 +7,9 @@ Default values are provided here as a reference for implementors.
 """
 
 import abc
-from typing import Iterator, Optional, Sequence, Tuple, TypeVar, Union
+from typing import Any, Iterator, Optional, Sequence, Tuple, Type, TypeVar, Union
 
-import pyarrow
+import pyarrow as pa
 from typing_extensions import Final
 
 from . import base
@@ -17,11 +17,30 @@ from . import options
 
 _RO_AUTO = options.ResultOrder.AUTO
 
+_DFT = TypeVar("_DFT", bound="DataFrame")
+"""Any implementation of DataFrame."""
+
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     """A multi-column table with a user-defined schema."""
 
     __slots__ = ()
+
+    # Lifecycle
+
+    @classmethod
+    @abc.abstractmethod
+    def create(
+        cls: Type[_DFT],
+        uri: str,
+        *,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> _DFT:
+        """Creates a new DataFrame."""
+        raise NotImplementedError()
 
     # Data operations
 
@@ -36,7 +55,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         result_order: options.StrOr[options.ResultOrder] = _RO_AUTO,
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "ReadIter[pyarrow.Table]":
+    ) -> "ReadIter[pa.Table]":
         """Reads a user-defined slice of data into Arrow tables.
 
         TODO: Further per-param documentation.
@@ -46,7 +65,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def write(
         self,
-        values: Union[pyarrow.RecordBatch, pyarrow.Table],
+        values: Union[pa.RecordBatch, pa.Table],
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
         """Writes values to the data store.
@@ -59,7 +78,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def schema(self) -> pyarrow.Schema:
+    def schema(self) -> pa.Schema:
         """The schema of the data in this dataframe."""
         raise NotImplementedError()
 
@@ -74,10 +93,29 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     soma_type: Final = "SOMADataFrame"
 
 
+_NDT = TypeVar("_NDT", bound="NDArray")
+"""Any implementation of NDArray."""
+
+
 class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     """Common behaviors of N-dimensional arrays of a single primitive type."""
 
     __slots__ = ()
+
+    # Lifecycle
+
+    @classmethod
+    @abc.abstractmethod
+    def create(
+        cls: Type[_NDT],
+        uri: str,
+        *type: pa.DataType,
+        shape: Sequence[int],
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> _NDT:
+        """Creates a new NDArray at the given URI."""
+        raise NotImplementedError()
 
     # Metadata operations
 
@@ -94,7 +132,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def schema(self) -> pyarrow.Schema:
+    def schema(self) -> pa.Schema:
         """The schema of the data in this array."""
         raise NotImplementedError()
 
@@ -119,7 +157,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         partitions: Optional[options.ReadPartitions] = None,
         result_order: options.StrOr[options.ResultOrder] = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> pyarrow.Tensor:
+    ) -> pa.Tensor:
         """Reads the specified subarray from this NDArray as a Tensor.
 
         TODO: Additional per-param documentation.
@@ -130,7 +168,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     def write(
         self,
         coords: options.DenseNDCoords,
-        values: pyarrow.Tensor,
+        values: pa.Tensor,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
@@ -145,10 +183,10 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
 
 
 SparseArrowData = Union[
-    pyarrow.SparseCSCMatrix,
-    pyarrow.SparseCSRMatrix,
-    pyarrow.SparseCOOTensor,
-    pyarrow.Table,
+    pa.SparseCSCMatrix,
+    pa.SparseCSRMatrix,
+    pa.SparseCOOTensor,
+    pa.Table,
 ]
 """Any of the sparse data storages provided by Arrow."""
 
@@ -241,20 +279,20 @@ class SparseRead:
     about why the given format is not supported.
     """
 
-    def coos(self) -> ReadIter[pyarrow.SparseCOOTensor]:
+    def coos(self) -> ReadIter[pa.SparseCOOTensor]:
         raise NotImplementedError()
 
-    def cscs(self) -> ReadIter[pyarrow.SparseCSCMatrix]:
+    def cscs(self) -> ReadIter[pa.SparseCSCMatrix]:
         raise NotImplementedError()
 
-    def csrs(self) -> ReadIter[pyarrow.SparseCSRMatrix]:
+    def csrs(self) -> ReadIter[pa.SparseCSRMatrix]:
         raise NotImplementedError()
 
-    def dense_tensors(self) -> ReadIter[pyarrow.Tensor]:
+    def dense_tensors(self) -> ReadIter[pa.Tensor]:
         raise NotImplementedError()
 
-    def record_batches(self) -> ReadIter[pyarrow.RecordBatch]:
+    def record_batches(self) -> ReadIter[pa.RecordBatch]:
         raise NotImplementedError()
 
-    def tables(self) -> ReadIter[pyarrow.Table]:
+    def tables(self) -> ReadIter[pa.Table]:
         raise NotImplementedError()

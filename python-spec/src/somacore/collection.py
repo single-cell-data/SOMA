@@ -34,6 +34,21 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
 
     __slots__ = ()
 
+    @classmethod
+    @abc.abstractmethod
+    def create(
+        cls: Type[_CT],
+        uri: str,
+        *,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> _CT:
+        """Creates a new Collection at the given URI and returns it.
+
+        The collection will be returned in the opened state.
+        """
+        raise NotImplementedError()
+
     @abc.abstractmethod
     def add_collection(
         self,
@@ -197,6 +212,12 @@ class SimpleCollection(Collection[_ST]):
     @property
     def metadata(self) -> Dict[str, Any]:
         return self._metadata
+
+    @classmethod
+    def create(cls, *args, **kwargs) -> "SimpleCollection":
+        del args, kwargs  # All unused
+        # SimpleCollection is in-memory only, so just return a new empty one.
+        return cls()
 
     def add_collection(self, *args, **kwargs) -> NoReturn:
         del args, kwargs  # All unused
