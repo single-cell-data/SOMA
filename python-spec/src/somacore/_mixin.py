@@ -15,20 +15,23 @@ _T = TypeVar("_T")
 class item(Generic[_T]):
     """Descriptor to transform property access into indexing.
 
-    This descriptor works with :class:`CollectionProxy` to allow for simple
-    specification of properties that reflect the members of the collection::
+    This descriptor works on mapping objects to allow simple specification of
+    properties that are backed by map entries::
 
-        class WrapImpl(CollectionProxy):
+        class FirstSecondMixin:
 
             first = item(str)
             second = item(int, "2nd")
 
-        inst = WrapImpl(some_collection)
+        class FSCollection(FirstSecondMixin, CollectionBase):
+            pass
 
-        # This is equivalent to getting some_collection["first"]
+        inst = FSCollection(...)
+
+        # This is equivalent to getting inst["first"]
         inst.first
 
-        # This is equivalent to setting some_collection["2nd"]
+        # This is equivalent to setting inst["2nd"]
         inst.second = 500
     """
 
