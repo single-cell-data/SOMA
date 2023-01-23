@@ -214,6 +214,11 @@ class SimpleCollection(Collection[_ST]):
         return self._metadata
 
     @classmethod
+    def open(cls, *args, **kwargs) -> NoReturn:
+        del args, kwargs  # All unused
+        raise TypeError("SimpleCollections are in-memory only and cannot be opened.")
+
+    @classmethod
     def create(cls, *args, **kwargs) -> "SimpleCollection":
         del args, kwargs  # All unused
         # SimpleCollection is in-memory only, so just return a new empty one.
