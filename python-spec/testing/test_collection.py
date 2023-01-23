@@ -22,9 +22,8 @@ class SimpleCollectionTest(unittest.TestCase):
 
         self.assertEqual("world", coll.metadata["hello"])
 
-    def test_mro(self):
-        # Ensures that constant definitions interact correctly with the
-        # method resolution order.
+    def test_method_resolution_order(self):
+        # Ensures that constant definitions interact correctly with the MRO.
 
         m = measurement.SimpleMeasurement()
         self.assertEqual("SOMAMeasurement", m.soma_type)
