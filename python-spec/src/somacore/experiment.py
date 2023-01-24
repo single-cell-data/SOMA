@@ -1,4 +1,4 @@
-from typing import MutableMapping, TypeVar
+from typing import MutableMapping, Optional, TypeVar
 
 from typing_extensions import Final
 
@@ -47,8 +47,8 @@ class Experiment(MutableMapping[str, _ST]):
         self: _Self,
         measurement_name: str,
         *,
-        obs_query: query.AxisQuery = query.AxisQuery(),
-        var_query: query.AxisQuery = query.AxisQuery(),
+        obs_query: Optional[query.AxisQuery] = None,
+        var_query: Optional[query.AxisQuery] = None,
     ) -> "query.ExperimentAxisQuery[_Self]":
         """Creates an axis query over this experiment.
 
@@ -57,7 +57,10 @@ class Experiment(MutableMapping[str, _ST]):
         # mypy doesn't quite understand descriptors so it issues a spurious
         # error here.
         return query.ExperimentAxisQuery(  # type: ignore[type-var]
-            self, measurement_name, obs_query=obs_query, var_query=var_query
+            self,
+            measurement_name,
+            obs_query=obs_query or query.AxisQuery(),
+            var_query=var_query or query.AxisQuery(),
         )
 
     soma_type: Final = "SOMAExperiment"
