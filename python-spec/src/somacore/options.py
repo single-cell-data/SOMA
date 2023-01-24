@@ -11,6 +11,13 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 import pyarrow as pa
+from typing_extensions import Final, Literal
+
+SOMA_JOINID: Final = "soma_joinid"
+"""Global constant for the SOMA join ID."""
+
+OpenMode = Literal["r", "w"]
+"""How to open a SOMA object: read or write."""
 
 
 class ReadPartitions:

@@ -1,13 +1,27 @@
 import abc
-from typing import Any, Dict, Iterator, MutableMapping, Optional, Type, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    MutableMapping,
+    NoReturn,
+    Optional,
+    Sequence,
+    Type,
+    TypeVar,
+)
 
+import pyarrow as pa
 from typing_extensions import LiteralString
 
 from . import base
+from . import data
 from . import options
 
 _ST = TypeVar("_ST", bound=base.SOMAObject)
 """Generic type variable for any SOMA object."""
+_CT = TypeVar("_CT", bound="Collection")
+"""Any implementation of a Collection."""
 
 
 class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMeta):
@@ -20,41 +34,59 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
 
     __slots__ = ()
 
+    @classmethod
     @abc.abstractmethod
-    def add(
+    def create(
+        cls: Type[_CT],
+        uri: str,
+        *,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> _CT:
+        """Creates a new Collection at the given URI and returns it.
+
+        The collection will be returned in the opened state.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def add_new_collection(
         self,
         key: str,
-        cls: Type[_ST],
+        cls: Optional[Type[_CT]] = None,
         *,
         uri: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> _ST:
-        """Creates a child member of this collection and adds it.
+    ) -> _CT:
+        """Creates a new sub-collection of this collection.
 
-        This allows the creation of child objects of any type::
+        To add an existing collection as a sub-element of this collection,
+        use :meth:`set` or indexed access instead.
+
+        The type provided is used to create the skeleton of this collection
+        as in :meth:`create`. By default, this will create a basic collection::
 
             # Create a child Measurement object at the key "density"
             # with default settings.
             #
             # This creates both the backing Measurement collection, as well as
             # the necessary sub-elements to have a complete Measurement.
-            density = the_collection.create("density", somacore.Measurement)
+            density = the_collection.add_new_collection("density", somacore.Measurement)
 
-            # Create a child DataFrame at the key "data" with a custom URI
-            # and additional platform configuration.
-            data = the_collection.create(
-                "data",
-                somacore.DataFrame,
-                uri="file:///custom/path/to/df",
-                platform_config={"somaimpl": ...},
-            )
+            # This will create a basic Collection as a child.
+            sub_child = density.add_new_collection("sub_child")
 
-        By default (in situations where it is possible to do so), the default
-        URI used should be a relative URI with its final component as the key.
-        For instance, adding sub-element ``data`` to a Collection located at
-        ``file:///path/to/coll`` should by default use
-        ``file:///path/to/coll/data`` as its URI if possible. If this is not
-        possible, the collection may construct a new non-relative URI.
+        In situations where relative URIs are supported, the default URI of the
+        child should be a sub-path of the parent URI. The final component
+        should be a path-sanitized version of the new key. For instance, adding
+        sub-element ``data`` to a Collection located at ``file:///path/to/coll``
+        would have a default path of ``file:///path/to/coll/data``. For
+        non–URI-safe keys, no specific path-sanitization method is required,
+        but as an example, a child named ``non/path?safe`` could use
+        ``file:///path/to/coll/non_path_safe`` as its full URI.
+
+        When a specific child URI is specified, that exact URI should be used
+        (whether relative or absolute).
 
         :param key: The key that this child should live at (i.e., it will be
             accessed via ``the_collection[key]``).
@@ -63,6 +95,57 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
             to create this object. This may be absolute or relative.
         :param platform_config: Platform-specific configuration options used
             when creating the child.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def add_new_dataframe(
+        self,
+        key: str,
+        *,
+        uri: Optional[str] = None,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> data.DataFrame:
+        """Creates a new DataFrame as a child of this collection.
+
+        Parameters are as in :meth:`data.DataFrame.create`.
+        See :meth:`add_new_collection` for details about child creation.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def add_new_dense_ndarray(
+        self,
+        key: str,
+        *,
+        uri: Optional[str] = None,
+        type: pa.DataType,
+        shape: Sequence[int],
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> data.DenseNDArray:
+        """Creates a new dense NDArray as a child of this collection.
+
+        Parameters are as in :meth:`data.DenseNDArray.create`.
+        See :meth:`add_new_collection` for details about child creation.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def add_new_sparse_ndarray(
+        self,
+        key: str,
+        *,
+        uri: Optional[str] = None,
+        type: pa.DataType,
+        shape: Sequence[int],
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> data.SparseNDArray:
+        """Creates a new sparse NDArray as a child of this collection.
+
+        Parameters are as in :meth:`data.SparseNDArray.create`.
+        See :meth:`add_new_collection` for details about child creation.
         """
         raise NotImplementedError()
 
@@ -135,21 +218,29 @@ class SimpleCollection(Collection[_ST]):
     def metadata(self) -> Dict[str, Any]:
         return self._metadata
 
-    def add(
-        self,
-        key: str,
-        cls: Type[_ST],
-        *,
-        uri: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> _ST:
-        del key, cls, uri, platform_config  # All unused
+    @classmethod
+    def open(cls, *args, **kwargs) -> NoReturn:
+        del args, kwargs  # All unused
+        raise TypeError("SimpleCollections are in-memory only and cannot be opened.")
+
+    @classmethod
+    def create(cls, *args, **kwargs) -> "SimpleCollection":
+        del args, kwargs  # All unused
+        # SimpleCollection is in-memory only, so just return a new empty one.
+        return cls()
+
+    def add_new_collection(self, *args, **kwargs) -> NoReturn:
+        del args, kwargs  # All unused
         # TODO: Should we be willing to create Collection-based child elements,
         # like Measurement and Experiment?
         raise TypeError(
             "A SimpleCollection cannot create its own children;"
             " only existing SOMA objects may be added."
         )
+
+    add_new_dataframe = add_new_collection
+    add_new_sparse_ndarray = add_new_collection
+    add_new_dense_ndarray = add_new_collection
 
     def set(
         self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None

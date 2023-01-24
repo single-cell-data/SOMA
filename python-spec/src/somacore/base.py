@@ -5,15 +5,32 @@ members will be exported to the ``somacore`` namespace.
 """
 
 import abc
-from typing import Any, MutableMapping
+from typing import Any, MutableMapping, Optional, Type, TypeVar
 
 from typing_extensions import LiteralString
+
+from . import options
+
+_ST = TypeVar("_ST", bound="SOMAObject")
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
     """A sentinel interface indicating that this type is a SOMA object."""
 
     __slots__ = ("__weakref__",)
+
+    @classmethod
+    @abc.abstractmethod
+    def open(
+        cls: Type[_ST],
+        uri: str,
+        mode: options.OpenMode = "r",
+        *,
+        context: Optional[Any] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> _ST:
+        """Opens the SOMA object at the given URL."""
+        raise NotImplementedError()
 
     @property
     @abc.abstractmethod
