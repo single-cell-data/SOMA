@@ -50,7 +50,7 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def add_collection(
+    def add_new_collection(
         self,
         key: str,
         cls: Optional[Type[_CT]] = None,
@@ -71,17 +71,22 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
             #
             # This creates both the backing Measurement collection, as well as
             # the necessary sub-elements to have a complete Measurement.
-            density = the_collection.add_collection("density", somacore.Measurement)
+            density = the_collection.add_new_collection("density", somacore.Measurement)
 
             # This will create a basic Collection as a child.
-            sub_child = density.add_collection("sub_child")
+            sub_child = density.add_new_collection("sub_child")
 
-        By default (in situations where it is possible to do so), the default
-        URI used should be a relative URI with its final component as the key.
-        For instance, adding sub-element ``data`` to a Collection located at
-        ``file:///path/to/coll`` should by default use
-        ``file:///path/to/coll/data`` as its URI if possible. If this is not
-        possible, the collection may construct a new non-relative URI.
+        In situations where relative URIs are supported, the default URI of the
+        child should be a sub-path of the parent URI. The final component
+        should be a path-sanitized version of the new key. For instance, adding
+        sub-element ``data`` to a Collection located at ``file:///path/to/coll``
+        would have a default path of ``file:///path/to/coll/data``. For
+        non–URI-safe keys, no specific path-sanitization method is required,
+        but as an example, a child named ``non/path?safe`` could use
+        ``file:///path/to/coll/non_path_safe`` as its full URI.
+
+        When a specific child URI is specified, that exact URI should be used
+        (whether relative or absolute).
 
         :param key: The key that this child should live at (i.e., it will be
             accessed via ``the_collection[key]``).
@@ -94,7 +99,7 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def add_dataframe(
+    def add_new_dataframe(
         self,
         key: str,
         *,
@@ -106,41 +111,41 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
         """Creates a new DataFrame as a child of this collection.
 
         Parameters are as in :meth:`data.DataFrame.create`.
-        See :meth:`add_collection` for details about child creation.
+        See :meth:`add_new_collection` for details about child creation.
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def add_dense_ndarray(
+    def add_new_dense_ndarray(
         self,
         key: str,
         *,
-        uri: Optional[str] = ...,
+        uri: Optional[str] = None,
         type: pa.DataType,
         shape: Sequence[int],
-        platform_config: Optional[options.PlatformConfig] = ...,
+        platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.DenseNDArray:
         """Creates a new dense NDArray as a child of this collection.
 
         Parameters are as in :meth:`data.DenseNDArray.create`.
-        See :meth:`add_collection` for details about child creation.
+        See :meth:`add_new_collection` for details about child creation.
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def add_sparse_ndarray(
+    def add_new_sparse_ndarray(
         self,
         key: str,
         *,
-        uri: Optional[str] = ...,
+        uri: Optional[str] = None,
         type: pa.DataType,
         shape: Sequence[int],
-        platform_config: Optional[options.PlatformConfig] = ...,
+        platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.SparseNDArray:
         """Creates a new sparse NDArray as a child of this collection.
 
         Parameters are as in :meth:`data.SparseNDArray.create`.
-        See :meth:`add_collection` for details about child creation.
+        See :meth:`add_new_collection` for details about child creation.
         """
         raise NotImplementedError()
 
@@ -224,7 +229,7 @@ class SimpleCollection(Collection[_ST]):
         # SimpleCollection is in-memory only, so just return a new empty one.
         return cls()
 
-    def add_collection(self, *args, **kwargs) -> NoReturn:
+    def add_new_collection(self, *args, **kwargs) -> NoReturn:
         del args, kwargs  # All unused
         # TODO: Should we be willing to create Collection-based child elements,
         # like Measurement and Experiment?
@@ -233,9 +238,9 @@ class SimpleCollection(Collection[_ST]):
             " only existing SOMA objects may be added."
         )
 
-    add_dataframe = add_collection
-    add_sparse_ndarray = add_collection
-    add_dense_ndarray = add_collection
+    add_new_dataframe = add_new_collection
+    add_new_sparse_ndarray = add_new_collection
+    add_new_dense_ndarray = add_new_collection
 
     def set(
         self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
