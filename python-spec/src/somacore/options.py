@@ -5,7 +5,7 @@ SOMA types that require them, not reimplemented by the implementing package.
 """
 
 import enum
-from typing import Any, Mapping, Optional, Sequence, TypeVar, Union
+from typing import Any, Mapping, Optional, Sequence, Union
 
 import attrs
 import numpy as np
@@ -96,10 +96,6 @@ to individual calls. Keys are the name of a SOMA implementation, each value is
 an implementation-defined configuration structure.
 """
 
-_ET = TypeVar("_ET", bound=enum.Enum)
-StrOr = Union[_ET, str]
-"""A string, or the named enum."""
-
 
 class ResultOrder(enum.Enum):
     """The order results should be returned in."""
@@ -107,6 +103,10 @@ class ResultOrder(enum.Enum):
     AUTO = "auto"
     ROW_MAJOR = "row-major"
     COLUMN_MAJOR = "column-major"
+
+
+ResultOrderStr = Union[ResultOrder, Literal["auto", "row-major", "column-major"]]
+"""A ResultOrder, or the str representing it."""
 
 
 DenseCoord = Union[int, slice]
