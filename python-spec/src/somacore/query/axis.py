@@ -9,13 +9,15 @@ from .. import options
 
 
 def _canonicalize_coords(
-    in_coords: options.SparseDFCoords,
+    in_coords: Optional[options.SparseDFCoords],
 ) -> Tuple[options.SparseDFCoord, ...]:
     """Validates coordinates and freezes sequences as tuples.
 
     This is not strictly necessary; DataFrame will report these errors
     eventually but doing it now makes for better UX.
     """
+    if in_coords is None:
+        return (slice(None),)
     if not _is_normal_sequence(in_coords):
         raise TypeError(
             "query coordinates must be a normal sequence, not `str` or `bytes`."
@@ -57,6 +59,7 @@ class AxisQuery:
     Examples::
 
         AxisQuery()  # all data
+        AxisQuery(coords=None)  # also all data
         AxisQuery(coords=(slice(1,10),))  # 1D, slice
         AxisQuery(coords=([0,1,2]))  # 1D, point indexing using array-like
         AxisQuery(coords=(slice(None), numpy.array([0,88,1001])))  # 2D
