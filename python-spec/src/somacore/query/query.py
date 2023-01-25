@@ -211,10 +211,10 @@ class ExperimentAxisQuery(Generic[_ET]):
 
     def __del__(self) -> None:
         """Ensure that we're closed when our last ref disappears."""
+        self.close()
         # If any superclass in our MRO has a __del__, call it.
         sdel = getattr(super(), "__del__", lambda: None)
         sdel()
-        self.close()
 
     # Internals
 

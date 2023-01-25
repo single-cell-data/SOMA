@@ -68,3 +68,23 @@ class SOMAObject(metaclass=abc.ABCMeta):
     def soma_type(self) -> LiteralString:
         """A string describing the SOMA type of this object."""
         raise NotImplementedError()
+
+    # Context management
+
+    def close(self) -> None:
+        """Releases any external resources held by this object.
+
+        An implementation of close must be idempotent.
+        """
+        # Default implementation does nothing.
+
+    def __enter__(self: _ST) -> _ST:
+        return self
+
+    def __exit__(self, *_: Any) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        self.close()
+        super_del = getattr(super(), "__del__", lambda: None)
+        super_del()
