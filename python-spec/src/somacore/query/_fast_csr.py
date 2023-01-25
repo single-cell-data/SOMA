@@ -117,13 +117,15 @@ class _CSRAccumulator:
         nnz = sum(len(chunk[2]) for chunk in self.coo_chunks)
         index_dtype = _select_dtype(nnz)
         if nnz == 0:
-            # no way to infer matrix dtype, so use default and return empty matrix
-            empty = sparse.csr_matrix((0, 0))
+            # There is no way to infer matrix dtype, so use a default and return
+            # an empty matrix. Float32 is used as a default type, as it is most
+            # compatible with AnnData expectations.
+            empty = sparse.csr_matrix((0, 0), dtype=np.float32)
             return _CSRAccumulatorFinalResult(
                 data=empty.data,
                 indptr=empty.indptr,
                 indices=empty.indices,
-                shape=(0, 0),
+                shape=self.shape,
             )
 
         # cumsum row lengths to get indptr
