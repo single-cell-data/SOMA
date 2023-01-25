@@ -125,7 +125,7 @@ class _CSRAccumulator:
                 data=empty.data,
                 indptr=empty.indptr,
                 indices=empty.indices,
-                shape=(0, 0),
+                shape=self.shape,
             )
 
         # cumsum row lengths to get indptr
