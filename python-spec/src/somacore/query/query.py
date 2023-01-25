@@ -398,10 +398,10 @@ class _AxisQueryResult:
     def to_anndata(self) -> anndata.AnnData:
         """Convert to AnnData"""
         obs = self.obs.to_pandas()
-        obs.index = obs.index.map(str)
+        obs.index = obs.index.astype(str)
 
         var = self.var.to_pandas()
-        var.index = var.index.map(str)
+        var.index = var.index.astype(str)
 
         return anndata.AnnData(
             X=self.X, obs=obs, var=var, layers=(self.X_layers or None)
