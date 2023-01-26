@@ -29,6 +29,7 @@ class Experiment(MutableMapping[str, _ST]):
     #     TypeError: multiple bases have instance lay-out conflict
 
     __slots__ = ()
+    soma_type: Final = "SOMAExperiment"
 
     obs = _mixin.item(data.DataFrame)
     """Primary observations on the observation axis.
@@ -63,8 +64,6 @@ class Experiment(MutableMapping[str, _ST]):
             var_query=var_query or query.AxisQuery(),
         )
 
-    soma_type: Final = "SOMAExperiment"
 
-
-class SimpleExperiment(Experiment, collection.SimpleCollection):
+class SimpleExperiment(Experiment, collection.SimpleCollection):  # type: ignore[misc]
     """An in-memory Collection with Experiment semantics."""

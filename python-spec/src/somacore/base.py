@@ -5,7 +5,7 @@ members will be exported to the ``somacore`` namespace.
 """
 
 import abc
-from typing import Any, MutableMapping, Optional, Type, TypeVar
+from typing import Any, ClassVar, MutableMapping, Optional, Type, TypeVar
 
 from typing_extensions import LiteralString
 
@@ -63,11 +63,14 @@ class SOMAObject(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    @property
-    @abc.abstractmethod
-    def soma_type(self) -> LiteralString:
-        """A string describing the SOMA type of this object."""
-        raise NotImplementedError()
+    soma_type: ClassVar[LiteralString]
+    """A string describing the SOMA type of this object. This is constant."""
+    # This uses ClassVar since you can't do abstract class properties.
+    # This is the equivalent, just without abc-based automatic verification.
+    #
+    # Overrides are marked Final with an ignore[misc] because mypy by default
+    # wants this to be mutable, and doesn't like overriding the mutable member
+    # with a Final member.
 
     # Context management
 
