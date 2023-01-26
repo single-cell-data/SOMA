@@ -200,7 +200,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     """A N-dimensional array stored sparsely."""
 
     __slots__ = ()
-    soma_type: Final = "SparseNDArray"  # type: ignore[misc]
+    soma_type: Final = "SOMASparseNDArray"  # type: ignore[misc]
     is_sparse: Final = True  # type: ignore[misc]
 
     @abc.abstractmethod
