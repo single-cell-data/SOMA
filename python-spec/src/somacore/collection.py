@@ -12,7 +12,6 @@ from typing import (
 )
 
 import pyarrow as pa
-from typing_extensions import LiteralString
 
 from . import base
 from . import data
@@ -33,6 +32,7 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
     """
 
     __slots__ = ()
+    soma_type = "SOMACollection"
 
     @classmethod
     @abc.abstractmethod
@@ -181,12 +181,6 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
             If ``False``, will always use an absolute URI.
         """
         raise NotImplementedError()
-
-    # This is implemented as a property and not a literal so that it can be
-    # overridden with `Final` members in Collection specializations.
-    @property
-    def soma_type(self) -> LiteralString:
-        return "SOMACollection"
 
 
 class SimpleCollection(Collection[_ST]):

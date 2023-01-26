@@ -28,6 +28,7 @@ class Measurement(MutableMapping[str, _ST]):
     #     TypeError: multiple bases have instance lay-out conflict
 
     __slots__ = ()
+    soma_type: Final = "SOMAMeasurement"
 
     var = _mixin.item(data.DataFrame)
     """Primary annotations on the variable axis for vars on this meansurement.
@@ -68,8 +69,6 @@ class Measurement(MutableMapping[str, _ST]):
     This is indexed by ``[varid_1, varid_2]``.
     """
 
-    soma_type: Final = "SOMAMeasurement"
 
-
-class SimpleMeasurement(Measurement, collection.SimpleCollection):
+class SimpleMeasurement(Measurement, collection.SimpleCollection):  # type: ignore[misc]
     """An in-memory Collection with Measurement semantics."""

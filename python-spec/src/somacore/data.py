@@ -7,10 +7,20 @@ Default values are provided here as a reference for implementors.
 """
 
 import abc
-from typing import Any, Iterator, Optional, Sequence, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    ClassVar,
+    Iterator,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 import pyarrow as pa
-from typing_extensions import Final
+from typing_extensions import Final, Literal
 
 from . import base
 from . import options
@@ -25,6 +35,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     """A multi-column table with a user-defined schema."""
 
     __slots__ = ()
+    soma_type: Final = "SOMADataFrame"  # type: ignore[misc]
 
     # Lifecycle
 
@@ -89,10 +100,6 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         """The names of the index (dimension) columns."""
         raise NotImplementedError()
 
-    # Basic operations
-
-    soma_type: Final = "SOMADataFrame"
-
 
 _NDT = TypeVar("_NDT", bound="NDArray")
 """Any implementation of NDArray."""
@@ -138,17 +145,16 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         """The schema of the data in this array."""
         raise NotImplementedError()
 
-    @property
-    @abc.abstractmethod
-    def is_sparse(self) -> bool:
-        """True if this array is sparse. False if this array is dense."""
-        raise NotImplementedError()
+    is_sparse: ClassVar[Literal[True, False]]
+    """True if the array is sparse. False if it is dense."""
 
 
 class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     """A N-dimensional array stored densely."""
 
     __slots__ = ()
+    soma_type: Final = "SOMADenseNDArray"  # type: ignore[misc]
+    is_sparse: Final = False  # type: ignore[misc]
 
     @abc.abstractmethod
     def read(
@@ -180,9 +186,6 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    is_sparse: Final = False
-    soma_type: Final = "SOMADenseNDArray"
-
 
 SparseArrowData = Union[
     pa.SparseCSCMatrix,
@@ -197,6 +200,8 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     """A N-dimensional array stored sparsely."""
 
     __slots__ = ()
+    soma_type: Final = "SparseNDArray"  # type: ignore[misc]
+    is_sparse: Final = True  # type: ignore[misc]
 
     @abc.abstractmethod
     def read(
@@ -241,9 +246,6 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         For dense arrays, this will be the total size of the array.
         """
         raise NotImplementedError()
-
-    is_sparse: Final = True
-    soma_type: Final = "SOMASparseNDArray"
 
 
 #
