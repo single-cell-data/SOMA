@@ -165,7 +165,7 @@ class _CSRAccumulator:
         )
 
 
-@numba.jit(nopython=True, nogil=True)  # type: ignore
+@numba.jit(nopython=True, nogil=True)  # type: ignore[attr-defined]
 def _accum_row_length(
     row_length: npt.NDArray[np.int64], row_ind: npt.NDArray[np.int64]
 ) -> None:
@@ -173,7 +173,7 @@ def _accum_row_length(
         row_length[rind] += 1
 
 
-@numba.jit(nopython=True, nogil=True)  # type: ignore
+@numba.jit(nopython=True, nogil=True)  # type: ignore[attr-defined]
 def _copy_chunk_range(
     row_ind_chunk: npt.NDArray[np.signedinteger],
     col_ind_chunk: npt.NDArray[np.signedinteger],
@@ -194,7 +194,7 @@ def _copy_chunk_range(
         indptr[row] += 1
 
 
-@numba.jit(nopython=True, nogil=True)  # type: ignore
+@numba.jit(nopython=True, nogil=True)  # type: ignore[attr-defined]
 def _copy_chunklist_range(
     chunk_list: numba.typed.List,
     data: npt.NDArray[np.number],
@@ -219,7 +219,7 @@ def _copy_chunklist_range(
         )
 
 
-@numba.jit(nopython=True, nogil=True)  # type: ignore
+@numba.jit(nopython=True, nogil=True)  # type: ignore[attr-defined]
 def _finalize_indptr(indptr: npt.NDArray[np.signedinteger]):
     prev = 0
     for r in range(len(indptr)):

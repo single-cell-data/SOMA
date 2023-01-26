@@ -1,4 +1,5 @@
 import unittest
+from typing import Any
 
 from somacore import collection
 from somacore import experiment
@@ -10,8 +11,8 @@ class SimpleCollectionTest(unittest.TestCase):
         # Since the SimpleCollection implementation is straightforward this is
         # just to ensure that we actually fulfill everything.
 
-        coll = collection.SimpleCollection()
-        entry_a = collection.SimpleCollection()
+        coll = collection.SimpleCollection[Any]()
+        entry_a = collection.SimpleCollection[Any]()
         coll["a"] = entry_a
         self.assertIs(entry_a, coll["a"])
         del coll["a"]

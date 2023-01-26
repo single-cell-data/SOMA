@@ -44,6 +44,15 @@ force_single_line = true
 known_first_party = ["somacore"]
 single_line_exclusions = ["typing", "typing_extensions"]
 
+[tool.mypy]
+check_untyped_defs = true
+enable_error_code = ["ignore-without-code"]
+warn_redundant_casts = true
+# We want to enable this but it won't work when running locally due to the
+# presence of _version.py (which invalidates the ignore, which causes an error).
+#
+#     warn_unused_ignores = true
+
 [[tool.mypy.overrides]]
 # These dependencies do not currently have canonical type stubs.
 module = ["anndata", "numba", "pandas", "pyarrow", "scipy"]
