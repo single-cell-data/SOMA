@@ -1,7 +1,7 @@
 # `somacore`: the Python version of the SOMA specification
 
 `somacore` is a (currently in-development) Python interpretation of the
-[abstract SOMA specification](../abstract_specification.md). Like the abstract
+[abstract SOMA specification](https://github.com/single-cell-data/SOMA/blob/main/abstract_specification.md). Like the abstract
 specification, it is still in flux and in progress, and we gladly accept
 feedback. This will evolve in tandem with the abstract spec itself as well as
 the [initial TileDB-based implementation](
