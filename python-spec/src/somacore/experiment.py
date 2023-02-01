@@ -1,4 +1,4 @@
-from typing import MutableMapping, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from typing_extensions import Final
 
@@ -10,28 +10,37 @@ from . import measurement
 from . import query
 
 _Self = TypeVar("_Self", bound="Experiment")
-_ST = TypeVar("_ST", bound=base.SOMAObject)
+"""A self type."""
+_DF = TypeVar("_DF", bound=data.DataFrame)
+"""An implementation of a DataFrame."""
+_MeasColl = TypeVar("_MeasColl", bound=collection.Collection[measurement.Measurement])
+"""An implementation of a collection of Measurements."""
+_RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
+"""The root SOMA object type of the implementation."""
 
 
-class Experiment(MutableMapping[str, _ST]):
+class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _RootSO]):
     """Mixin for Experiment types."""
 
-    # This class is implemented as a mixin to be used with SOMA classes:
+    # This class is implemented as a mixin to be used with SOMA classes.
+    # For example, a SOMA implementation would look like this:
     #
-    #     # in a SOMA implementation:
-    #     class Experiment(somacore.Experiment, ImplsBaseCollection):
-    #         pass
-    #
-    # Experiment should always appear *first* in the base class list.
-    # MutableMapping is listed as the parent type instead of Collection here
-    # to avoid the interpreter being unable to pick the right base class:
-    #
-    #     TypeError: multiple bases have instance lay-out conflict
+    #     # This type-ignore comment will always be needed due to limitations
+    #     # of type annotations; it is (currently) expected.
+    #     class Experiment(  # type: ignore[type-var]
+    #         ImplBaseCollection[ImplSOMAObject],
+    #         somacore.Experiment[
+    #             ImplDataFrame,    # _DF
+    #             ImplMeasurement,  # _MeasColl
+    #             ImplSOMAObject,   # _RootSO
+    #         ],
+    #     ):
+    #         ...
 
     __slots__ = ()
-    soma_type: Final = "SOMAExperiment"
+    soma_type: Final = "SOMAExperiment"  # type: ignore[misc]
 
-    obs = _mixin.item(data.DataFrame)
+    obs = _mixin.item[_DF]()
     """Primary observations on the observation axis.
 
     The contents of the ``soma_joinid`` pseudo-column define the observation
@@ -39,9 +48,7 @@ class Experiment(MutableMapping[str, _ST]):
     defined here.
     """
 
-    ms = _mixin.item(
-        collection.Collection[measurement.Measurement]  # type: ignore[type-var]
-    )
+    ms = _mixin.item[_MeasColl]()
     """A collection of named measurements."""
 
     def axis_query(

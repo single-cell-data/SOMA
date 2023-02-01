@@ -36,11 +36,11 @@ class AxisColumnNames(TypedDict, total=False):
     """var columns to use. All columns if ``None`` or not present."""
 
 
-_ET = TypeVar("_ET", bound="_Experimentish")
+_Exp = TypeVar("_Exp", bound="_Experimentish")
 """TypeVar for the concrete type of an experiment-like object."""
 
 
-class ExperimentAxisQuery(Generic[_ET]):
+class ExperimentAxisQuery(Generic[_Exp]):
     """Axis-based query against a SOMA Experiment. [lifecycle: experimental]
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
@@ -73,7 +73,7 @@ class ExperimentAxisQuery(Generic[_ET]):
 
     def __init__(
         self,
-        experiment: _ET,
+        experiment: _Exp,
         measurement_name: str,
         *,
         obs_query: axis.AxisQuery = axis.AxisQuery(),
@@ -531,5 +531,10 @@ def _to_numpy(it: _Numpyable) -> np.ndarray:
 class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
-    ms: Mapping[str, measurement.Measurement]
-    obs: data.DataFrame
+    @property
+    def ms(self) -> Mapping[str, measurement.Measurement]:
+        ...
+
+    @property
+    def obs(self) -> data.DataFrame:
+        ...
