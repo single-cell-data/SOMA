@@ -23,6 +23,18 @@ class SimpleCollectionTest(unittest.TestCase):
 
         self.assertEqual("world", coll.metadata["hello"])
 
+    def test_equality_identity(self):
+        # Ensures that only object identity is used to compare SOMA objects,
+        # and nothing else.
+        # If these were any other Mapping type, they would be `__eq__` here,
+        # since they both have the same (i.e., no) elements.
+        coll = collection.SimpleCollection[Any]()
+        coll_2 = collection.SimpleCollection[Any]()
+        self.assertNotEqual(coll, coll_2)
+        both = frozenset((coll, coll_2))
+        self.assertIn(coll, both)
+        self.assertIn(coll_2, both)
+
     def test_method_resolution_order(self):
         # Ensures that constant definitions interact correctly with the MRO.
 

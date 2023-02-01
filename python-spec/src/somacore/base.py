@@ -91,3 +91,16 @@ class SOMAObject(metaclass=abc.ABCMeta):
         self.close()
         super_del = getattr(super(), "__del__", lambda: None)
         super_del()
+
+    # Explicitly use Python's identity-based equality/hash checks.
+    # These will show up in the `__mro__` before any other classes
+    # provided a SOMAObject base is put first:
+    #
+    #    class SubType(SomeSOMAObject, MutableMapping):
+    #        ...
+    #
+    #    # sub_type_inst.__eq__ uses object.__eq__ rather than
+    #    # MutableMapping.__eq__.
+
+    __eq__ = object.__eq__
+    __hash__ = object.__hash__
