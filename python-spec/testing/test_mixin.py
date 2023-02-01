@@ -9,7 +9,6 @@ class TestItem(unittest.TestCase):
         the_a = _mixin.item(str)
 
         class ItemHaver(collection.SimpleCollection):
-
             a = the_a
             b = _mixin.item(int, "base_b")
 
