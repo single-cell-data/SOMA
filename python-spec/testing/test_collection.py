@@ -1,18 +1,16 @@
 import unittest
 from typing import Any
 
-from somacore import collection
-from somacore import experiment
-from somacore import measurement
+from somacore import ephemeral
 
 
-class SimpleCollectionTest(unittest.TestCase):
+class EphemeralCollectionTest(unittest.TestCase):
     def test_basic(self):
         # Since the SimpleCollection implementation is straightforward this is
         # just to ensure that we actually fulfill everything.
 
-        coll = collection.SimpleCollection[Any]()
-        entry_a = collection.SimpleCollection[Any]()
+        coll = ephemeral.Collection[Any]()
+        entry_a = ephemeral.Collection[Any]()
         coll["a"] = entry_a
         self.assertIs(entry_a, coll["a"])
         del coll["a"]
@@ -28,8 +26,8 @@ class SimpleCollectionTest(unittest.TestCase):
         # and nothing else.
         # If these were any other Mapping type, they would be `__eq__` here,
         # since they both have the same (i.e., no) elements.
-        coll = collection.SimpleCollection[Any]()
-        coll_2 = collection.SimpleCollection[Any]()
+        coll = ephemeral.Collection[Any]()
+        coll_2 = ephemeral.Collection[Any]()
         self.assertNotEqual(coll, coll_2)
         both = frozenset((coll, coll_2))
         self.assertIn(coll, both)
@@ -38,7 +36,7 @@ class SimpleCollectionTest(unittest.TestCase):
     def test_method_resolution_order(self):
         # Ensures that constant definitions interact correctly with the MRO.
 
-        m = measurement.SimpleMeasurement()
+        m = ephemeral.Measurement()
         self.assertEqual("SOMAMeasurement", m.soma_type)
-        exp = experiment.SimpleExperiment()
+        exp = ephemeral.Experiment()
         self.assertEqual("SOMAExperiment", exp.soma_type)

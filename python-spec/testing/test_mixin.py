@@ -1,14 +1,14 @@
 import unittest
 
 from somacore import _mixin
-from somacore import collection
+from somacore import ephemeral
 
 
 class TestItem(unittest.TestCase):
     def test_get(self):
         the_a = _mixin.item(str)
 
-        class ItemHaver(collection.SimpleCollection):
+        class ItemHaver(ephemeral.Collection):
             a = the_a
             b = _mixin.item(int, "base_b")
 
