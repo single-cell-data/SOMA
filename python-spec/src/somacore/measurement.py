@@ -68,7 +68,3 @@ class Measurement(MutableMapping[str, _ST]):
 
     This is indexed by ``[varid_1, varid_2]``.
     """
-
-
-class SimpleMeasurement(Measurement, collection.SimpleCollection):  # type: ignore[misc]
-    """An in-memory Collection with Measurement semantics."""

@@ -4,14 +4,24 @@ Types will be defined in their own modules and then imported here for a single
 unified namespace.
 """
 
+# __init__ files, used strictly for re-exporting, are the exception to the
+# "import modules only" style used in somacore.
+
 from typing import Tuple, Union
 
-from . import base
-from . import collection
-from . import data
-from . import options
-from . import query
-from .query import axis
+from .base import SOMAObject
+from .collection import Collection
+from .data import DataFrame
+from .data import DenseNDArray
+from .data import NDArray
+from .data import ReadIter
+from .data import SparseNDArray
+from .data import SparseRead
+from .options import BatchSize
+from .options import IOfN
+from .options import ResultOrder
+from .query import AxisQuery
+from .query import ExperimentAxisQuery
 
 try:
     # This trips up mypy since it's a generated file:
@@ -23,37 +33,19 @@ except ImportError:
     __version__ = "0.0.0.dev+invalid"
     __version_tuple__ = (0, 0, 0, "dev", "invalid")
 
-SOMAObject = base.SOMAObject
-
-Collection = collection.Collection
-SimpleCollection = collection.SimpleCollection
-
-DataFrame = data.DataFrame
-NDArray = data.NDArray
-DenseNDArray = data.DenseNDArray
-SparseNDArray = data.SparseNDArray
-ReadIter = data.ReadIter
-SparseRead = data.SparseRead
-
-IOfN = options.IOfN
-BatchSize = options.BatchSize
-ResultOrder = options.ResultOrder
-
-AxisQuery = axis.AxisQuery
-ExperimentAxisQuery = query.ExperimentAxisQuery
 
 __all__ = (
     "SOMAObject",
     "Collection",
-    "SimpleCollection",
     "DataFrame",
-    "NDArray",
     "DenseNDArray",
-    "SparseNDArray",
+    "NDArray",
     "ReadIter",
+    "SparseNDArray",
     "SparseRead",
-    "IOfN",
     "BatchSize",
+    "IOfN",
     "ResultOrder",
     "AxisQuery",
+    "ExperimentAxisQuery",
 )

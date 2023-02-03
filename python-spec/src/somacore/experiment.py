@@ -63,7 +63,3 @@ class Experiment(MutableMapping[str, _ST]):
             obs_query=obs_query or query.AxisQuery(),
             var_query=var_query or query.AxisQuery(),
         )
-
-
-class SimpleExperiment(Experiment, collection.SimpleCollection):  # type: ignore[misc]
-    """An in-memory Collection with Experiment semantics."""
