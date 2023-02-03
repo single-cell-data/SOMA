@@ -382,7 +382,6 @@ Summary of operations:
 | create(uri, ...)           | Create a SOMADenseNDArray named with the URI.                                  |
 | delete(uri)                | Delete the SOMADenseNDArray specified with the URI.                            |
 | exists(uri) -> bool        | Return true if object exists and is a SOMADenseNDArray.                        |
-| get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get soma_type              | Returns the constant "SOMADenseNDArray".                                       |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndim`.               |
 | get ndim -> int            | Return number of dimensions.                                                   |
@@ -471,7 +470,6 @@ Summary of operations:
 | create(uri, ...)           | Create a SOMASparseNDArray named with the URI.                                 |
 | delete(uri)                | Delete the SOMASparseNDArray specified with the URI.                           |
 | exists(uri) -> bool        | Return true if object exists and is a SOMASparseNDArray.                       |
-| get metadata               | Access the metadata as a mutable [`SOMAMetadataMapping`](#SOMAMetadataMapping) |
 | get soma_type              | Returns the constant "SOMASparseNDArray"                                       |
 | get shape -> (int, ...)    | Return length of each dimension, always a list of length `ndim`.               |
 | get ndim ->  int           | Return number of dimensions.                                                   |
@@ -659,8 +657,8 @@ Examples, using a pseudo-syntax:
 ## Platform-Specific Configuration
 
 SOMA includes provisions for two separate ways to provide platform-specific configuration data to objects and operations.
-For configuration settings that affect a single operation, SOMA functions include a `platform_config` parameter, which can be used on a call-by-call basis to specify short-term behavior.
-For long-lived configuration settings, SOMA objects expose a `context` field that contains implementation-defined data that can be shared over an entire analysis session.
+For configuration settings that affect a single operation, SOMA functions include a `platform_config` parameter, which can be used on a call-by-call basis to change implementation-specific behavior for that call.
+For configuration settings whose scope affects many operations, SOMA objects expose a `context` field that contains implementation-defined data that can be shared over an entire analysis session.
 
 ### Per-call configuration
 
@@ -716,10 +714,44 @@ Examples of data that might belong in a context includes:
 - Endpoint URLs
 - Database connections
 
-In other words, the `context` contains what is effectively the global state for a SOMA analysis session.
+In other words, the `context` contains what is effectively shared configuration information across multiple individual SOMA objects.
+A context can be specified when instantiating a SOMA object, whether in the process of creating new SOMA data in storage, or in the process of opening existing stored SOMA data.
+Implementations should provide a new empty "default" context if one is not specified when opening an object.
+This context is automatically propagated by implementations when a parent object is used to access a child.
+For example, in a hypothetical Python SOMA implementation named `somalib`:
 
-The format and contents of a `context` object is completely implementation-defined.
-An implentation may provide a way to construct its specific context type, which can be used by user setup code to connect to the SOMA data store.
+```python
+# The details of context creation are implementation-defined; this is just a
+# hypothetical builder that returns a `context` used by somaimpl.
+context = somaimpl.create_context(...)
+
+exp = somaimpl.open("file:///uri/of/some/experiment", "w", context=context)
+# The data in the `context` value is used when opening the Experiment,
+# and is available at `exp.context`.
+
+obs_df = exp.obs
+# The `obs` field of `exp` is opened. When opening it, the Experiment passes
+# its context value into the dataframe's opener.
+
+exp.ms.add_new_collection("bases", somaimpl.Measurement)
+# The context value in `exp` is first used to open `exp.ms`, and then `exp.ms`
+# uses that same context value in the creation of the new "bases" collection.
+
+# A user can open other data in a different context:
+unrelated_collection = somaimpl.open("file:///unrelated/collection", "r")
+# In this case, the context of `unrelated_collection` is completely separate
+# from that of `exp`.
+
+# and they can manually pass the context of an existing SOMA object when
+# opening (or creating) a different SOMA object.
+another_collection = somaimpl.Collection.create(
+    "file:///another/collection", context=unrelated_collection.context)
+```
+
+While this example code is Python-based, the core concepts and data flow apply to the use of Contexts in any language.
+
+The format and contents of a Context object is completely implementation-defined.
+An implementation may provide a way to construct its specific context type, which can be used by user setup code to connect to the SOMA data store (represented above as the `somaimpl.create_context` call).
 However, client code should treat the `context` object on any instantiated SOMA objects as an opaque value, and only pass it directly as the context parameter when creating or opening other SOMA data.
 
 # ⚠️ Other Issues (open issues with this doc)
