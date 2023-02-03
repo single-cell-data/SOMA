@@ -6,8 +6,8 @@ from somacore import ephemeral
 
 class EphemeralCollectionTest(unittest.TestCase):
     def test_basic(self):
-        # Since the SimpleCollection implementation is straightforward this is
-        # just to ensure that we actually fulfill everything.
+        # Since the ephemeral Collection implementation is straightforward,
+        # this is just to ensure that we actually fulfill everything.
 
         coll = ephemeral.Collection[Any]()
         entry_a = ephemeral.Collection[Any]()

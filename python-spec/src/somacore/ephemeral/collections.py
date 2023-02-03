@@ -31,7 +31,7 @@ class Collection(collection.Collection[_ST]):
 
     @property
     def uri(self) -> str:
-        return f"somacore:simple-collection:{id(self):x}"
+        return f"somacore:ephemeral-collection:{id(self):x}"
 
     @property
     def metadata(self) -> Dict[str, Any]:
@@ -40,12 +40,14 @@ class Collection(collection.Collection[_ST]):
     @classmethod
     def open(cls, *args, **kwargs) -> NoReturn:
         del args, kwargs  # All unused
-        raise TypeError("SimpleCollections are in-memory only and cannot be opened.")
+        raise TypeError(
+            "Ephemeral collections are in-memory only and cannot be opened."
+        )
 
     @classmethod
     def create(cls, *args, **kwargs) -> "Collection":
         del args, kwargs  # All unused
-        # SimpleCollection is in-memory only, so just return a new empty one.
+        # ThisCollection is in-memory only, so just return a new empty one.
         return cls()
 
     def add_new_collection(self, *args, **kwargs) -> NoReturn:
@@ -53,7 +55,7 @@ class Collection(collection.Collection[_ST]):
         # TODO: Should we be willing to create Collection-based child elements,
         # like Measurement and Experiment?
         raise TypeError(
-            "A SimpleCollection cannot create its own children;"
+            "An ephemeral Collection cannot create its own children;"
             " only existing SOMA objects may be added."
         )
 
