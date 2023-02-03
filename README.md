@@ -25,7 +25,8 @@ To address these emerging needs in the single cell ecosystem, CZI, in partnershi
 
 * Please report any bugs or issues at [https://github.com/single-cell-data/SOMA/issues](https://github.com/single-cell-data/SOMA/issues).
 * If you believe you have found a security issue, in lieu of filing an issue please responsibly disclose it by contacting TBD.
-* Feedback is appreciated, this is a community-driven project, if you have well-scoped features/discussions please add them at  [https://github.com/single-cell-data/SOMA/issues](https://github.com/single-cell-data/SOMA/issues) for any other inquiries please reach out to [acarr@chanzuckerberg.com](mailto:acarr@chanzuckerberg.com).
+* Feedback is appreciated, this is a community-driven project, if you have well-scoped features/discussions please add them at [https://github.com/single-cell-data/SOMA/issues](https://github.com/single-cell-data/SOMA/issues) for any other inquiries please reach out to [soma@chanzuckerberg.com](mailto:soma@chanzuckerberg.com).
+* If you would like to learn more about SOMA or would like to keep up to date with the latest developments, please join our mailing list [here](https://bit.ly/soma-signup).
 
 
 ## Code of Conduct
