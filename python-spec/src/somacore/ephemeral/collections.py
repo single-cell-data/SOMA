@@ -1,14 +1,16 @@
-from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
+from typing import Any, Dict, Iterator, NoReturn, Optional, Type, TypeVar
 
 from .. import base
 from .. import collection
+from .. import data
 from .. import experiment
 from .. import measurement
 
-_ST = TypeVar("_ST", bound=base.SOMAObject)
+_Elem = TypeVar("_Elem", bound=base.SOMAObject)
+_Self = TypeVar("_Self")
 
 
-class Collection(collection.Collection[_ST]):
+class BaseCollection(collection.BaseCollection[_Elem]):
     """A memory-backed SOMA Collection for ad-hoc collection building.
 
     This Collection implementation exists purely in memory. It can be used to
@@ -21,12 +23,14 @@ class Collection(collection.Collection[_ST]):
     collection has no ``context`` and ``close``ing it does nothing.
     """
 
-    def __init__(self, *args: Any, **kwargs: _ST):
+    __slots__ = ("_entries", "_metadata")
+
+    def __init__(self, *args: Any, **kwargs: _Elem):
         """Creates a new Collection.
 
         Arguments and kwargs are provided as in the ``dict`` constructor.
         """
-        self._entries: Dict[str, _ST] = dict(*args, **kwargs)
+        self._entries: Dict[str, _Elem] = dict(*args, **kwargs)
         self._metadata: Dict[str, Any] = {}
 
     @property
@@ -45,7 +49,7 @@ class Collection(collection.Collection[_ST]):
         )
 
     @classmethod
-    def create(cls, *args, **kwargs) -> "Collection":
+    def create(cls: Type[_Self], *args, **kwargs) -> _Self:
         del args, kwargs  # All unused
         # ThisCollection is in-memory only, so just return a new empty one.
         return cls()
@@ -64,12 +68,12 @@ class Collection(collection.Collection[_ST]):
     add_new_dense_ndarray = add_new_collection
 
     def set(
-        self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
+        self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
     ) -> None:
         del use_relative_uri  # Ignored.
         self._entries[key] = value
 
-    def __getitem__(self, key: str) -> _ST:
+    def __getitem__(self, key: str) -> _Elem:
         return self._entries[key]
 
     def __delitem__(self, key: str) -> None:
@@ -82,9 +86,36 @@ class Collection(collection.Collection[_ST]):
         return len(self._entries)
 
 
-class Measurement(measurement.Measurement, Collection):  # type: ignore[misc]
+class Collection(BaseCollection[_Elem], collection.Collection):
+    """An in-memory Collection imposing no semantics on the contents."""
+
+    __slots__ = ()
+
+
+_BasicAbstractMeasurement = measurement.Measurement[
+    data.DataFrame,
+    collection.Collection[data.NDArray],
+    collection.Collection[data.DenseNDArray],
+    collection.Collection[data.SparseNDArray],
+    base.SOMAObject,
+]
+"""The loosest possible constraint of the abstract Measurement type."""
+
+
+class Measurement(BaseCollection[base.SOMAObject], _BasicAbstractMeasurement):
     """An in-memory Collection with Measurement semantics."""
 
+    __slots__ = ()
 
-class Experiment(experiment.Experiment, Collection):  # type: ignore[misc]
+
+class Experiment(
+    BaseCollection[base.SOMAObject],
+    experiment.Experiment[
+        data.DataFrame,
+        collection.Collection[_BasicAbstractMeasurement],
+        base.SOMAObject,
+    ],
+):
     """An in-memory Collection with Experiment semantics."""
+
+    __slots__ = ()

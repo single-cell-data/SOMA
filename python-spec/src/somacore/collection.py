@@ -1,19 +1,22 @@
 import abc
-from typing import Any, MutableMapping, Optional, Sequence, Type, TypeVar
+from typing import Any, MutableMapping, Optional, Sequence, Type, TypeVar, overload
 
 import pyarrow as pa
+from typing_extensions import Final
 
 from . import base
 from . import data
 from . import options
 
-_ST = TypeVar("_ST", bound=base.SOMAObject)
-"""Generic type variable for any SOMA object."""
-_CT = TypeVar("_CT", bound="Collection")
+_Elem = TypeVar("_Elem", bound=base.SOMAObject)
+"""Element Type for a SOMA collection."""
+_CT = TypeVar("_CT", bound="BaseCollection")
 """Any implementation of a Collection."""
 
 
-class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMeta):
+class BaseCollection(
+    base.SOMAObject, MutableMapping[str, _Elem], metaclass=abc.ABCMeta
+):
     """A generic string-keyed collection of :class:`SOMAObject`s.
 
     The generic type specifies what type the Collection may contain. At its
@@ -22,7 +25,6 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
     """
 
     __slots__ = ()
-    soma_type = "SOMACollection"
 
     @classmethod
     @abc.abstractmethod
@@ -39,15 +41,45 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
         """
         raise NotImplementedError()
 
+    # Overloads to allow type inference to work when doing:
+    #
+    #     some_coll.add_new_collection("key")  # -> Collection
+    # and
+    #     some_coll.add_new_collection("key", Experiment)  # -> Experiment
+
+    @overload
     @abc.abstractmethod
     def add_new_collection(
         self,
         key: str,
-        cls: Optional[Type[_CT]] = None,
+        cls: None = None,
+        *,
+        uri: Optional[str] = ...,
+        platform_config: Optional[options.PlatformConfig] = ...,
+    ) -> "Collection":
+        ...
+
+    @overload
+    @abc.abstractmethod
+    def add_new_collection(
+        self,
+        key: str,
+        cls: Type[_CT],
+        *,
+        uri: Optional[str] = ...,
+        platform_config: Optional[options.PlatformConfig] = ...,
+    ) -> _CT:
+        ...
+
+    @abc.abstractmethod
+    def add_new_collection(
+        self,
+        key: str,
+        cls: Optional[Type["BaseCollection"]] = None,
         *,
         uri: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> _CT:
+    ) -> "BaseCollection":
         """Creates a new sub-collection of this collection.
 
         To add an existing collection as a sub-element of this collection,
@@ -139,13 +171,13 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
         """
         raise NotImplementedError()
 
-    def __setitem__(self, key: str, value: _ST) -> None:
+    def __setitem__(self, key: str, value: _Elem) -> None:
         """Sets an entry into this collection. See :meth:`set` for details."""
         self.set(key, value)
 
     @abc.abstractmethod
     def set(
-        self, key: str, value: _ST, *, use_relative_uri: Optional[bool] = None
+        self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
     ) -> None:
         """Sets an entry of this collection.
 
@@ -171,3 +203,10 @@ class Collection(base.SOMAObject, MutableMapping[str, _ST], metaclass=abc.ABCMet
             If ``False``, will always use an absolute URI.
         """
         raise NotImplementedError()
+
+
+class Collection(BaseCollection[_Elem]):
+    """SOMA Collection imposing no semantics on the contained values."""
+
+    soma_type: Final = "SOMACollection"  # type: ignore[misc]
+    __slots__ = ()
