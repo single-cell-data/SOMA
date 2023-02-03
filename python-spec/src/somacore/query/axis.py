@@ -18,6 +18,10 @@ def _canonicalize_coords(
     """
     if in_coords is None:
         return (slice(None),)
+    if not isinstance(in_coords, Sequence):
+        raise TypeError(
+            f"query coordinates must be a sequence, not a single {type(in_coords)}"
+        )
     if not _is_normal_sequence(in_coords):
         raise TypeError(
             "query coordinates must be a normal sequence, not `str` or `bytes`."
@@ -28,10 +32,10 @@ def _canonicalize_coords(
 def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:
     """Validates a single coordinate, freezing mutable sequences."""
     if coord is None or isinstance(
-        coord, (int, slice, pa.Array, pa.ChunkedArray, np.ndarray)
+        coord, (bytes, int, slice, str, pa.Array, pa.ChunkedArray, np.ndarray)
     ):
         return coord
-    if _is_normal_sequence(coord):
+    if isinstance(coord, Sequence):
         # We're trusting here that the elements of the user's sequence are
         # appropriate. If this is not the case, it will raise down the line.
         return tuple(coord)

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Any, Tuple
 
 import numpy as np
 import pytest
@@ -14,21 +14,10 @@ from somacore import options
         ((slice(1, 10),), (slice(1, 10),)),
         ([0, 1, 2], (0, 1, 2)),
         ((slice(None), [0, 88, 1001]), (slice(None), (0, 88, 1001))),
-        pytest.param(
-            ("string-coord",),
-            ("string-coord",),
-            marks=mark.xfail(reason="strings not supported yet"),
-        ),
-        pytest.param(
-            (b"bytes-coord",),
-            (b"bytes-coord",),
-            marks=mark.xfail(reason="bytes not supported yet"),
-        ),
+        (("string-coord", [b"lo", b"hi"]), ("string-coord", (b"lo", b"hi"))),
     ],
 )
-def test_canonicalization(
-    coords: options.SparseDFCoords, want: Tuple[options.SparseDFCoord, ...]
-) -> None:
+def test_canonicalization(coords: Any, want: Tuple[options.SparseDFCoord, ...]) -> None:
     axq = somacore.AxisQuery(coords=coords)
     assert want == axq.coords
 
@@ -47,6 +36,7 @@ def test_canonicalization_nparray() -> None:
         ("forbid bare strings",),
         (b"forbid bare byteses",),
         ([1, 1.5, 2],),
+        (999,),
     ],
 )
 def test_canonicalization_bad(coords) -> None:
