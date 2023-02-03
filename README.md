@@ -1,6 +1,6 @@
 # SOMA
 
-SOMA, “stack of matrices, annotated,” is a flexible, extensible, and open-source API enabling access to data in a variety of formats. SOMA is designed to be general purpose for the data that can be modeled as one or more sets of 2D annotated matrices that describe measurements of features across observations.
+SOMA, “stack of matrices, annotated,” is a flexible, extensible, and open-source API enabling access to data in a variety of formats. SOMA is designed to be general purpose for data that can be modeled as one or more sets of 2D annotated matrices that describe measurements of features across observations.
 
 The driver use case of SOMA is single-cell data in the form of annotated matrices with observations — frequently cells — and features like genes, proteins, or genomic regions.
 
@@ -13,7 +13,7 @@ To address these emerging needs in the single cell ecosystem, CZI, in partnershi
 
 1. Driving the development of SOMA.
 2. Providing its first implementation, [TileDB-SOMA](https://github.com/single-cell-data/TileDB-SOMA) which utilizes the [TileDB Embedded](https://github.com/TileDB-Inc/TileDB) engine.
-3. Adopting TileDB-SOMA at [CZ CELLxGENE Discover](https://cellxgene.cziscience.com/) to the build the [Cell Census](https://github.com/TileDB-Inc/TileDB) which provides efficient access and querying of its data from > 40 million cells.
+3. Adopting TileDB-SOMA at [CZ CELLxGENE Discover](https://cellxgene.cziscience.com/) to build the [Cell Census](https://github.com/TileDB-Inc/TileDB) which provides efficient access and querying of its data from > 40 million cells.
 
 ## Developer information
 
