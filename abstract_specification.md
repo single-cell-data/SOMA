@@ -658,7 +658,7 @@ Examples, using a pseudo-syntax:
 
 SOMA includes provisions for two separate ways to provide platform-specific configuration data to objects and operations.
 All SOMA operations include a `platform_config` parameter that allow a caller to provide implementation-specific configuration settings that affect the behavior of an operation on per-call basis.
-All SOMA objects expose a `context` field that contain implementation-specific configuration settings that affect all operations called on a SOMA object and any of its children, and that are scoped to the life of these objects.
+All SOMA objects expose a `context` field that contain implementation-specific configuration settings and shared local state that apply to all operations called on a SOMA object, any of its children, and any other SOMA objects that share the same `context` instance. These settings and state are used for the entire lifetime of that object and any other objects sharing the same `context`.
 
 ### Per-call configuration
 
