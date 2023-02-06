@@ -20,6 +20,7 @@ from .data import SparseRead
 from .options import BatchSize
 from .options import IOfN
 from .options import ResultOrder
+from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
 
@@ -46,6 +47,7 @@ __all__ = (
     "BatchSize",
     "IOfN",
     "ResultOrder",
+    "AxisColumnNames",
     "AxisQuery",
     "ExperimentAxisQuery",
 )
