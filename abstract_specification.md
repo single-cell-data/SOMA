@@ -657,8 +657,8 @@ Examples, using a pseudo-syntax:
 ## Platform-Specific Configuration
 
 SOMA includes provisions for two separate ways to provide platform-specific configuration data to objects and operations.
-For configuration settings that affect a single operation, SOMA functions include a `platform_config` parameter, which can be used on a call-by-call basis to change implementation-specific behavior for that call.
-For configuration settings whose scope affects many operations, SOMA objects expose a `context` field that contains implementation-defined data that can be shared over an entire analysis session.
+All SOMA operations include a `platform_config` parameter that allow a caller to provide implementation-specific configuration settings that affect the behavior of an operation on per-call basis.
+All SOMA objects expose a `context` field that contain implementation-specific configuration settings that affect all operations called on a SOMA object and any of its children, and that are scoped to the life of these objects.
 
 ### Per-call configuration
 
@@ -707,8 +707,8 @@ A platform should only ever examine its own entry in the `platform_config` mappi
 ### Long-lived context data
 
 In addition to the `platform_config` parameters described above, implementations can also store a value on the `context` field of a SOMA object.
-This read-only field should be used to store long-lived implementation-specific data that is used to access SOMA datasets.
-Examples of data that might belong in a context includes:
+This read-only field should be used to store long-lived implementation-specific settings that are used to access SOMA datasets.
+Examples of settings that might belong in a context includes:
 
 - Storage credentials or API keys
 - Endpoint URLs
