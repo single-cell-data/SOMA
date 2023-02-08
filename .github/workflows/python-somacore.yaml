@@ -21,12 +21,13 @@ jobs:
           cache: pip
           cache-dependency-path: python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
       - uses: psf/black@stable
-      - uses: isort/isort-action@v1
-      - name: Install typing packages
+      - name: Install static analysis packages
         run: |
           pip install -r python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
       - name: Run mypy
         run: mypy ./python-spec/src
+      - name: Run ruff
+        run: ruff .
 
   run-tests:
     runs-on: ubuntu-latest
