@@ -2,7 +2,7 @@ import abc
 from typing import Any, MutableMapping, Optional, Sequence, Type, TypeVar, overload
 
 import pyarrow as pa
-from typing_extensions import Final
+from typing_extensions import Final, Self
 
 from . import base
 from . import data
@@ -29,12 +29,12 @@ class BaseCollection(
     @classmethod
     @abc.abstractmethod
     def create(
-        cls: Type[_CT],
+        cls,
         uri: str,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
-    ) -> _CT:
+    ) -> Self:
         """Creates a new Collection at the given URI and returns it.
 
         The collection will be returned in the opened state.

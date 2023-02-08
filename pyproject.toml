@@ -25,7 +25,7 @@ urls = { repository = "https://github.com/single-cell-data/SOMA.git" }
 classifiers = ["License :: OSI Approved :: MIT License"]
 
 [project.optional-dependencies]
-dev = ["black", "isort", "setuptools-scm"]
+dev = ["black", "isort", "mypy~=1.0", "ruff"]
 
 [tool.setuptools]
 packages.find.where = ["python-spec/src"]
@@ -37,12 +37,10 @@ write_to = "python-spec/src/somacore/_version.py"
 # by requiring `python-` at the start of the tag (e.g. `python-v1.2.3`).
 tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
-[tool.isort]
-profile = "black"
-line_length = 88
-force_single_line = true
-known_first_party = ["somacore"]
-single_line_exclusions = ["typing", "typing_extensions"]
+[tool.ruff.isort]
+force-single-line = true
+known-first-party = ["somacore"]
+single-line-exclusions = ["typing", "typing_extensions"]
 
 [tool.mypy]
 check_untyped_defs = true

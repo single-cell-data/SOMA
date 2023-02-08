@@ -5,13 +5,11 @@ members will be exported to the ``somacore`` namespace.
 """
 
 import abc
-from typing import Any, ClassVar, MutableMapping, Optional, Type, TypeVar
+from typing import Any, ClassVar, MutableMapping, Optional
 
-from typing_extensions import LiteralString
+from typing_extensions import LiteralString, Self
 
 from . import options
-
-_ST = TypeVar("_ST", bound="SOMAObject")
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
@@ -22,13 +20,13 @@ class SOMAObject(metaclass=abc.ABCMeta):
     @classmethod
     @abc.abstractmethod
     def open(
-        cls: Type[_ST],
+        cls,
         uri: str,
         mode: options.OpenMode = "r",
         *,
         context: Optional[Any] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> _ST:
+    ) -> Self:
         """Opens the SOMA object at the given URL."""
         raise NotImplementedError()
 
@@ -81,7 +79,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         """
         # Default implementation does nothing.
 
-    def __enter__(self: _ST) -> _ST:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *_: Any) -> None:

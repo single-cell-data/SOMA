@@ -1,4 +1,5 @@
-from typing import Any, Dict, Iterator, NoReturn, Optional, Type, TypeVar
+from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
+from typing_extensions import Self
 
 from .. import base
 from .. import collection
@@ -7,7 +8,6 @@ from .. import experiment
 from .. import measurement
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
-_Self = TypeVar("_Self")
 
 
 class BaseCollection(collection.BaseCollection[_Elem]):
@@ -49,7 +49,7 @@ class BaseCollection(collection.BaseCollection[_Elem]):
         )
 
     @classmethod
-    def create(cls: Type[_Self], *args, **kwargs) -> _Self:
+    def create(cls, *args, **kwargs) -> Self:
         del args, kwargs  # All unused
         # ThisCollection is in-memory only, so just return a new empty one.
         return cls()
