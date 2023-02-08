@@ -14,21 +14,17 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    Type,
     TypeVar,
     Union,
 )
 
 import pyarrow as pa
-from typing_extensions import Final, Literal
+from typing_extensions import Final, Literal, Self
 
 from . import base
 from . import options
 
 _RO_AUTO = options.ResultOrder.AUTO
-
-_DFT = TypeVar("_DFT", bound="DataFrame")
-"""Any implementation of DataFrame."""
 
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -42,14 +38,14 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @classmethod
     @abc.abstractmethod
     def create(
-        cls: Type[_DFT],
+        cls,
         uri: str,
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
-    ) -> _DFT:
+    ) -> Self:
         """Creates a new DataFrame."""
         raise NotImplementedError()
 
@@ -101,10 +97,6 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
 
-_NDT = TypeVar("_NDT", bound="NDArray")
-"""Any implementation of NDArray."""
-
-
 class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     """Common behaviors of N-dimensional arrays of a single primitive type."""
 
@@ -115,14 +107,14 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     @classmethod
     @abc.abstractmethod
     def create(
-        cls: Type[_NDT],
+        cls,
         uri: str,
         *,
         type: pa.DataType,
         shape: Sequence[int],
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
-    ) -> _NDT:
+    ) -> Self:
         """Creates a new NDArray at the given URI."""
         raise NotImplementedError()
 

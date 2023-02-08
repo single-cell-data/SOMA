@@ -1,6 +1,6 @@
 from typing import Generic, Optional, TypeVar
 
-from typing_extensions import Final
+from typing_extensions import Final, Self
 
 from . import _mixin
 from . import base
@@ -9,8 +9,6 @@ from . import data
 from . import measurement
 from . import query
 
-_Self = TypeVar("_Self", bound="Experiment")
-"""A self type."""
 _DF = TypeVar("_DF", bound=data.DataFrame)
 """An implementation of a DataFrame."""
 _MeasColl = TypeVar("_MeasColl", bound=collection.Collection[measurement.Measurement])
@@ -52,12 +50,12 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
     """A collection of named measurements."""
 
     def axis_query(
-        self: _Self,
+        self,
         measurement_name: str,
         *,
         obs_query: Optional[query.AxisQuery] = None,
         var_query: Optional[query.AxisQuery] = None,
-    ) -> "query.ExperimentAxisQuery[_Self]":
+    ) -> "query.ExperimentAxisQuery[Self]":
         """Creates an axis query over this experiment.
 
         See :class:`query.ExperimentAxisQuery` for details on usage.
