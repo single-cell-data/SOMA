@@ -14,7 +14,7 @@ To address these emerging needs in the single cell ecosystem, CZI in partnership
 
 1. Driving the development of SOMA.
 2. Providing its first implementation, [TileDB-SOMA](https://github.com/single-cell-data/TileDB-SOMA) which utilizes the [TileDB Embedded](https://github.com/TileDB-Inc/TileDB) engine.
-3. Adopting TileDB-SOMA at [CZ CELLxGENE Discover](https://cellxgene.cziscience.com/) to build the [Cell Census](https://github.com/TileDB-Inc/TileDB) which provides efficient access and querying of its data from > 40 million cells.
+3. Adopting TileDB-SOMA at [CZ CELLxGENE Discover](https://cellxgene.cziscience.com/) to build the [Cell Census](https://github.com/TileDB-Inc/TileDB) which provides efficient access and querying of its data from nearly 50 million cells, compiled from 700+ datasets.
 
 The `SOMA` specification and its `TileDB-SOMA` implementation provides the following capabilities for single-cell data:
 
