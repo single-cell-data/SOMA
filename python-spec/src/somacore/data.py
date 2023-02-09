@@ -46,7 +46,18 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new DataFrame."""
+        """Creates a new DataFrame at the given URI.
+
+        :param uri: The URI where the DataFrame will be created.
+        :param schema: Arrow schema defining the per-column schema. This schema
+            must define all columns, including columns to be named as index
+            columns.  If the schema includes types unsupported by the SOMA
+            implementation, an error will be raised.
+        :param index_column_names: A list of column names to use as user-defined
+            index columns (e.g., ``['cell_type', 'tissue_type']``).
+            All named columns must exist in the schema, and at least one
+            index column name is required.
+        """
         raise NotImplementedError()
 
     # Data operations
@@ -65,7 +76,48 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     ) -> "ReadIter[pa.Table]":
         """Reads a user-defined slice of data into Arrow tables.
 
-        TODO: Further per-param documentation.
+        :param coords: for each index dimension, which rows to read.
+            Defaults to ``None``, meaning no constraint -- all IDs.
+        :param column_names: the named columns to read and return.
+            Defaults to ``None``, meaning no constraint -- all column names.
+        :param partitions: an optional ``ReadPartitions`` hint to indicate
+            how results should be organized.
+        :param result_order: order of read results.
+            This can be one of 'row-major', 'col-major', or 'auto'.
+        :param value_filter: an optional [value filter] to apply to the results.
+            Defaults to no filter.
+
+        **Indexing:**
+
+        Indexing is performed on a per-column basis for each indexed column.
+        To specify dimensions:
+
+        - A sequence of coordinates is accepted, one per indexed dimension.
+        - The sequence length must be less than or equal to the number of
+          indexed dimensions.
+        - If the sequence is shorter than the number of indexed coordinates,
+          then no constraint (i.e. ``None``) is used for the remaining
+          indexed dimensions.
+        - Specifying ``None`` or an empty sequence (e.g. ``()``) represents
+          no constraints over any dimension, returning the entire dataset.
+          TODO: https://github.com/single-cell-data/TileDB-SOMA/pull/910
+
+        Each dimension may be indexed as follows:
+
+        - ``None`` or ``slice(None)`` places no constraint on the dimension.
+        - Coordinates can be specified as a scalar value, a Python sequence
+          (``list``, ``tuple``, etc.), a ``ndarray``, an Arrow array, and
+          similar objects (as defined by ``SparseDFCoords``).
+        - Slices are doubly inclusive: ``slice(2, 4)`` means ``[2, 3, 4]``,
+          not ``[2, 3]``.  Slice *steps* may not be used: ``slice(10, 20, 2)``
+          is invalid.  ``slice(None)`` places no constraint on the dimension.
+          Half-specified slices like ``slice(None, 99)`` and ``slice(5, None)``
+          specify all indices up to and including that value, and all indices
+          starting from and including the value.
+        - Negative indexing is not supported.
+          TODO: What if the domain includes negative numbers?
+          Negative values are treated as ordinary indices, e.g. ``slice(-1, 5)``
+          represents all indices between −1 and 5 (inclusive).
         """
         raise NotImplementedError()
 
@@ -76,9 +128,16 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         *,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
-        """Writes values to the data store.
+        """Writes the data from an Arrow table to the persistent object.
 
-        TODO: Further per-param documentation.
+        As duplicate index values are not allowed, index values already present
+        in the object are overwritten and new index values are added.
+
+        [lifecycle: experimental]
+
+        :param values: An Arrow table containing all columns, including
+            the index columns. The schema for the values must match
+            the schema for the ``DataFrame``.
         """
         raise NotImplementedError()
 
@@ -115,7 +174,14 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new NDArray at the given URI."""
+        """Creates a new ND array of the current type at the given URI.
+
+        :param uri: The URI where the array will be created.
+        :param type: The Arrow type to store in the array.
+            If the type is unsupported, an error will be raised.
+        :param shape: The length of each dimension as a sequence,
+            e.g. ``(100, 10)``. All lengths must be in the postive int64 range.
+        """
         raise NotImplementedError()
 
     # Metadata operations
@@ -158,9 +224,39 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pa.Tensor:
-        """Reads the specified subarray from this NDArray as a Tensor.
+        """Reads the specified subarray from this DenseNDArray as a Tensor.
 
-        TODO: Additional per-param documentation.
+        Coordinates must specify a contiguous subarray, and the number of
+        coordinates must be less than or equal to the number of dimensions.
+        For example, if the array is 10×20, acceptable values of ``coords``
+        include ``()``, ``(3, 4)``, ``[slice(5, 10)]``, and
+        ``[slice(5, 10), slice(6, 12)]``.  Slice indices are doubly-inclusive.
+
+        :param coords: A per-dimension sequence of coordinates defining
+            the range to read.
+        :param batch_size: The size of batches that should be returned
+            from a read. See :class:`options.BatchSize` for details.
+            XXX How does this work if this returns a single Tensor?
+        :param partitions: Specifies that this is part of a partitioned read,
+            and which partition to include, if present.
+        :param result_order: The order to return the results in.
+
+        **Indexing:**
+
+        Indexing is performed on a per-dimension basis.
+
+        - A sequence of coordinates is accepted, one per dimension.
+        - The sequence length must be less than the number of dimensions.
+        - If the sequence is shorter than the number of dimensions, the
+          remaining dimensions are unconstrained. (Thus, if an empty sequence
+          is provided, the entire array will be returned.)
+
+        Each dimension may be indexed by value or slice:
+
+        - Slices are doubly-inclusive.
+        - Half-specified slices include all data up to or starting from the
+          specified bound, inclusive.
+        - Negative indexing is unsupported.
         """
         raise NotImplementedError()
 
@@ -174,7 +270,13 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     ) -> None:
         """Writes a Tensor to a subarray of the persistent object.
 
-        TODO: Additional per-param documentation.
+        The subarray written is defined by ``coords`` and ``values``. This will
+        overwrite existing values in the array.
+
+        :param coords: A per-dimension tuple of scalars or slices
+            defining the bounds of the subarray to be written.
+        :param values: The values to be written to the subarray.  Must have
+            the same shape as ``coords``, and matching type to the DenseNDArray.
         """
         raise NotImplementedError()
 
@@ -205,7 +307,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SparseRead":
-        """Reads a subset of the object in one or more batches.
+        """Reads a subset this DenseNDArray in batches.
 
         Values returned are a :class:`SparseRead` object which can be converted
         to any number of formats::
@@ -215,7 +317,37 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
             some_dense_array.read(...).csrs().all()
             # -> a single flattened sparse CSR matrix
 
-        TODO: Additional per-param documentation.
+        :param coords: A per-dimension sequence of coordinates defining
+            the range to be read.
+        :param batch_size: The size of batches that should be returned
+            from a read. See :class:`options.BatchSize` for details.
+        :param partitions: Specifies that this is part of a partitioned read,
+            and which partition to include, if present.
+        :param result_order: The order to return the results in.
+
+        **Indexing:**
+
+        Indexing is performed on a per-dimension basis.
+
+        - A sequence of coordinates is accepted, one per dimension.
+        - The sequence length must be less than the number of dimensions.
+        - If the sequence is shorter than the number of dimensions, the
+          remaining dimensions are unconstrained.
+        - Specifying ``None`` or an empty sequence will return the entire array.
+
+        Each dimension may be indexed as follows:
+
+        - ``None`` or ``slice(None)`` places no constraint on the dimension.
+        - Coordinates can be specified as a scalar value, a Python sequence
+          (``list``, ``tuple``, etc.), a ``ndarray``, an Arrow array, and
+          similar objects (as defined by ``SparseNDCoords``).
+        - Slices are doubly inclusive: ``slice(2, 4)`` means ``[2, 3, 4]``,
+          not ``[2, 3]``.  Slice *steps* may not be used: ``slice(10, 20, 2)``
+          is invalid.  ``slice(None)`` places no constraint on the dimension.
+          Half-specified slices like ``slice(None, 99)`` and ``slice(5, None)``
+          specify all indices up to and including that value, and all indices
+          starting from and including the value.
+        - Negative indexing is not supported.
         """
 
     @abc.abstractmethod
@@ -227,16 +359,24 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     ) -> None:
         """Writes a Tensor to a subarray of the persistent object.
 
-        TODO: Additional per-param documentation.
+        :param values: The values to write to the array.
+
+        **Value types:**
+
+        Arrow sparse tensor: the coordinates in the tensor are interpreted as
+        the coordinates to write to.  Supports the *experimental* types
+        SparseCOOTensor, SparseCSRMatrix and SparseCSCMatrix. There is currently
+        no support for Arrow SparseCSFTensor or dense Tensor.
+
+        Arrow table: a COO table, with columns named ``soma_dim_0``, ...,
+        ``soma_dim_N`` and ``soma_data``, to be written to the array.
+
         """
         raise NotImplementedError()
 
     @property
     def nnz(self) -> int:
-        """The number of values stored in the array, including explicit zeros.
-
-        For dense arrays, this will be the total size of the array.
-        """
+        """The number of values stored in the array, including explicit zeros."""
         raise NotImplementedError()
 
 

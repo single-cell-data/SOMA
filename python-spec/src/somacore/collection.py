@@ -35,9 +35,9 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new Collection at the given URI and returns it.
+        """Creates a new collection of this type at the given URI.
 
-        The collection will be returned in the opened state.
+        The collection will be returned opened for writing.
         """
         raise NotImplementedError()
 

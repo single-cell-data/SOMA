@@ -27,7 +27,14 @@ class SOMAObject(metaclass=abc.ABCMeta):
         context: Optional[Any] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
-        """Opens the SOMA object at the given URL."""
+        """Opens the SOMA object of this type at the given URI.
+
+        :param uri: The URI of the object to open.
+        :param mode: The mode to open this in, either `r` or `w`.
+        :param context: The Context value to use when opening the object.
+        :param platform_config: Platform configuration options specific to
+            this open operation.
+        """
         raise NotImplementedError()
 
     @property
@@ -59,6 +66,18 @@ class SOMAObject(metaclass=abc.ABCMeta):
         and writes to it (provided the object is opened) are reflected in
         storage.
         """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def mode(self) -> options.OpenMode:
+        """Returns the mode this object was opened in."""
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        """Returns True if this object has been closed; False if still open."""
         raise NotImplementedError()
 
     soma_type: ClassVar[LiteralString]
