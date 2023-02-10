@@ -719,7 +719,6 @@ Summary:
 ```
 read(
     coords,
-    batch_size,
     partitions,
     result_order,
     platform_config,
@@ -727,7 +726,7 @@ read(
 ```
 
 - coords - per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a per-dimension list of scalar or range.
-- partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- partitions - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - result_order - a [`ResultOrder`](#resultorder) specifying the order of read results.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
