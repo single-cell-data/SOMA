@@ -241,14 +241,14 @@ The opened object can be manipulated (pursuant to its open state) until it is **
 
 SOMA objects are open for **exclusively** reading or writing.
 When a SOMA object is open for writing, only metadata, the schema, and information directly derived from the schema may be read.
-Additionally, for Collection objects, the members of the collection are also accessible when the collection is open in write mode.
+Additionally, for collection objects, the members of the collection are also accessible when the collection is open in write mode.
 For example:
 
 ```
 writable_collection = soma_impl.open('file:///some/collection', 'w')
 dataframe = writable_collection['dataframe']  # OK
 dataframe.schema  # OK
-dataframe.read(...)  # This is NOT allowed and will cause an error.
+dataframe.read(...)  # This is forbidden and will cause an error.
 dataframe.metadata['soma_type']  # OK
 writable_collection.add_new_collection('new_sub_collection')  # OK
 
@@ -256,8 +256,8 @@ readable_collection = soma_impl.open('file:///other/collection')
 nd_array = readable_collection['nd_array']  # OK
 nd_array.type  # OK
 nd_array.read(...)  # OK
-nd_array.write(...)  # This is NOT allowed.
-readable_collection['new_member'] = other_soma_object  # This is NOT allowed.
+nd_array.write(...)  # This is forbidden.
+readable_collection['new_member'] = other_soma_object  # This is forbidden.
 ```
 
 When a SOMA object is opened for writing, write operations are not guaranteed to be complete until the object is **closed**.
@@ -280,7 +280,7 @@ class Collection:
 ```
 
 ```
-soma_collection_t soma_collection_create(char *uri, ...) { ... }
+bool soma_dataframe_exists(char *uri, ...) { ... }
 ```
 
 Where possible, the lifecycle should be integrated into language-specific resource management frameworks (e.g. context management with `with` in Python, try-with-resources in Java).
@@ -314,8 +314,8 @@ Parameters:
 
 - uri - URI of the object to open.
 - mode - The mode to open this object in. Defaults to **read** mode.
-- [context](#long-lived-context-data) - optional context to use for this new object.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
+- [context](#long-lived-context-data) - optional context to use for this new object.
 
 ### Operation: close
 
@@ -330,16 +330,16 @@ writer = soma_impl.open('file:///write/here', 'w')
 writer.write(...)
 
 reader = soma_impl.open('file:///write/here')
-reader.read(...)  # may not (ideally, will not) see the data written above.
+reader.read(...)  # May not (ideally, will not) see the data written above.
 writer.close()
 
 post_close = soma_impl.open('file:///write/here')
-post_close.read(...)  # WILL see the data written by write_data.
+post_close.read(...)  # Will see the data written by write_data.
 ```
 
-Additionally, opened SOMA object instances are not guaranteed to see changes made by other writers after the open completed.
+Additionally, opened SOMA object instances are not guaranteed to see changes made by other writers after they were opened.
 As with atomic writes above, an implementation may provide an even stronger contract guaranteeing that an opened SOMA object will only see a "snapshot" of the object as of the time of opening.
-This applies to all aspects of a SOMA object: data, metadata, collection contents.
+This applies to all aspects of a SOMA object: data, metadata, collection contents, etc.
 
 ```
 reader = soma_impl.open('file:///important/data')
@@ -349,8 +349,8 @@ writer.metadata['key'] = 12
 writer.write(...)
 writer.close()
 
-# It is NOT guaranteed that this read will include any of the data written above.
-# Some implementations may guarantee that writer's writes WILL NOT be visible.
+# It is not guaranteed that this read will include any of the data written above.
+# Some implementations may guarantee that writer's writes will not be visible.
 reader.read(...)
 reader.metadata['key']  # May not be 12.
 ```
@@ -384,7 +384,7 @@ If the object stored at the URI is of a _different_ type, the function should st
 soma_impl.Experiment.exists("backend://host/path/to/some/experiment")
 # -> True
 soma_impl.DataFrame.exists("backend://host/path/to/some/experiment")
-# -> False; the data stored there is *not* a DataFrame.
+# -> False; the data stored there is not a DataFrame.
 soma_impl.Collection.exists("backend://host/nonexistent/path")
 # -> False
 ```
@@ -400,42 +400,36 @@ Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined
 
 In addition, SOMACollection supports operations to manage the contents of the collection:
 
-| Operation                               | Description                                                                              |
-| --------------------------------------- | ---------------------------------------------------------------------------------------- |
-| get(string key)                         | Get the object associated with the key                                                   |
-| has(string key)                         | Test for the existence of key in collection.                                             |
-| iterator                                | Iterate over the collection.                                                             |
-| get length                              | Get the number of elements in the collection.                                            |
-| set(string key, ValueType value)        | Set the key/value in the collection.                                                     |
-| del(string key)                         | Remove the key/value from the collection. Does not delete the underlying object (value). |
-| add_new_collection(string key, ...)     | Creates a new sub-Collection and adds it to this Collection.                             |
-| add_new_dataframe(string key, ...)      | Creates a new DataFrame and adds it to this Collection.                                  |
-| add_new_dense_ndarray(string key, ...)  | Creates a new DenseNDArray and adds it to this Collection.                               |
-| add_new_sparse_ndarray(string key, ...) | Creates a new SparseNDArray and adds it to this Collection.                              |
+| Operation                                           | Description                                                                              |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| get(string key)                                     | Get the object associated with the key.                                                  |
+| has(string key)                                     | Test for the existence of key in collection.                                             |
+| iterator                                            | Iterate over the collection.                                                             |
+| get length                                          | Get the number of elements in the collection.                                            |
+| set(string key, SOMAObject value, use_relative_uri) | Set the key/value in the collection.                                                     |
+| del(string key)                                     | Remove the key/value from the collection. Does not delete the underlying object (value). |
+| add_new_collection(string key, ...)                 | Creates a new sub-Collection and adds it to this Collection.                             |
+| add_new_dataframe(string key, ...)                  | Creates a new DataFrame and adds it to this Collection.                                  |
+| add_new_dense_ndarray(string key, ...)              | Creates a new DenseNDArray and adds it to this Collection.                               |
+| add_new_sparse_ndarray(string key, ...)             | Creates a new SparseNDArray and adds it to this Collection.                              |
 
 A SOMA collection also manages the lifecycle of objects directly instantiated by it.
-Objects accessed via getting a Collection element, or objects created with one of the <code>add*new*<var>object_type</var></code> methods are considered "owned" by the collection.
+Objects accessed via getting a Collection element, or objects created with one of the <code>add_new\_<var>object_type</var></code> methods are considered "owned" by the collection.
 All such objects will be automatically closed together by [the collection's close operation](#operation-close-collection-types).
 
 ### Operation: create() (Collection types)
 
-Create a new SOMACollection of the given type with the user-specified URI.
+Create a new collection of the given type with the user-specified URI.
 The collection type created should match the collection type it is called upon; for example `SOMAExperiment.create` should create a `SOMAExperiment`.
-This `create` function has no parameters beyond those shared by all `create` methods.
+This `create` function has no parameters beyond [those shared by all `create` methods](#operation-create).
 
 ```
 SOMACollectionType.create(string uri, platform_config, context) -> SOMACollectionType
 ```
 
-Parameters:
-
-- uri - location at which to create the object.
-- [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
-- [context](#long-lived-context-data) - optional context to use for this new object.
-
 ### Operation: close (Collection types)
 
-In addition to the details of the [common close operation](#operation-close), there are some semantics specific to collection types.
+In addition to the details of the [common close operation](#operation-close), closing has additional semantics specific to collection types.
 
 When a SOMA collection is directly used to instantiate child SOMA objects, those SOMA objects are considered "owned" by the collection, and the collection manages their lifecycle.
 When the collection is closed, it must close any of these child objects before closing itself.
@@ -478,6 +472,20 @@ A user may close a child object before closing the parent object.
 Because `close` is idempotent, this is explicitly allowed.
 Closing the child will _not_ otherwise affect the parent object; it will remain open as usual.
 
+### Operation: set
+
+Adds an entry to the collection, overwriting an existing key if one exists already.
+
+```
+set(string key, SOMAObject value, URIType uri_type)
+```
+
+Parameters:
+
+- key - The key to set.
+- value - The value to set the key to. If a user sets a collection entry to a type inconsistent with the type of that key (e.g. a defined key in an Experiment) or with the general type of the collection (e.g. a collection of Measurements), behavior is unspecified. Implementations are encouraged to raise an error if possible, to prevent latent errors when later attempting to use the data.
+- uri_type - How the collection should refer to the URI of the newly-added element, whether by absolute or relative URI. The default is `auto`, which will use a relative URI if possible but otherwise use an absolute URI. If `absolute`, the entry will always use an absolute URI. If `relative`, the entry will always use a relative URI, and an error will be raised if a relative URI cannot be used.
+
 ### Operation: add_new\_<var>object_type</var>
 
 Each <code>add_new\_<var>object_type</var></code> method creates a new SOMA dataset in storage, adds it to the collection, and returns it to the user. The newly-created entry has the same `context` value as the existing collection and is [owned by the current collection](#operation-close-collection-types).
@@ -490,7 +498,7 @@ add_new_sparse_ndarray(string key, string uri = "", ...) -> SOMASparseNDArray
 
 Parameters:
 
-- key: The key to add the new element at. This cannot already be a key of the Collection.
+- key: The key to add the new element at. This cannot already be a key of the collection.
 - uri: An optional parameter to specify an exact URI to create the collection at. If the URI is relative, the new entry will be added as a relative URI. If the URI is absolute, the new entry will be added as an absolute URI. If not specified, the collection will generate a new URI for the entry based on a sanitized version of the key. When possible, this should be a relative URI based on the key. If a collection already exists at the user-provided URI, the operation should fail.
 - The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the current collection's context.
 
@@ -508,15 +516,15 @@ add_new_collection(string key, CollectionType type, string uri = "", PlatformCon
 >
 > Summary of operations:
 
-| Operation                                | Description                                        |
-| ---------------------------------------- | -------------------------------------------------- |
-| static create(uri, ...) -> SOMADataFrame | Create a SOMADataFrame.                            |
-| get soma_type                            | Returns the constant "SOMADataFrame"               |
-| get schema -> Arrow.Schema               | Return data schema, in the form of an Arrow Schema |
-| get index_column_names -> [string, ...]  | Return index (dimension) column names.             |
-| get count -> int                         | Return the number of rows in the SOMADataFrame.    |
-| read                                     | Read a subset of data from the SOMADataFrame       |
-| write                                    | Write a subset of data to the SOMADataFrame        |
+| Operation                                | Description                                         |
+| ---------------------------------------- | --------------------------------------------------- |
+| static create(uri, ...) -> SOMADataFrame | Create a SOMADataFrame.                             |
+| get soma_type                            | Returns the constant "SOMADataFrame".               |
+| get schema -> Arrow.Schema               | Return data schema, in the form of an Arrow Schema. |
+| get index_column_names -> [string, ...]  | Return index (dimension) column names.              |
+| get count -> int                         | Return the number of rows in the SOMADataFrame.     |
+| read                                     | Read a subset of data from the SOMADataFrame.       |
+| write                                    | Write a subset of data to the SOMADataFrame.        |
 
 A SOMADataFrame is indexed by one or more dataframe columns (aka "dimensions"). The name and order of dimensions is specified at the time of creation. [Slices](#indexing-and-slicing) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
 
@@ -694,10 +702,10 @@ Summary of operations:
 | Operation                                    | Description                                                             |
 | -------------------------------------------- | ----------------------------------------------------------------------- |
 | static create(uri, ...) -> SOMASparseNDArray | Create a SOMASparseNDArray named with the URI.                          |
-| get soma_type                                | Returns the constant "SOMASparseNDArray"                                |
+| get soma_type                                | Returns the constant "SOMASparseNDArray".                               |
 | get shape -> (int, ...)                      | Return length of each dimension, always a list of length `ndim`.        |
 | get ndim -> int                              | Return number of dimensions.                                            |
-| get schema -> Arrow.Schema                   | Return data schema, in the form of an Arrow Schema                      |
+| get schema -> Arrow.Schema                   | Return data schema, in the form of an Arrow Schema.                     |
 | get is_sparse -> True                        | Return the constant True.                                               |
 | get nnz -> uint                              | Return the number stored values in the array, including explicit zeros. |
 | read                                         | Read a slice of data from the SOMASparseNDArray.                        |
