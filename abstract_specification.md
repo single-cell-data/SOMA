@@ -122,6 +122,68 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 - as a container of independent objects (e.g., a collection of single-cell datasets, each manifest as a [SOMAExperiment](#soma-experiment) object)
 - as the basis for building other composed types (e.g., using SOMACollection to organize pre-defined fields in [SOMAExperiment](#soma-experiment) such as multiple layers of `X`).
 
+#### Collection entry URIs
+
+Collections refer to their components by URI.
+A collection may store its reference to an element by **absolute** URI or **relative** URI.
+
+A reference to an **absolute** URI is, as the name implies, absolute.
+When the backing storage of the collection itself is moved, absolute URI references do not change.
+
+A collection can also refer to sub-paths of itself by **relative** URI.
+If the entire directory storing a collection and a child referred to by relative URI is moved, the relative URI references now refer to the changed base URI.
+While the term "relative" is used, only **child** URIs are supported as relative URIs; relative paths like `../sibling-path/sub-entry` are not supported.
+
+Consider a directory tree of a SOMA implementation that uses a file named `.collection-info` to store the URIs of the collection's contents:
+
+- `file:///soma-dataset`
+  - `collection`
+    - `.collection-info`
+      - `absolute`: `file:///soma-dataset/collection/abspath`
+      - `external-absolute`: `file:///soma-dataset/more-data/other-data`
+      - `relative`: `relpath`
+    - `abspath`
+      - [contents]
+    - `relpath`
+      - [contents]
+  - `more-data`
+    - [contents]
+
+When `file:///soma-dataset/collection` is opened, the URIs will be resolved as follows:
+
+- `absolute`: `file:///soma-dataset/collection/abspath`
+- `external-absolute`: `file:///soma-dataset/more-data/other-data`
+- `relative`: `file:///soma-dataset/collection/relpath`
+
+If the entire `collection` directory is moved to a new path:
+
+- `file:///soma-dataset`
+  - `old-data`
+    - `the-collection`
+      - `.collection-info`
+        - `absolute`: `file:///soma-dataset/collection/abspath`
+        - `external-absolute`: `file:///soma-dataset/more-data/other-data`
+        - `relative`: `relpath`
+      - `abspath`
+        - [contents]
+      - `relpath`
+        - [contents]
+  - `more-data`
+    - [contents]
+
+When `file:///soma-dataset/old-data/the-collection` is opened, the URIs will be resolved as follows:
+
+- `absolute`: `file:///soma-dataset/collection/abspath`
+  (This resolved URI is the same as before. However, the data is no longer at this location; attempting to access this element will fail.)
+- `external-absolute`: `file:///soma-dataset/more-data/other-data`
+  (This URI still points to the same data.)
+- `relative`: `file:///soma-dataset/old-data/the-collection/relpath`
+  (This URI resolves differently and still points to the same data even after it has been moved.)
+
+In general, absolute and relative URIs can both be used interchangeably.
+However, in certain situations, an implementation may support only absolute or relative URIs.
+For instance, a purely filesystem-based implementation may support only relative URIs, or a non-hierarchichal storage backend may support only absolute URIs.
+
 ### SOMADataFrame
 
 `SOMADataFrame` is a multi-column table with a user-defined schema, defining the number of columns and their respective column name and value type. The schema is expressed as an Arrow `Schema`.
@@ -236,7 +298,7 @@ Any given storage "engine" upon which SOMA is implemented may have additional fe
 ## Object lifecycle
 
 SOMA object instances have a lifecycle analogous to the lifecycle of OS-level file objects.
-A SOMA object is instantiated by **opening** a provided URI, in one of _read_ (`r`) or _write_ (`w`) mode.
+A SOMA object is instantiated by **opening** a provided URI, in one of [_read_ or _write_ mode](#openmode).
 The opened object can be manipulated (pursuant to its open state) until it is **closed**, at which point any further calls which attempt to access or modifying backing data will fail (again, akin to a file object).
 
 SOMA objects are open for **exclusively** reading or writing.
@@ -499,7 +561,7 @@ add_new_sparse_ndarray(string key, string uri = "", ...) -> SOMASparseNDArray
 Parameters:
 
 - key: The key to add the new element at. This cannot already be a key of the collection.
-- uri: An optional parameter to specify an exact URI to create the collection at. If the URI is relative, the new entry will be added as a relative URI. If the URI is absolute, the new entry will be added as an absolute URI. If not specified, the collection will generate a new URI for the entry based on a sanitized version of the key. When possible, this should be a relative URI based on the key. If a collection already exists at the user-provided URI, the operation should fail.
+- uri: An optional parameter to specify a URI to create the new collection, which may be [relative or absolute](#collection-entry-uris). If the URI is relative, the new entry will be added with that relative URI. If the URI is absolute, the new entry will be added with that absolute URI. If a collection already exists at the user-provided URI, the operation should fail. If the user does not specify a URI, the collection will generate a new URI for the entry. When possible, this should be a relative URI based on a sanitized version of the key.
 - The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the current collection's context.
 
 `add_new_collection` has an extra parameter allowing control over the type of collection added:
@@ -582,7 +644,7 @@ Parameters:
 - column_names - the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-- result_order - order of read results. If dataframe is indexed, can be one of row-major, col-major or unordered. If dataframe is non-indexed, can be one of rowid-ordered or unordered.
+- result_order - a [`ResultOrder`](#resultorder) specifying the order of read results.
 - value_filter - an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
@@ -666,7 +728,7 @@ read(
 
 - coords - per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a per-dimension list of scalar or range.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-- result_order - order of read results. Can be one of row-major or column-major.
+- result_order - a [`ResultOrder`](#resultorder) specifying the order of read results.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
@@ -758,7 +820,7 @@ read(
 - slice - per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - batch_size - a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - partition - an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-- result_order - order of read results. Can be one of row-major, column-major and unordered.
+- result_order - a [`ResultOrder`](#resultorder) specifying the order of read results.
 - batch_format - a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
 
@@ -783,6 +845,47 @@ Parameters:
 
 - values - values to be written. The type of elements in `values` must match the type of the SOMASparseNDArray.
 - [platform_config](#platform-specific-configuration) - optional storage-engine specific configuration
+
+## Enumeration types
+
+Some functions accept enumerated values as parameters. Language-specific implementations may use language-provided `enum` types to implement these, or use bare constants or another mechanism, depending upon the context.
+
+### OpenMode
+
+The mode used to open a SOMA object from storage, defining the operations that can be performed.
+
+| Entry   | Description                                                                   |
+| ------- | ----------------------------------------------------------------------------- |
+| `read`  | The default opening mode. The caller can read from the object, but not write. |
+| `write` | The caller can write to the object, but not read.                             |
+
+In the Python implementation, this uses the string constants `'r'` and `'w'`.
+
+For more details about the semantics of read and write mode, see the [object lifecycle](#object-lifecycle) section.
+
+### ResultOrder
+
+The order that values will be returned from a read operation.
+
+| Entry          | Description                                                                        |
+| -------------- | ---------------------------------------------------------------------------------- |
+| `auto`         | The caller does not care about result order. Results can be returned in any order. |
+| `row-major`    | The results are returned in row-major order.                                       |
+| `column-major` | The results are returned in column-major order.                                    |
+
+### URIType
+
+How the URI of a new element should be stored by a collection.
+
+| Entry      | Description                                                          |
+| ---------- | -------------------------------------------------------------------- |
+| `auto`     | The collection will determine what type of URI to use automatically. |
+| `absolute` | The collection will always use an absolute URI to store the entry.   |
+| `relative` | The collection will always use a relative URI to store the entry.    |
+
+In the Python implementation, this is represented with a `use_relative_uri` parameter to the given method, where `None` (the default) represents `auto`, `False` represents `absolute`, and `True` represents `relative`.
+
+See [collection entry URIs](#collection-entry-uris) for details about the semantics of absolute and relative URIs as they pertain to collections.
 
 ## Common Interfaces
 
