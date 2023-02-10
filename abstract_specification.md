@@ -415,7 +415,7 @@ In addition, SOMACollection supports operations to manage the contents of the co
 
 A SOMA collection also manages the lifecycle of objects directly instantiated by it.
 Objects accessed via getting a Collection element, or objects created with one of the <code>add*new*<var>object_type</var></code> methods are considered "owned" by the collection.
-This allows all the objects to be automatically closed together by [the collection's close operation](#operation-close-collection-types).
+All such objects will be automatically closed together by [the collection's close operation](#operation-close-collection-types).
 
 ### Operation: create() (Collection types)
 
