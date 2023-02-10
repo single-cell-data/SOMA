@@ -404,7 +404,7 @@ class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
         """Returns all the requested data in a single operation.
 
         If some data has already been retrieved using ``next``, this will return
-        the rest of the data after that is already returned.
+        the rest of the data after that which has already been returned.
         """
         raise NotImplementedError()
 
