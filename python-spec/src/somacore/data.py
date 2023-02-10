@@ -85,9 +85,9 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         :param result_order: the order to return results, specified as a
             :class:`~options.ResultOrder` or its string value.
         :param value_filter: an optional value filter to apply to the results.
-            Value filter syntax is implementation-defined; see the documentation
-            for a particular SOMA implementation for examples.
-            Defaults to no filter.
+            The default of ``None`` represents no filter. Value filter syntax
+            is implementation-defined; see the documentation for a particular
+            SOMA implementation for details.
 
         **Indexing:**
 
