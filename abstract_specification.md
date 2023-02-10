@@ -124,13 +124,16 @@ SOMACollection is an unordered, `string`-keyed map of values. Values may be any 
 
 #### Collection entry URIs
 
-Collections refer to their components by URI.
+Collections refer to their elements by URI.
 A collection may store its reference to an element by **absolute** URI or **relative** URI.
 
 A reference to an **absolute** URI is, as the name implies, absolute.
+This means that the collection stores the full URI of the element.
 When the backing storage of the collection itself is moved, absolute URI references do not change.
 
 A collection can also refer to sub-paths of itself by **relative** URI.
+This means that the collection's elements are stored as suffixes of the collection's path; for instance for a collection at `backend://host/dataset`, the name `child` would refer to `backend://host/dataset/child`.
+This applies both to truly hierarchical systems (like POSIX filesystems) and systems that are technically non-hierarchical but can emulate a hierarchical namespace, like Amazon S3 or Google Cloud Storage.
 If the entire directory storing a collection and a child referred to by relative URI is moved, the relative URI references now refer to the changed base URI.
 While the term "relative" is used, only **child** URIs are supported as relative URIs; relative paths like `../sibling-path/sub-entry` are not supported.
 
@@ -176,11 +179,11 @@ When `file:///soma-dataset/old-data/the-collection` is opened, the URIs will be 
 - `absolute`: `file:///soma-dataset/collection/abspath`
   (This resolved URI is the same as before. However, the data is no longer at this location; attempting to access this element will fail.)
 - `external-absolute`: `file:///soma-dataset/more-data/other-data`
-  (This URI still points to the same data.)
+  (This URI is identical and still points to the same data.)
 - `relative`: `file:///soma-dataset/old-data/the-collection/relpath`
   (This URI resolves differently and still points to the same data even after it has been moved.)
 
-In general, absolute and relative URIs can both be used interchangeably.
+In general, absolute and relative URIs can both be used interchangeably within the same collection (as in the example above).
 However, in certain situations, an implementation may support only absolute or relative URIs.
 For instance, a purely filesystem-based implementation may support only relative URIs, or a non-hierarchichal storage backend may support only absolute URIs.
 
