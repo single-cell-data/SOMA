@@ -46,9 +46,9 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new DataFrame at the given URI.
+        """Creates a new ``DataFrame`` at the given URI.
 
-        :param uri: The URI where the DataFrame will be created.
+        :param uri: The URI where the ``DataFrame`` will be created.
         :param schema: Arrow schema defining the per-column schema. This schema
             must define all columns, including columns to be named as index
             columns.  If the schema includes types unsupported by the SOMA
@@ -65,7 +65,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        coords: Optional[options.SparseDFCoords] = None,
+        coords: Optional[options.SparseDFCoords] = (),
         column_names: Optional[Sequence[str]] = None,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
@@ -77,13 +77,13 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         """Reads a user-defined slice of data into Arrow tables.
 
         :param coords: for each index dimension, which rows to read.
-            Defaults to ``None``, meaning no constraint -- all IDs.
+            Defaults to ``()``, meaning no constraint -- all IDs.
         :param column_names: the named columns to read and return.
             Defaults to ``None``, meaning no constraint -- all column names.
-        :param partitions: an optional ``ReadPartitions`` hint to indicate
-            how results should be organized.
-        :param result_order: order of read results.
-            This can be one of 'row-major', 'col-major', or 'auto'.
+        :param partitions: If present, specifies that this is part of
+            a partitioned read, and which part of the data to include.
+        :param result_order: the order to return results, specified as a
+            :class:`~options.ResultOrder` or its string value.
         :param value_filter: an optional [value filter] to apply to the results.
             Defaults to no filter.
 
@@ -100,13 +100,12 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
           indexed dimensions.
         - Specifying ``None`` or an empty sequence (e.g. ``()``) represents
           no constraints over any dimension, returning the entire dataset.
-          TODO: https://github.com/single-cell-data/TileDB-SOMA/pull/910
 
         Each dimension may be indexed as follows:
 
         - ``None`` or ``slice(None)`` places no constraint on the dimension.
         - Coordinates can be specified as a scalar value, a Python sequence
-          (``list``, ``tuple``, etc.), a ``ndarray``, an Arrow array, and
+          (``list``, ``tuple``, etc.), a NumPy ndarray, an Arrow array, or
           similar objects (as defined by ``SparseDFCoords``).
         - Slices are doubly inclusive: ``slice(2, 4)`` means ``[2, 3, 4]``,
           not ``[2, 3]``.  Slice *steps* may not be used: ``slice(10, 20, 2)``
@@ -115,9 +114,6 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
           specify all indices up to and including that value, and all indices
           starting from and including the value.
         - Negative indexing is not supported.
-          TODO: What if the domain includes negative numbers?
-          Negative values are treated as ordinary indices, e.g. ``slice(-1, 5)``
-          represents all indices between −1 and 5 (inclusive).
         """
         raise NotImplementedError()
 
@@ -219,12 +215,11 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         self,
         coords: options.DenseNDCoords,
         *,
-        batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pa.Tensor:
-        """Reads the specified subarray from this DenseNDArray as a Tensor.
+        """Reads the specified subarray as a Tensor.
 
         Coordinates must specify a contiguous subarray, and the number of
         coordinates must be less than or equal to the number of dimensions.
@@ -234,12 +229,10 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         :param coords: A per-dimension sequence of coordinates defining
             the range to read.
-        :param batch_size: The size of batches that should be returned
-            from a read. See :class:`options.BatchSize` for details.
-            XXX How does this work if this returns a single Tensor?
-        :param partitions: Specifies that this is part of a partitioned read,
-            and which partition to include, if present.
-        :param result_order: The order to return the results in.
+        :param partitions: If present, specifies that this is part of
+            a partitioned read, and which part of the data to include.
+        :param result_order: the order to return results, specified as a
+            :class:`~options.ResultOrder` or its string value.
 
         **Indexing:**
 
@@ -268,15 +261,16 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         *,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
-        """Writes a Tensor to a subarray of the persistent object.
+        """Writes an Arrow tensor to a subarray of the persistent object.
 
         The subarray written is defined by ``coords`` and ``values``. This will
         overwrite existing values in the array.
 
         :param coords: A per-dimension tuple of scalars or slices
             defining the bounds of the subarray to be written.
+            See :meth:`read` for details about indexing.
         :param values: The values to be written to the subarray.  Must have
-            the same shape as ``coords``, and matching type to the DenseNDArray.
+            the same shape as ``coords``, and matching type to the array.
         """
         raise NotImplementedError()
 
@@ -300,14 +294,14 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        coords: Optional[options.SparseNDCoords] = None,
+        coords: Optional[options.SparseNDCoords] = (),
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SparseRead":
-        """Reads a subset this DenseNDArray in batches.
+        """Reads the specified subarray in batches.
 
         Values returned are a :class:`SparseRead` object which can be converted
         to any number of formats::
@@ -323,14 +317,16 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
             from a read. See :class:`options.BatchSize` for details.
         :param partitions: Specifies that this is part of a partitioned read,
             and which partition to include, if present.
-        :param result_order: The order to return the results in.
+        :param result_order: the order to return results, specified as a
+            :class:`~options.ResultOrder` or its string value.
 
         **Indexing:**
 
         Indexing is performed on a per-dimension basis.
 
         - A sequence of coordinates is accepted, one per dimension.
-        - The sequence length must be less than the number of dimensions.
+        - The sequence length must be less than or equal to
+          the number of dimensions.
         - If the sequence is shorter than the number of dimensions, the
           remaining dimensions are unconstrained.
         - Specifying ``None`` or an empty sequence will return the entire array.
@@ -393,6 +389,8 @@ _T = TypeVar("_T")
 class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
     """SparseRead result iterator allowing users to flatten the iteration."""
 
+    __slots__ = ()
+
     # __iter__ is already implemented as `return self` in Iterator.
     # SOMA implementations must implement __next__.
 
@@ -414,6 +412,8 @@ class SparseRead:
     exception (likely a ``TypeError``) containing more specific information
     about why the given format is not supported.
     """
+
+    __slots__ = ()
 
     def coos(self) -> ReadIter[pa.SparseCOOTensor]:
         raise NotImplementedError()
