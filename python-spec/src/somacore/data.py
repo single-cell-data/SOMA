@@ -65,7 +65,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        coords: Optional[options.SparseDFCoords] = (),
+        coords: options.SparseDFCoords = (),
         column_names: Optional[Sequence[str]] = None,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
@@ -84,7 +84,9 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             a partitioned read, and which part of the data to include.
         :param result_order: the order to return results, specified as a
             :class:`~options.ResultOrder` or its string value.
-        :param value_filter: an optional [value filter] to apply to the results.
+        :param value_filter: an optional value filter to apply to the results.
+            Value filter syntax is implementation-defined; see the documentation
+            for a particular SOMA implementation for examples.
             Defaults to no filter.
 
         **Indexing:**
@@ -98,7 +100,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         - If the sequence is shorter than the number of indexed coordinates,
           then no constraint (i.e. ``None``) is used for the remaining
           indexed dimensions.
-        - Specifying ``None`` or an empty sequence (e.g. ``()``) represents
+        - Specifying an empty sequence (e.g. ``()``, the default) represents
           no constraints over any dimension, returning the entire dataset.
 
         Each dimension may be indexed as follows:
@@ -213,7 +215,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        coords: options.DenseNDCoords,
+        coords: options.DenseNDCoords = (),
         *,
         partitions: Optional[options.ReadPartitions] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
@@ -239,10 +241,12 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         Indexing is performed on a per-dimension basis.
 
         - A sequence of coordinates is accepted, one per dimension.
-        - The sequence length must be less than the number of dimensions.
+        - The sequence length must be less than or equal to
+          the number of dimensions.
         - If the sequence is shorter than the number of dimensions, the
-          remaining dimensions are unconstrained. (Thus, if an empty sequence
-          is provided, the entire array will be returned.)
+          remaining dimensions are unconstrained.
+        - Specifying an empty sequence (e.g. ``()``, the default) represents
+          no constraints over any dimension, returning the entire dataset.
 
         Each dimension may be indexed by value or slice:
 
@@ -294,7 +298,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read(
         self,
-        coords: Optional[options.SparseNDCoords] = (),
+        coords: options.SparseNDCoords = (),
         *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
@@ -329,7 +333,8 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
           the number of dimensions.
         - If the sequence is shorter than the number of dimensions, the
           remaining dimensions are unconstrained.
-        - Specifying ``None`` or an empty sequence will return the entire array.
+        - Specifying an empty sequence (e.g. ``()``, the default) represents
+          no constraints over any dimension, returning the entire dataset.
 
         Each dimension may be indexed as follows:
 
