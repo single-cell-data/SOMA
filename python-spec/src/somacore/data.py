@@ -138,7 +138,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         values: Union[pa.RecordBatch, pa.Table],
         *,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> None:
+    ) -> Self:
         """Writes the data from an Arrow table to the persistent object.
         [lifecycle: experimental]
 
@@ -148,6 +148,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         :param values: An Arrow table containing all columns, including
             the index columns. The schema for the values must match
             the schema for the ``DataFrame``.
+        :return: ``self``, to enable method chaining.
         """
         raise NotImplementedError()
 
@@ -288,7 +289,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         values: pa.Tensor,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> None:
+    ) -> Self:
         """Writes an Arrow tensor to a subarray of the persistent object.
         [lifecycle: experimental]
 
@@ -300,6 +301,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
             See :meth:`read` for details about indexing.
         :param values: The values to be written to the subarray.  Must have
             the same shape as ``coords``, and matching type to the array.
+        :return: ``self``, to enable method chaining.
         """
         raise NotImplementedError()
 
@@ -382,11 +384,12 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         values: SparseArrowData,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> None:
+    ) -> Self:
         """Writes a Tensor to a subarray of the persistent object.
         [lifecycle: experimental]
 
         :param values: The values to write to the array.
+        :return: ``self``, to enable method chaining.
 
         **Value types:**
 
@@ -397,7 +400,6 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Arrow table: a COO table, with columns named ``soma_dim_0``, ...,
         ``soma_dim_N`` and ``soma_data``, to be written to the array.
-
         """
         raise NotImplementedError()
 

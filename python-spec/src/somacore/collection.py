@@ -184,7 +184,7 @@ class BaseCollection(
     @abc.abstractmethod
     def set(
         self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
-    ) -> None:
+    ) -> Self:
         """Sets an entry of this collection. [lifecycle: experimental]
 
         Important note: Because parent objects may need to share
@@ -207,6 +207,7 @@ class BaseCollection(
             not share a relative URI base, or use of relative URIs is not
             possible at all, the collection should throw an exception.
             If ``False``, will always use an absolute URI.
+        :return: ``self``, to enable method chaining.
         """
         raise NotImplementedError()
 
