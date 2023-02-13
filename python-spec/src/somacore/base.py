@@ -13,7 +13,7 @@ from . import options
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
-    """A sentinel interface indicating that this type is a SOMA object."""
+    """The base type for all SOMA objects, containing common behaviors."""
 
     __slots__ = ("__weakref__",)
 
@@ -27,18 +27,27 @@ class SOMAObject(metaclass=abc.ABCMeta):
         context: Optional[Any] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
-        """Opens the SOMA object at the given URL."""
+        """Opens the SOMA object of this type at the given URI.
+        [lifecycle: experimental]
+
+        :param uri: The URI of the object to open.
+        :param mode: The mode to open this in, either `r` or `w`.
+        :param context: The Context value to use when opening the object.
+        :param platform_config: Platform configuration options specific to
+            this open operation.
+        """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def uri(self) -> str:
-        """Returns the URI of this SOMA object."""
+        """Returns the URI of this SOMA object. [lifecycle: experimental]"""
         raise NotImplementedError()
 
     @property
     def context(self) -> Any:
         """A value storing implementation-specific configuration information.
+        [lifecycle: experimental]
 
         This contains long-lived (i.e., not call-specific) information that is
         used by the SOMA implementation to access storage. This may include
@@ -53,11 +62,27 @@ class SOMAObject(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def metadata(self) -> MutableMapping[str, Any]:
-        """The metadata of this SOMA object.
+        """The metadata of this SOMA object. [lifecycle: experimental]
 
         The returned value directly references the stored metadata; reads from
         and writes to it (provided the object is opened) are reflected in
         storage.
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def mode(self) -> options.OpenMode:
+        """Returns the mode this object was opened in, either ``r`` or ``w``.
+        [lifecycle: experimental]
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def closed(self) -> bool:
+        """Returns True if this object has been closed; False if still open.
+        [lifecycle: experimental]
         """
         raise NotImplementedError()
 
@@ -74,6 +99,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
     def close(self) -> None:
         """Releases any external resources held by this object.
+        [lifecycle: experimental]
 
         An implementation of close must be idempotent.
         """

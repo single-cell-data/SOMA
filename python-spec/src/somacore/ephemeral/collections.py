@@ -1,6 +1,8 @@
 from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
 from typing_extensions import Self
 
+from .. import options
+
 from .. import base
 from .. import collection
 from .. import data
@@ -66,6 +68,14 @@ class BaseCollection(collection.BaseCollection[_Elem]):
     add_new_dataframe = add_new_collection
     add_new_sparse_ndarray = add_new_collection
     add_new_dense_ndarray = add_new_collection
+
+    @property
+    def closed(self) -> bool:
+        return False  # With no backing storage, there is nothing to close.
+
+    @property
+    def mode(self) -> options.OpenMode:
+        return "w"  # This collection is always writable.
 
     def set(
         self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
