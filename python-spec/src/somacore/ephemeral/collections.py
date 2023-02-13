@@ -79,9 +79,10 @@ class BaseCollection(collection.BaseCollection[_Elem]):
 
     def set(
         self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
-    ) -> None:
+    ) -> Self:
         del use_relative_uri  # Ignored.
         self._entries[key] = value
+        return self
 
     def __getitem__(self, key: str) -> _Elem:
         return self._entries[key]
