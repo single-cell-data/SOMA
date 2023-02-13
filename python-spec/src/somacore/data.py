@@ -28,7 +28,9 @@ _RO_AUTO = options.ResultOrder.AUTO
 
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table with a user-defined schema."""
+    """A multi-column table with a user-defined schema.
+    [lifecycle: experimental]
+    """
 
     __slots__ = ()
     soma_type: Final = "SOMADataFrame"  # type: ignore[misc]
@@ -47,6 +49,13 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         context: Optional[Any] = None,
     ) -> Self:
         """Creates a new ``DataFrame`` at the given URI.
+        [lifecycle: experimental]
+
+        The schema of the created dataframe will include a column named
+        ``soma_joinid`` of type ``pyarrow.int64``. If a ``soma_joinid`` column
+        is present in the provided schema, it must be of the correct type. If no
+        ``soma_joinid`` column is provided, one will be added. This column may
+        be used as an indexed column.
 
         :param uri: The URI where the ``DataFrame`` will be created.
         :param schema: Arrow schema defining the per-column schema. This schema
@@ -75,6 +84,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "ReadIter[pa.Table]":
         """Reads a user-defined slice of data into Arrow tables.
+        [lifecycle: experimental]
 
         :param coords: for each index dimension, which rows to read.
             Defaults to ``()``, meaning no constraint -- all IDs.
@@ -109,13 +119,16 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         - Coordinates can be specified as a scalar value, a Python sequence
           (``list``, ``tuple``, etc.), a NumPy ndarray, an Arrow array, or
           similar objects (as defined by ``SparseDFCoords``).
-        - Slices are doubly inclusive: ``slice(2, 4)`` means ``[2, 3, 4]``,
-          not ``[2, 3]``.  Slice *steps* may not be used: ``slice(10, 20, 2)``
-          is invalid.  ``slice(None)`` places no constraint on the dimension.
-          Half-specified slices like ``slice(None, 99)`` and ``slice(5, None)``
-          specify all indices up to and including that value, and all indices
+        - Slices specify a closed range: ``slice(2, 4)`` includes both 2 and 4.
+          Slice *steps* may not be used: ``slice(10, 20, 2)`` is invalid.
+          ``slice(None)`` places no constraint on the dimension. Half-specified
+          slices like ``slice(None, 99)`` and ``slice(5, None)`` specify
+          all indices up to and including the value, and all indices
           starting from and including the value.
-        - Negative indexing is not supported.
+        - Negative values in indices and slices are treated as raw domain values
+          and not as indices relative to the end, unlike traditional Python
+          sequence indexing. For instance, ``slice(-10, 3)`` indicates the range
+          from −10 to 3 on the given dimension.
         """
         raise NotImplementedError()
 
@@ -127,11 +140,10 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
         """Writes the data from an Arrow table to the persistent object.
+        [lifecycle: experimental]
 
         As duplicate index values are not allowed, index values already present
         in the object are overwritten and new index values are added.
-
-        [lifecycle: experimental]
 
         :param values: An Arrow table containing all columns, including
             the index columns. The schema for the values must match
@@ -144,13 +156,17 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def schema(self) -> pa.Schema:
-        """The schema of the data in this dataframe."""
+        """The schema of the data in this dataframe.
+        [lifecycle: experimental]
+        """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def index_column_names(self) -> Tuple[str, ...]:
-        """The names of the index (dimension) columns."""
+        """The names of the index (dimension) columns.
+        [lifecycle: experimental]
+        """
         raise NotImplementedError()
 
 
@@ -173,6 +189,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         context: Optional[Any] = None,
     ) -> Self:
         """Creates a new ND array of the current type at the given URI.
+        [lifecycle: experimental]
 
         :param uri: The URI where the array will be created.
         :param type: The Arrow type to store in the array.
@@ -187,26 +204,30 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def shape(self) -> Tuple[int, ...]:
-        """The length of each dimension of this array."""
+        """The length of each dimension of this array.
+        [lifecycle: experimental]
+        """
         raise NotImplementedError()
 
     @property
     def ndim(self) -> int:
-        """The number of dimensions in this array."""
+        """The number of dimensions in this array. [lifecycle: experimental]"""
         return len(self.shape)
 
     @property
     @abc.abstractmethod
     def schema(self) -> pa.Schema:
-        """The schema of the data in this array."""
+        """The schema of the data in this array. [lifecycle: experimental]"""
         raise NotImplementedError()
 
     is_sparse: ClassVar[Literal[True, False]]
-    """True if the array is sparse. False if it is dense."""
+    """True if the array is sparse. False if it is dense.
+    [lifecycle: experimental]
+    """
 
 
 class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
-    """A N-dimensional array stored densely."""
+    """A N-dimensional array stored densely. [lifecycle: experimental]"""
 
     __slots__ = ()
     soma_type: Final = "SOMADenseNDArray"  # type: ignore[misc]
@@ -221,13 +242,13 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pa.Tensor:
-        """Reads the specified subarray as a Tensor.
+        """Reads the specified subarray as a Tensor. [lifecycle: experimental]
 
         Coordinates must specify a contiguous subarray, and the number of
         coordinates must be less than or equal to the number of dimensions.
         For example, if the array is 10×20, acceptable values of ``coords``
         include ``()``, ``(3, 4)``, ``[slice(5, 10)]``, and
-        ``[slice(5, 10), slice(6, 12)]``.  Slice indices are doubly-inclusive.
+        ``[slice(5, 10), slice(6, 12)]``.
 
         :param coords: A per-dimension sequence of coordinates defining
             the range to read.
@@ -250,10 +271,13 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Each dimension may be indexed by value or slice:
 
-        - Slices are doubly-inclusive.
-        - Half-specified slices include all data up to or starting from the
-          specified bound, inclusive.
-        - Negative indexing is unsupported.
+        - Slices specify a closed range: ``slice(2, 4)`` includes 2, 3, and 4.
+          Slice *steps* may not be used: ``slice(10, 20, 2)`` is invalid.
+          ``slice(None)`` places no constraint on the dimension. Half-specified
+          slices like ``slice(None, 99)`` and ``slice(5, None)`` specify
+          all indices up to and including the value, and all indices
+          starting from and including the value.
+        - Negative indexing is not supported.
         """
         raise NotImplementedError()
 
@@ -266,6 +290,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
         """Writes an Arrow tensor to a subarray of the persistent object.
+        [lifecycle: experimental]
 
         The subarray written is defined by ``coords`` and ``values``. This will
         overwrite existing values in the array.
@@ -289,7 +314,7 @@ SparseArrowData = Union[
 
 
 class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
-    """A N-dimensional array stored sparsely."""
+    """A N-dimensional array stored sparsely. [lifecycle: experimental]"""
 
     __slots__ = ()
     soma_type: Final = "SOMASparseNDArray"  # type: ignore[misc]
@@ -305,7 +330,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SparseRead":
-        """Reads the specified subarray in batches.
+        """Reads the specified subarray in batches. [lifecycle: experimental]
 
         Values returned are a :class:`SparseRead` object which can be converted
         to any number of formats::
@@ -342,11 +367,11 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         - Coordinates can be specified as a scalar value, a Python sequence
           (``list``, ``tuple``, etc.), a ``ndarray``, an Arrow array, and
           similar objects (as defined by ``SparseNDCoords``).
-        - Slices are doubly inclusive: ``slice(2, 4)`` means ``[2, 3, 4]``,
-          not ``[2, 3]``.  Slice *steps* may not be used: ``slice(10, 20, 2)``
-          is invalid.  ``slice(None)`` places no constraint on the dimension.
-          Half-specified slices like ``slice(None, 99)`` and ``slice(5, None)``
-          specify all indices up to and including that value, and all indices
+        - Slices specify a closed range: ``slice(2, 4)`` includes 2, 3, and 4.
+          Slice *steps* may not be used: ``slice(10, 20, 2)`` is invalid.
+          ``slice(None)`` places no constraint on the dimension. Half-specified
+          slices like ``slice(None, 99)`` and ``slice(5, None)`` specify
+          all indices up to and including the value, and all indices
           starting from and including the value.
         - Negative indexing is not supported.
         """
@@ -359,6 +384,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> None:
         """Writes a Tensor to a subarray of the persistent object.
+        [lifecycle: experimental]
 
         :param values: The values to write to the array.
 
@@ -377,7 +403,9 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
     @property
     def nnz(self) -> int:
-        """The number of values stored in the array, including explicit zeros."""
+        """The number of values stored in the array, including explicit zeros.
+        [lifecycle: experimental]
+        """
         raise NotImplementedError()
 
 
@@ -392,7 +420,9 @@ _T = TypeVar("_T")
 
 
 class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
-    """SparseRead result iterator allowing users to flatten the iteration."""
+    """SparseRead result iterator allowing users to flatten the iteration.
+    [lifecycle: experimental]
+    """
 
     __slots__ = ()
 
@@ -402,6 +432,7 @@ class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def concat(self) -> _T:
         """Returns all the requested data in a single operation.
+        [lifecycle: experimental]
 
         If some data has already been retrieved using ``next``, this will return
         the rest of the data after that which has already been returned.
@@ -411,6 +442,7 @@ class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
 
 class SparseRead:
     """Intermediate type to choose result format when reading a sparse array.
+    [lifecycle: experimental]
 
     A query may not be able to return all of these formats. The concrete result
     may raise a ``NotImplementedError`` or may choose to raise a different

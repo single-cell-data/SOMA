@@ -18,6 +18,7 @@ class BaseCollection(
     base.SOMAObject, MutableMapping[str, _Elem], metaclass=abc.ABCMeta
 ):
     """A generic string-keyed collection of :class:`SOMAObject`s.
+    [lifecycle: experimental]
 
     The generic type specifies what type the Collection may contain. At its
     most generic, a Collection may contain any SOMA object, but a subclass
@@ -36,6 +37,7 @@ class BaseCollection(
         context: Optional[Any] = None,
     ) -> Self:
         """Creates a new collection of this type at the given URI.
+        [lifecycle: experimental]
 
         The collection will be returned opened for writing.
         """
@@ -81,6 +83,7 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "BaseCollection":
         """Creates a new sub-collection of this collection.
+        [lifecycle: experimental]
 
         To add an existing collection as a sub-element of this collection,
         use :meth:`set` or indexed access instead.
@@ -131,6 +134,7 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.DataFrame:
         """Creates a new DataFrame as a child of this collection.
+        [lifecycle: experimental]
 
         Parameters are as in :meth:`data.DataFrame.create`.
         See :meth:`add_new_collection` for details about child creation.
@@ -148,6 +152,7 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.DenseNDArray:
         """Creates a new dense NDArray as a child of this collection.
+        [lifecycle: experimental]
 
         Parameters are as in :meth:`data.DenseNDArray.create`.
         See :meth:`add_new_collection` for details about child creation.
@@ -165,6 +170,7 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.SparseNDArray:
         """Creates a new sparse NDArray as a child of this collection.
+        [lifecycle: experimental]
 
         Parameters are as in :meth:`data.SparseNDArray.create`.
         See :meth:`add_new_collection` for details about child creation.
@@ -179,7 +185,7 @@ class BaseCollection(
     def set(
         self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
     ) -> None:
-        """Sets an entry of this collection.
+        """Sets an entry of this collection. [lifecycle: experimental]
 
         Important note: Because parent objects may need to share
         implementation-internal state with children, when you set an item in a
@@ -206,7 +212,9 @@ class BaseCollection(
 
 
 class Collection(BaseCollection[_Elem]):
-    """SOMA Collection imposing no semantics on the contained values."""
+    """SOMA Collection imposing no semantics on the contained values.
+    [lifecycle: experimental]
+    """
 
     soma_type: Final = "SOMACollection"  # type: ignore[misc]
     __slots__ = ()
