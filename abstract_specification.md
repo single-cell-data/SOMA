@@ -305,7 +305,7 @@ A SOMA object is instantiated by **opening** a provided URI, in one of [_read_ o
 The opened object can be manipulated (pursuant to its open state) until it is **closed**, at which point any further calls which attempt to access or modifying backing data will fail (again, akin to a file object).
 
 SOMA objects are open for **exclusively** reading or writing.
-When a SOMA object is open for writing, only metadata, the schema, and information directly derived from the schema may be read.
+When a SOMA object is open for writing, the `read()` method cannot be called. However, its metadata, its schema, and information directly derived from the schema may be inspected.
 Additionally, for collection objects, the members of the collection are also accessible when the collection is open in write mode.
 For example:
 
@@ -461,7 +461,7 @@ Summary of operations on a SOMACollection, where `ValueType` is any SOMA-defined
 | Operation     | Description                                                              |
 | ------------- | ------------------------------------------------------------------------ |
 | close()       | Closes this SOMACollection and other objects whose lifecycle it manages. |
-| get soma_type | Returns the constant "SOMACollection"                                    |
+| get soma_type | Returns the constant "SOMACollection".                                   |
 
 In addition, SOMACollection supports operations to manage the contents of the collection:
 
@@ -553,7 +553,7 @@ Parameters:
 
 ### Operation: add_new\_<var>object_type</var>
 
-Each <code>add_new\_<var>object_type</var></code> method creates a new SOMA dataset in storage, adds it to the collection, and returns it to the user. The newly-created entry has the same `context` value as the existing collection and is [owned by the current collection](#operation-close-collection-types).
+Each <code>add_new\_<var>object_type</var></code> method creates a new SOMA dataset in storage, adds it to the collection (with the same semantics as the `create` operation), and returns it to the user. The newly-created entry has the same `context` value as the existing collection and is [owned by the current collection](#operation-close-collection-types).
 
 ```
 add_new_dataframe(string key, string uri = "", ...) -> SOMADataFrame
