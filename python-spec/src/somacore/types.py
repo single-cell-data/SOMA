@@ -1,7 +1,17 @@
 """Type and interface declarations that are not specific to options."""
 
-from typing import Optional, TypeVar
-from typing_extensions import Protocol, Self, runtime_checkable
+from typing import Any, Optional, TypeVar, Sequence
+from typing_extensions import Protocol, Self, runtime_checkable, TypeGuard
+
+
+def is_nonstringy_sequence(it: Any) -> TypeGuard[Sequence]:
+    """Returns true if a sequence is a "normal" sequence and not str or bytes.
+
+    str and bytes are "weird" sequences because iterating them gives you
+    another str or bytes instance for each character, and when used as a
+    sequence is not what users want.
+    """
+    return not isinstance(it, (str, bytes)) and isinstance(it, Sequence)
 
 
 class Comparable(Protocol):

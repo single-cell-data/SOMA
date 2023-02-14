@@ -1,11 +1,11 @@
-from typing import Any, Optional, Sequence, Tuple
+from typing import Optional, Sequence, Tuple
 
 import attrs
 import numpy as np
 import pyarrow as pa
-from typing_extensions import TypeGuard
 
 from .. import options
+from .. import types
 
 
 def _canonicalize_coords(
@@ -22,7 +22,7 @@ def _canonicalize_coords(
         raise TypeError(
             f"query coordinates must be a sequence, not a single {type(in_coords)}"
         )
-    if not _is_normal_sequence(in_coords):
+    if not types.is_nonstringy_sequence(in_coords):
         raise TypeError(
             "query coordinates must be a normal sequence, not `str` or `bytes`."
         )
@@ -40,10 +40,6 @@ def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:
         # appropriate. If this is not the case, it will raise down the line.
         return tuple(coord)
     raise TypeError(f"{type(coord)} object cannot be used as a coordinate.")
-
-
-def _is_normal_sequence(it: Any) -> TypeGuard[Sequence]:
-    return not isinstance(it, (str, bytes)) and isinstance(it, Sequence)
 
 
 @attrs.define(frozen=True, kw_only=True)
