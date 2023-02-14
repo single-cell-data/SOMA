@@ -7,6 +7,8 @@ SOMA types that require them, not reimplemented by the implementing package.
 import enum
 from typing import Any, Mapping, Optional, Sequence, Union
 
+from . import types
+
 import attrs
 import numpy as np
 import numpy.typing as npt
@@ -109,43 +111,39 @@ ResultOrderStr = Union[ResultOrder, Literal["auto", "row-major", "column-major"]
 """A ResultOrder, or the str representing it."""
 
 
-DenseCoord = Union[int, slice]
-"""A single coordinate range for reading dense data."""
+DenseCoord = Union[None, int, types.Slice[int]]
+"""A single coordinate range for reading dense data.
+
+``None`` indicates the entire domain of a dimension; values of this type are
+not ``Optional``, but may be ``None``.
+"""
 DenseNDCoords = Sequence[DenseCoord]
 """A sequence of ranges to read dense data."""
 
 # TODO: Add support for non-integer types.
 SparseDFCoord = Union[
-    None,
-    int,
-    slice,
+    DenseCoord,
     Sequence[int],
+    Sequence[str],
+    Sequence[bytes],
+    types.Slice[bytes],
+    types.Slice[str],
     pa.Array,
     pa.ChunkedArray,
     npt.NDArray[np.integer],
 ]
-"""A single coordinate range for reading sparse dataframes.
-
-``None`` is included here since it is a valid value; parameters of this type
-are not ``Optional``, but may be ``None``.
-"""
+"""A single coordinate range for one dimension of a sparse dataframe."""
 SparseDFCoords = Sequence[SparseDFCoord]
 """A sequence of coordinate ranges for reading dense dataframes."""
 
-SparseNDCoords = Union[
-    None,
-    Sequence[
-        Union[
-            None,
-            DenseCoord,
-            Sequence[int],
-            npt.NDArray[np.integer],
-            pa.IntegerArray,
-        ]
-    ],
+SparseNDCoord = Union[
+    DenseCoord,
+    Sequence[int],
+    npt.NDArray[np.integer],
+    pa.IntegerArray,
 ]
-"""A sequence of coordinate ranges for reading sparse ndarrays.
+"""A single coordinate range for one dimension of a sparse nd-array."""
 
-``None`` is included here since it is a valid value (for reading the entire
-ndarray); parameters of this type are not ``Optional`` but may be ``None``.
-"""
+
+SparseNDCoords = Sequence[SparseNDCoord]
+"""A sequence of coordinate ranges for reading sparse ndarrays."""
