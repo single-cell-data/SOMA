@@ -27,7 +27,7 @@ The `SOMA` specification and its `TileDB-SOMA` implementation provide the follow
 ## Developer information
 
 * [SOMA abstract specification](https://github.com/single-cell-data/SOMA/blob/main/abstract_specification.md) — language-agnostic SOMA API specification.
-* [Python SOMA specification](https://github.com/single-cell-data/SOMA/tree/main/python-spec) — persistence-layer–agnostic Python definition of SOMA core types. R coming soon.
+* [Python SOMA specification](https://github.com/single-cell-data/SOMA/tree/main/python-spec) — persistence-layer–agnostic Python definition of SOMA core types.
 * [TileDB-SOMA](https://github.com/single-cell-data/TileDB-SOMA) — Python and R implementation of SOMA specification using [TileDB Embedded](https://github.com/TileDB-Inc/TileDB). R coming soon.
 
 ## Coming soon!
