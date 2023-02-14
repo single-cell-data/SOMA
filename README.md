@@ -19,7 +19,7 @@ To address these emerging needs in the single cell ecosystem, the Chan Zuckerber
 The `SOMA` specification and its `TileDB-SOMA` implementation provide the following capabilities for single-cell data:
 
 1. An abstract specification with flexibility for data from multiple modalities (e.g. RNA, spatial, epigenomics)
-1. A format to store and access datasets larger than memory, as compared to the current paradigm of `.h5ad`/`.mtx`/`.tgz`/`.RData`/`h5Seurat `/ etc.
+1. A format to store and access datasets larger than memory, as compared to the current paradigm of `.h5ad`/`.mtx`/`.tgz`/`.RData`/`.h5Seurat`/ etc.
 1. Eliminates in-memory limitations by providing query-ready data management for reading and writing at low latency and cloud scale. 
 1. R and python APIs with the flexibility to expand to other languages.
 
