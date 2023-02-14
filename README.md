@@ -41,7 +41,7 @@ The `SOMA` specification and its `TileDB-SOMA` implementation provide the follow
 
 * We expect the TileDB-SOMA repository to be the front door for reporting and tracking implementation issues [https://github.com/single-cell-data/TileDB-SOMA/issues](https://github.com/single-cell-data/TileDB-SOMA/issues). In addition, for spec-related issues please submit an issue at [https://github.com/single-cell-data/SOMA/issues](https://github.com/single-cell-data/SOMA/issues). 
 * If you believe you have found a security issue, in lieu of filing an issue please responsibly disclose it by contacting [security@chanzuckerberg.com](mailto:security@chanzuckerberg.com).
-* Feedback is appreciated, as this is a community-driven project. If you have well-scoped features/discussions please add them to [https://github.com/single-cell-data/SOMA/issues](https://github.com/single-cell-data/SOMA/issues. For any other inquiries please reach out to [soma@chanzuckerberg.com](mailto:soma@chanzuckerberg.com).
+* Feedback is appreciated, as this is a community-driven project. If you have well-scoped features/discussions please add them to [https://github.com/single-cell-data/SOMA/issues](https://github.com/single-cell-data/SOMA/issues). For any other inquiries please reach out to [soma@chanzuckerberg.com](mailto:soma@chanzuckerberg.com).
 * If you would like to learn more about SOMA or would like to keep up to date with the latest developments, please join our mailing list [here](https://bit.ly/soma-signup).
 
 
