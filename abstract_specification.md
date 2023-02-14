@@ -93,7 +93,7 @@ In the following doc:
 
 Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
-Numeric index types (eg, offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1)`. In other words, positive `int64` values are used for offset indexing.
+Numeric index types (eg, offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1)`. In other words, non-negative `int64` values are used for offset indexing.
 
 > ⚠️ **Issue** - are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (i.e., no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (e.g., RecordBatch, List, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
 

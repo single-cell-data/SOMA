@@ -52,10 +52,10 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         [lifecycle: experimental]
 
         The schema of the created dataframe will include a column named
-        ``soma_joinid`` of type ``pyarrow.int64``. If a ``soma_joinid`` column
-        is present in the provided schema, it must be of the correct type. If no
-        ``soma_joinid`` column is provided, one will be added. This column may
-        be used as an indexed column.
+        ``soma_joinid`` of type ``pyarrow.int64``, with negative values
+        disallowed.  If a ``soma_joinid`` column is present in the provided
+        schema, it must be of the correct type.  If no ``soma_joinid`` column
+        is provided, one will be added.  It may be used as an indexed column.
 
         :param uri: The URI where the ``DataFrame`` will be created.
         :param schema: Arrow schema defining the per-column schema. This schema
