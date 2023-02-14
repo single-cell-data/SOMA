@@ -137,20 +137,23 @@ This applies both to truly hierarchical systems (like POSIX filesystems) and sys
 If the entire directory storing a collection and a child referred to by relative URI is moved, the relative URI references now refer to the changed base URI.
 While the term "relative" is used, only **child** URIs are supported as relative URIs; relative paths like `../sibling-path/sub-entry` are not supported.
 
-Consider a directory tree of a SOMA implementation that uses a file named `.collection-info` to store the URIs of the collection's contents:
+Consider a directory tree of a SOMA implementation that uses a file named `.collection-info.toml` to store the URIs of the collection's contents:
 
 - `file:///soma-dataset`
   - `collection`
-    - `.collection-info`
-      - `absolute`: `file:///soma-dataset/collection/abspath`
-      - `external-absolute`: `file:///soma-dataset/more-data/other-data`
-      - `relative`: `relpath`
+    - `.collection-info.toml`:
+      ```toml
+      [contents]
+      absolute = "file:///soma-dataset/collection/abspath"
+      external-absolute = "file:///soma-dataset/more-data/other-data"
+      relative = "relpath"
+      ```
     - `abspath`
-      - [contents]
+      - _SOMA object data_
     - `relpath`
-      - [contents]
+      - _SOMA object data_
   - `more-data`
-    - [contents]
+    - _SOMA object data_
 
 When `file:///soma-dataset/collection` is opened, the URIs will be resolved as follows:
 
@@ -163,16 +166,19 @@ If the entire `collection` directory is moved to a new path:
 - `file:///soma-dataset`
   - `old-data`
     - `the-collection`
-      - `.collection-info`
-        - `absolute`: `file:///soma-dataset/collection/abspath`
-        - `external-absolute`: `file:///soma-dataset/more-data/other-data`
-        - `relative`: `relpath`
+      - `.collection-info.toml`
+        ```toml
+        [contents]
+        absolute = "file:///soma-dataset/collection/abspath"
+        external-absolute = "file:///soma-dataset/more-data/other-data"
+        relative = "relpath"
+        ```
       - `abspath`
-        - [contents]
+        - _SOMA object data_
       - `relpath`
-        - [contents]
+        - _SOMA object data_
   - `more-data`
-    - [contents]
+    - _SOMA object data_
 
 When `file:///soma-dataset/old-data/the-collection` is opened, the URIs will be resolved as follows:
 
@@ -354,7 +360,8 @@ Where possible, the lifecycle should be integrated into language-specific resour
 
 The `create` static method **creates** a new stored SOMA object, then returns that object opened in write mode.
 
-If an object already exists at the given location, this should throw an error.
+The create operation should be atomic, in that it is only possible for one caller to successfully create a SOMA object at a given URI (like `open(..., mode='x')` in Python, or the `O_EXCL` flag to the C `open` function).
+If an object already exists at the given location, `create` throws an error.
 
 ```
 SomeSOMAType.create(string uri, [additional per-type parameters], PlatformConfig platform_config, Context context) -> SomeSOMAType
@@ -370,6 +377,8 @@ Parameters:
 ### Operation: open
 
 The `open` static method **opens** a SOMA object of its type and returns it.
+
+If the object does not exist at the given location, `open` throws an error.
 
 ```
 SomeSOMAType.open(string uri, OpenMode mode = READ, PlatformConfig platform_config, Context context) -> SomeSOMAType
@@ -960,6 +969,8 @@ Semver compatible strings comply with the specification at [semver.org](https://
 ### Method: open
 
 The `open` global method finds the SOMA data at the given URI, identifies its type using metadata, and opens it as that type.
+
+If there is no SOMA object at the given URI, `open` raises an error.
 
 ```
 open(string uri, OpenMode mode, PlatformConfig platform_config, Context context) -> SOMAObject
