@@ -16,7 +16,7 @@ To address these emerging needs in the single cell ecosystem, the Chan Zuckerber
 2. Providing its first implementation, [TileDB-SOMA](https://github.com/single-cell-data/TileDB-SOMA) which utilizes the [TileDB Embedded](https://github.com/TileDB-Inc/TileDB) engine.
 3. Adopting TileDB-SOMA at [CZ CELLxGENE Discover](https://cellxgene.cziscience.com/) to build the [Cell Census](https://github.com/chanzuckerberg/cell-census/) which provides efficient access and querying to a corpus containing nearly 50 million cells, compiled from 700+ datasets.
 
-The `SOMA` specification and its `TileDB-SOMA` implementation provides the following capabilities for single-cell data:
+The `SOMA` specification and its `TileDB-SOMA` implementation provide the following capabilities for single-cell data:
 
 1. An abstract specification with flexibility for data from multiple modalities (e.g. RNA, spatial, epigenomics)
 1. A format to store and access datasets larger than memory, as compared to the current paradigm of `.h5ad`/`.mtx`/`.tgz`/`.RData`/`h5Seurat `/ etc.
