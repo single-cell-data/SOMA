@@ -2,7 +2,7 @@
 
 import sys
 from typing import Any, NoReturn, Optional, Type, TypeVar, Sequence, TYPE_CHECKING
-from typing_extensions import Protocol, Self, TypeGuard
+from typing_extensions import Protocol, TypeGuard
 
 
 def is_nonstringy_sequence(it: Any) -> TypeGuard[Sequence]:
@@ -13,28 +13,6 @@ def is_nonstringy_sequence(it: Any) -> TypeGuard[Sequence]:
     sequence is not what users want.
     """
     return not isinstance(it, (str, bytes)) and isinstance(it, Sequence)
-
-
-class Comparable(Protocol):
-    """Objects that can be ``<``/``==``/``>``'d."""
-
-    def __lt__(self, __other: Self) -> bool:
-        ...
-
-    def __le__(self, __other: Self) -> bool:
-        ...
-
-    def __eq__(self, __other: object) -> bool:
-        ...
-
-    def __ne__(self, __other: object) -> bool:
-        ...
-
-    def __ge__(self, __other: Self) -> bool:
-        ...
-
-    def __gt__(self, __other: Self) -> bool:
-        ...
 
 
 _T = TypeVar("_T")
