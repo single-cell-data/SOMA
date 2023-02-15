@@ -996,7 +996,7 @@ writeExperiment.mode();  // WRITE
 
 * In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
 * Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
-* Slices define a closed, i.e. are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
+* Slices define a closed interval, i.e. are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
 * Slices may include the lower bound, upper bound, both, or neither:
   * Slicing with neither (e.g. Python's `[:]`) means select all
   * Slicing with lower bound 2 and no upper bound selects indices 2 through the highest index present in the given data
