@@ -12,7 +12,7 @@ The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible,
 - support access to persistent, cloud-resident datasets
 - enable use within popular data-science environments (e.g., R, Python), using the tools of that environment (e.g., Python Pandas integration)
 - enable "out-of-core" access to data aggregations much larger than single-host main memory
-- enable distributed computation over datasets, and
+- enable distributed computation over datasets
 - provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g., a cell "atlas").
 
 The SOMA data model is centered on annotated 2-D matrices, conceptually similar to commonly used single-cell 'omics data structures including Seurat Assay, Bioconductor SingleCellExperiment, and Scanpy AnnData. Where possible, the SOMA API attempts to be general-purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
@@ -624,7 +624,7 @@ Parameters:
 - `uri`: location at which to create the object.
 - `schema`: an Arrow Schema defining the per-column schema.
 - `index_column_names`: a list of column names to use as index columns, also known as "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g., read result order). The `soma_joinid` column may be indexed.
-- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Returns: The newly created `SOMADataFrame`, opened in write mode.
@@ -663,7 +663,7 @@ Parameters:
 - `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
 - `value_filter``: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
-- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more Arrow `Table` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
@@ -679,7 +679,7 @@ write(Arrow.Table values, platform_config)
 Parameters:
 
 - `values`: a parameter containing all columns, including the index columns. The schema for the values must match the schema for the `SOMADataFrame`.
-- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 All columns, including index columns and `soma_joinid` must be specified in the `values` parameter.
 
@@ -713,7 +713,7 @@ Parameters:
 - `uri`: location at which to create the object
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data)`: optional context to use for this new object.
 
 Returns: The newly created `SOMADenseNDArray`, opened for writing.
@@ -744,7 +744,7 @@ read(
 - `coords`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a per-dimension list of scalar or range.
 - `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
 
@@ -768,7 +768,7 @@ Parameters:
 
 - `coords`: per-dimension slice, expressed as a per-dimension list of scalar or range.
 - `values`: values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNDArray.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
 
 ## SOMASparseNDArray
 
@@ -801,7 +801,7 @@ Parameters:
 - `uri`: location at which to create the object
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data)`: optional context to use for this new object.
 
 Returns: The newly created `SOMASparseNDArray`, opened for writing.
@@ -836,7 +836,7 @@ read(
 - `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
 - `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
 
@@ -858,7 +858,7 @@ Values to write may be provided in a variety of formats:
 Parameters:
 
 - `values`: values to be written. The type of elements in `values` must match the type of the `SOMASparseNDArray`.
-- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 ## Enumeration types
 
@@ -983,7 +983,7 @@ Parameters:
 
 - `uri`: The URI to open.
 - `mode`: The mode to open in. Defaults to **read** mode.
-- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
 For example, a Java-based implementation might look like this:
