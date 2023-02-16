@@ -11,6 +11,7 @@ from somacore import options
 @mark.parametrize(
     ["coords", "want"],
     [
+        ((), ()),
         ((slice(1, 10),), (slice(1, 10),)),
         ([0, 1, 2], (0, 1, 2)),
         ((slice(None), [0, 88, 1001]), (slice(None), (0, 88, 1001))),

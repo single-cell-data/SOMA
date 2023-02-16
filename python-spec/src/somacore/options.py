@@ -120,7 +120,9 @@ not ``Optional``, but may be ``None``.
 DenseNDCoords = Sequence[DenseCoord]
 """A sequence of ranges to read dense data."""
 
-# TODO: Add support for types other than int/string
+# TODO: Add support for non-integer types.
+# NOTE: Keep this in sync with the types accepted in `_canonicalize_coord`
+# in ./query/axis.py.
 # https://github.com/single-cell-data/TileDB-SOMA/issues/960
 SparseDFCoord = Union[
     DenseCoord,
