@@ -2,11 +2,11 @@
 
 The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible, and open-source API providing access to annotated, 2D matrix data stored in multiple underlying formats and systems. The vision for this API family includes:
 
-* support access to persistent, cloud-resident datasets,
-* enable use within popular data-science environments (e.g. R, Python), using the tools of that environment (e.g. Python Pandas integration),
-* enable "out-of-core" access to data aggregations much larger than single-host main memory,
-* enable distributed computation over datasets, and
-* provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g. a cell "atlas").
+- support access to persistent, cloud-resident datasets,
+- enable use within popular data-science environments (e.g. R, Python), using the tools of that environment (e.g. Python Pandas integration),
+- enable "out-of-core" access to data aggregations much larger than single-host main memory,
+- enable distributed computation over datasets, and
+- provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g. a cell "atlas").
 
 The SOMA data model is centered on annotated 2-D matrices, conceptually similar to commonly used single-cell 'omics data structures including Seurat Assay, Bioconductor SingleCellExperiment, and Scanpy AnnData. Where possible, the SOMA API attempts to be general-purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
 
@@ -18,10 +18,10 @@ This document attemptss to codify the abstract, language-neutral SOMA data model
 
 The SOMA API uses [RStudio's lifecycle stage model](https://lifecycle.r-lib.org) to indicate the maturity of its classes, methods, and parameters. The lifecycle stages are:
 
-* `experimental`: Under active development and may undergo significant and breaking changes.
-* `maturing`: Under active development but the interface and behavior have stabilized and are unlikely to change significantly but breaking changes are still possible.
-* `stable`: The interface is considered stable and breaking changes will be avoided where possible. Breaking changes that cannot be avoided will be accompanied by a major version bump.
-* `deprecated`: The API is no longer recommended for use and may be removed in a future release.
+- `experimental`: Under active development and may undergo significant and breaking changes.
+- `maturing`: Under active development but the interface and behavior have stabilized and are unlikely to change significantly but breaking changes are still possible.
+- `stable`: The interface is considered stable and breaking changes will be avoided where possible. Breaking changes that cannot be avoided will be accompanied by a major version bump.
+- `deprecated`: The API is no longer recommended for use and may be removed in a future release.
 
 Lifecycle stages are indicated in the documentation for each class, method and parameter using a `[lifecycle: <stage>]` tag. For example:
 
@@ -51,25 +51,25 @@ If a class, method, or parameter is not explicitly marked with a lifecycle stage
 
 The data model comprises two layers:
 
-* a set of _foundational_ types which are general in nature;
-* a set of _composed_ types, which are composed from the foundational types and are intended to improve ease of dataset use and interoperability.
+- a set of _foundational_ types which are general in nature;
+- a set of _composed_ types, which are composed from the foundational types and are intended to improve ease of dataset use and interoperability.
 
 The foundational types are:
 
-* `SOMACollection`: a string-keyed container (key-value map) of other SOMA data types, e.g. `SOMADataFrame`, `SOMASparseNDArray`, and `SOMACollection`.
-* `SOMADataFrame`: a multi-column table -- essentially a dataframe with indexing on user-specified columns.
-* `SOMADenseNDArray` and `SOMASparseNDArray`: an offset-addressed (zero-based), single-type N-D array, available in either sparse or dense instantiations.
+- `SOMACollection`: a string-keyed container (key-value map) of other SOMA data types, e.g. `SOMADataFrame`, `SOMASparseNDArray`, and `SOMACollection`.
+- `SOMADataFrame`: a multi-column table -- essentially a dataframe with indexing on user-specified columns.
+- `SOMADenseNDArray` and `SOMASparseNDArray`: an offset-addressed (zero-based), single-type N-D array, available in either sparse or dense instantiations.
 
 The composed types are:
 
-* `SOMAExperiment`: a specialization and extension of `SOMACollection`, codifying a set of naming and indexing conventions to represent an annotated, 2-D matrix of observations across _multiple_ sets of variables.
+- `SOMAExperiment`: a specialization and extension of `SOMACollection`, codifying a set of naming and indexing conventions to represent an annotated, 2-D matrix of observations across _multiple_ sets of variables.
 
 In this document, the term `dataframe` implies something akin to an Arrow `Table` (or `RecordBatch`), R `data.frame` or Python `pandas.DataFrame`, where:
 
-* multiple columns may exist, each with a string column name;
-* all columns are individually typed and contain simple data types (e.g. `int64`);
-* all columns are of equal length; and
-* rows are addressed by one or more dataframe columns.
+- multiple columns may exist, each with a string column name;
+- all columns are individually typed and contain simple data types (e.g. `int64`);
+- all columns are of equal length; and
+- rows are addressed by one or more dataframe columns.
 
 All SOMA data objects are named with URIs.
 
@@ -83,9 +83,9 @@ Where SOMA requires an explicit typing system, it utilizes the Arrow types and s
 
 In the following:
 
-* `primitive` types in this specification refer to Arrow primitive types, e.g. `int32`, `float`, etc.;
-* `string` refers to Arrow UTF-8 variable-length `string`, i.e. `List<Char>`;
-* `simple` types include all primitive types, plus `string`.
+- `primitive` types in this specification refer to Arrow primitive types, e.g. `int32`, `float`, etc.;
+- `string` refers to Arrow UTF-8 variable-length `string`, i.e. `List<Char>`;
+- `simple` types include all primitive types, plus `string`.
 
 Other Arrow types are explicitly noted as such, e.g. `Arrow RecordBatch`.
 
@@ -115,8 +115,8 @@ The foundational types represent the core data structures used to store and inde
 
 `SOMACollection` is an unordered, `string`-keyed map of values. Values may be any SOMA foundational or composed type, including other (nested) `SOMACollection` objects. Keys in the map are unique and singular (no duplicates, i.e. the `SOMACollection` is _not_ a multi-map). The `SOMACollection` is expected to be used for a variety of use cases:
 
-* as a container of independent objects (e.g. a collection of single-cell datasets, each manifest as a [`SOMAExperiment`](#soma-experiment) object);
-* as the basis for building other composed types (e.g. using `SOMACollection` to organize pre-defined fields in [`SOMAExperiment`](#soma-experiment) such as multiple layers of `X`).
+- as a container of independent objects (e.g. a collection of single-cell datasets, each manifest as a [`SOMAExperiment`](#soma-experiment) object);
+- as the basis for building other composed types (e.g. using `SOMACollection` to organize pre-defined fields in [`SOMAExperiment`](#soma-experiment) such as multiple layers of `X`).
 
 #### Collection entry URIs
 
@@ -135,54 +135,54 @@ While the term "relative" is used, only **child** URIs are supported as relative
 
 Consider a directory tree of a SOMA implementation that uses a file named `.collection-info.toml` to store the URIs of the collection's contents:
 
-* `file:///soma-dataset`
-  * `collection`
-    * `.collection-info.toml`:
+- `file:///soma-dataset`
+  - `collection`
+    - `.collection-info.toml`:
       ```toml
       [contents]
       absolute = "file:///soma-dataset/collection/abspath"
       external-absolute = "file:///soma-dataset/more-data/other-data"
       relative = "relpath"
       ```
-    * `abspath`
-      * _SOMA object data_
-    * `relpath`
-      * _SOMA object data_
-  * `more-data`
-    * _SOMA object data_
+    - `abspath`
+      - _SOMA object data_
+    - `relpath`
+      - _SOMA object data_
+  - `more-data`
+    - _SOMA object data_
 
 When `file:///soma-dataset/collection` is opened, the URIs will be resolved as follows:
 
-* `absolute`: `file:///soma-dataset/collection/abspath`
-* `external-absolute`: `file:///soma-dataset/more-data/other-data`
-* `relative`: `file:///soma-dataset/collection/relpath`
+- `absolute`: `file:///soma-dataset/collection/abspath`
+- `external-absolute`: `file:///soma-dataset/more-data/other-data`
+- `relative`: `file:///soma-dataset/collection/relpath`
 
 If the entire `collection` directory is moved to a new path:
 
-* `file:///soma-dataset`
-  * `old-data`
-    * `the-collection`
-      * `.collection-info.toml`
+- `file:///soma-dataset`
+  - `old-data`
+    - `the-collection`
+      - `.collection-info.toml`
         ```toml
         [contents]
         absolute = "file:///soma-dataset/collection/abspath"
         external-absolute = "file:///soma-dataset/more-data/other-data"
         relative = "relpath"
         ```
-      * `abspath`
-        * _SOMA object data_
-      * `relpath`
-        * _SOMA object data_
-  * `more-data`
-    * _SOMA object data_
+      - `abspath`
+        - _SOMA object data_
+      - `relpath`
+        - _SOMA object data_
+  - `more-data`
+    - _SOMA object data_
 
 When `file:///soma-dataset/old-data/the-collection` is opened, the URIs will be resolved as follows:
 
-* `absolute`: `file:///soma-dataset/collection/abspath`
+- `absolute`: `file:///soma-dataset/collection/abspath`
   (This resolved URI is the same as before. However, the data is no longer at this location; attempting to access this element will fail.)
-* `external-absolute`: `file:///soma-dataset/more-data/other-data`
+- `external-absolute`: `file:///soma-dataset/more-data/other-data`
   (This URI is identical and still points to the same data.)
-* `relative`: `file:///soma-dataset/old-data/the-collection/relpath`
+- `relative`: `file:///soma-dataset/old-data/the-collection/relpath`
   (This URI resolves differently and still points to the same data even after it has been moved.)
 
 In general, absolute and relative URIs can both be used interchangeably within the same collection (as in the example above).
@@ -203,8 +203,8 @@ Most language-specific bindings will provide convertors between `SOMADataFrame` 
 
 `SOMADenseNDArray` is a dense, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMADenseNDArray` has a user-defined schema, which includes:
 
-* type: a `primitive` type, expressed as an Arrow type (e.g. `int64`, `float32`, etc), indicating the type of data contained within the array;
-* shape: the shape of the array, i.e. number and length of each dimension.
+- type: a `primitive` type, expressed as an Arrow type (e.g. `int64`, `float32`, etc), indicating the type of data contained within the array;
+- shape: the shape of the array, i.e. number and length of each dimension.
 
 All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g. `soma_dim_0`), and elements are named `soma_data`.
 
@@ -216,8 +216,8 @@ The default "fill" value for `SOMADenseNDArray` is the zero or null value of the
 
 `SOMASparseNDArray` is a sparse, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMASparseNDArray` has a user-defined schema, which includes:
 
-* type: a `primitive` type, expressed as an Arrow type (e.g. `int64`, `float32`, etc), indicating the type of data contained within the array;
-* shape: the shape of the array, i.e. number and length of each dimension.
+- type: a `primitive` type, expressed as an Arrow type (e.g. `int64`, `float32`, etc), indicating the type of data contained within the array;
+- shape: the shape of the array, i.e. number and length of each dimension.
 
 All dimensions must have a positive (in particular, non-zero) length, and there must be 1 or more dimensions. Implicitly stored elements (i.e. those not explicitly stored in the array) are assumed to have a value of zero. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g. `soma_dim_0`), and elements are named `soma_data`.
 
@@ -235,8 +235,8 @@ Composed types are defined as a composition of foundational types, adding name, 
 
 The `SOMAExperiment` and `SOMAMeasurement` types comprise [foundational types](#foundational-types):
 
-* `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations;
-* `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g. measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
+- `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations;
+- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g. measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
 
 In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
 
@@ -250,26 +250,26 @@ These types have pre-defined fields, each of which have well-defined naming, typ
 
 The shape of each axis (`obs` and `var`) are defined by their respective dataframes, and the indexing of matrices is defined by the `soma_joinid` of the respective axis dataframe.
 
-* `obs`: the observation annotations are shared across the entire `SOMAExperiment`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `obs` SOMADataFrame (AKA `obsid`).
-* `var`: the variable annotations are shared within any given `SOMAMeasurement`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `var` SOMADataFrame (AKA `varid`).
+- `obs`: the observation annotations are shared across the entire `SOMAExperiment`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `obs` SOMADataFrame (AKA `obsid`).
+- `var`: the variable annotations are shared within any given `SOMAMeasurement`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `var` SOMADataFrame (AKA `varid`).
 
 The pre-defined fields of a `SOMAExperiment` object are:
 
-| Field name | Field type                                | Field description                                                                                                                                                                                                               |
-| ---------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Field name | Field type                                | Field description                                                                                                                                                                                                                 |
+| ---------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `obs`      | `SOMADataFrame`                           | Primary annotations on the _observation_ axis. The contents of the `soma_joinid` pseudo-column define the _observation_ index domain, AKA `obsid`. All observations for the `SOMAExperiment` _must_ be defined in this dataframe. |
-| `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurements.                                                                                                                                                                                             |
+| `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurements.                                                                                                                                                                                               |
 
 The `SOMAMeasurement` is a sub-element of a `SOMAExperiment`, and is otherwise a specialized `SOMACollection` with pre-defined fields:
 
-| Field name | Field type                                                    | Field description                                                                                                                                                                                                                                                                        |
-| ---------- | ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Field name | Field type                                                    | Field description                                                                                                                                                                                                                                                                       |
+| ---------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `var`      | `SOMADataFrame`                                               | Primary annotations on the _variable_ axis, for variables in this measurement (i.e. annotates columns of `X`). The contents of the `soma_joinid` pseudo-column define the _variable_ index domain, AKA `varid`. All variables for this measurement _must_ be defined in this dataframe. |
-| `X`        | `SOMACollection[string, SOMASparseNDArray\|SOMADenseNDArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                     |
-| `obsm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                       |
-| `obsp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                    |
-| `varm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`.                                                                                                                                                       |
-| `varp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                     |
+| `X`        | `SOMACollection[string, SOMASparseNDArray\|SOMADenseNDArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                    |
+| `obsm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                      |
+| `obsp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                   |
+| `varm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`.                                                                                                                                                      |
+| `varp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                    |
 
 For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm` and `X` (first dimension) are the values defined by the `obs` dataframe `soma_joinid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm` and `X` (second dimension) are the values defined by the `var` dataframe `soma_joinid` column in the same measurement. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` dataframes.
 
@@ -365,9 +365,9 @@ SomeSOMAType.create(string uri, [additional per-type parameters], PlatformConfig
 
 Parameters:
 
-* `uri`: The URI where the object should be created.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
-* [`context`](#long-lived-context-data): optional context to use for this new object.
+- `uri`: The URI where the object should be created.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Each SOMA type will have its own distinct set of parameters for `create`, described in its own section.
 
@@ -383,10 +383,10 @@ SomeSOMAType.open(string uri, OpenMode mode = READ, PlatformConfig platform_conf
 
 Parameters:
 
-* `uri`: URI of the object to open.
-* `mode`: The mode to open this object in. Defaults to **read** mode.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
-* [`context`](#long-lived-context-data): optional context to use for this new object.
+- `uri`: URI of the object to open.
+- `mode`: The mode to open this object in. Defaults to **read** mode.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 ### Operation: close
 
@@ -479,10 +479,10 @@ In addition, `SOMACollection` supports operations to manage the contents of the 
 | get length                                          | Gets the number of elements in the collection.                                            |
 | set(string key, SOMAObject value, use_relative_uri) | Sets the key/value in the collection.                                                     |
 | del(string key)                                     | Removes the key/value from the collection. Does not delete the underlying object (value). |
-| add_new_collection(string key, ...)                 | Creates a new sub-Collection and adds it to this `SOMACollection`.                             |
-| add_new_dataframe(string key, ...)                  | Creates a new `DataFrame` and adds it to this `SOMACollection`.                                  |
-| add_new_dense_ndarray(string key, ...)              | Creates a new `DenseNDArray` and adds it to this `SOMACollection`.                               |
-| add_new_sparse_ndarray(string key, ...)             | Creates a new `SparseNDArray` and adds it to this `SOMACollection`.                              |
+| add_new_collection(string key, ...)                 | Creates a new sub-Collection and adds it to this `SOMACollection`.                        |
+| add_new_dataframe(string key, ...)                  | Creates a new `DataFrame` and adds it to this `SOMACollection`.                           |
+| add_new_dense_ndarray(string key, ...)              | Creates a new `DenseNDArray` and adds it to this `SOMACollection`.                        |
+| add_new_sparse_ndarray(string key, ...)             | Creates a new `SparseNDArray` and adds it to this `SOMACollection`.                       |
 
 A `SOMACollection` also manages the lifecycle of objects directly instantiated by it.
 Objects accessed via getting a collection element, or objects created with one of the <code>add_new\_<var>object_type</var></code> methods are considered "owned" by the collection.
@@ -553,9 +553,9 @@ set(string key, SOMAObject value, URIType uri_type)
 
 Parameters:
 
-* `key`: The key to set.
-* `value`: The value to set the key to. If a user sets a collection entry to a type inconsistent with the type of that key (e.g. a defined key in a `SOMAExperiment`) or with the general type of the collection (e.g. a collection of `SOMAMeasurement`s), behavior is unspecified. Implementations are encouraged to raise an error if possible, to prevent latent errors when later attempting to use the data.
-* `uri_type`: How the collection should refer to the URI of the newly-added element, whether by absolute or relative URI. The default is `auto`, which will use a relative URI if possible but otherwise use an absolute URI. If `absolute`, the entry will always use an absolute URI. If `relative`, the entry will always use a relative URI, and an error will be raised if a relative URI cannot be used.
+- `key`: The key to set.
+- `value`: The value to set the key to. If a user sets a collection entry to a type inconsistent with the type of that key (e.g. a defined key in a `SOMAExperiment`) or with the general type of the collection (e.g. a collection of `SOMAMeasurement`s), behavior is unspecified. Implementations are encouraged to raise an error if possible, to prevent latent errors when later attempting to use the data.
+- `uri_type`: How the collection should refer to the URI of the newly-added element, whether by absolute or relative URI. The default is `auto`, which will use a relative URI if possible but otherwise use an absolute URI. If `absolute`, the entry will always use an absolute URI. If `relative`, the entry will always use a relative URI, and an error will be raised if a relative URI cannot be used.
 
 ### Operation: add_new\_<var>object_type</var>
 
@@ -569,8 +569,8 @@ add_new_sparse_ndarray(string key, string uri = "", ...) -> SOMASparseNDArray
 
 Parameters:
 
-* `key`: The key to add the new element at. This cannot already be a key of the collection.
-* `uri`: An optional parameter to specify a URI to create the new collection, which may be [relative or absolute](#collection-entry-uris). If the URI is relative, the new entry will be added with that relative URI. If the URI is absolute, the new entry will be added with that absolute URI. If a collection already exists at the user-provided URI, the operation should fail. If the user does not specify a URI, the collection will generate a new URI for the entry. When possible, this should be a relative URI based on a sanitized version of the key.
+- `key`: The key to add the new element at. This cannot already be a key of the collection.
+- `uri`: An optional parameter to specify a URI to create the new collection, which may be [relative or absolute](#collection-entry-uris). If the URI is relative, the new entry will be added with that relative URI. If the URI is absolute, the new entry will be added with that absolute URI. If a collection already exists at the user-provided URI, the operation should fail. If the user does not specify a URI, the collection will generate a new URI for the entry. When possible, this should be a relative URI based on a sanitized version of the key.
 
 The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the current collection's context.
 
@@ -580,7 +580,7 @@ The remaining parameters are passed directly to the respective type's `create` s
 add_new_collection(string key, CollectionType type, string uri = "", PlatformConfig platform_config) -> SOMACollection
 ```
 
-* `type`: The type of collection to add. For instance, if `SOMAExperiment` is provided, the newly-added collection, and the returned instance, will be a `SOMAExperiment`.
+- `type`: The type of collection to add. For instance, if `SOMAExperiment` is provided, the newly-added collection, and the returned instance, will be a `SOMAExperiment`.
 
 ## SOMADataFrame
 
@@ -614,11 +614,11 @@ create(string uri, Arrow.Schema schema, string[] index_column_names, platform_co
 
 Parameters:
 
-* `uri`: location at which to create the object.
-* `schema`: an Arrow Schema defining the per-column schema.
-* `index_column_names`: a list of column names to use as index columns, AKA "dimensions" (e.g. `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). The `soma_joinid` column may be indexed.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
-* [`context`](#long-lived-context-data): optional context to use for this new object.
+- `uri`: location at which to create the object.
+- `schema`: an Arrow Schema defining the per-column schema.
+- `index_column_names`: a list of column names to use as index columns, AKA "dimensions" (e.g. `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). The `soma_joinid` column may be indexed.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Returns: The newly created `SOMADataFrame`, opened in write mode.
 
@@ -650,13 +650,13 @@ read(
 
 Parameters:
 
-* `ids`: the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
-* `column_names`: the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
-* `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-* `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-* `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-* `value_filter``: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- `ids`: the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
+- `column_names`: the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
+- `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
+- `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
+- `value_filter``: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more Arrow `Table` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
@@ -671,8 +671,8 @@ write(Arrow.Table values, platform_config)
 
 Parameters:
 
-* `values`: a parameter containing all columns, including the index columns. The schema for the values must match the schema for the `SOMADataFrame`.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- `values`: a parameter containing all columns, including the index columns. The schema for the values must match the schema for the `SOMADataFrame`.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
 
 All columns, including index columns and `soma_joinid` must be specified in the `values` parameter.
 
@@ -684,14 +684,14 @@ Summary of operations:
 
 | Operation                                   | Description                                                      |
 | ------------------------------------------- | ---------------------------------------------------------------- |
-| static create(uri, ...) -> SOMADenseNDArray | Create a `SOMADenseNDArray` named with the URI.                    |
+| static create(uri, ...) -> SOMADenseNDArray | Create a `SOMADenseNDArray` named with the URI.                  |
 | get soma_type                               | Returns the constant "SOMADenseNDArray".                         |
 | get shape -> (int, ...)                     | Return length of each dimension, always a list of length `ndim`. |
 | get ndim -> int                             | Return number of dimensions.                                     |
 | get schema -> Arrow.Schema                  | Return data schema, in the form of an Arrow Schema.              |
 | get is_sparse -> False                      | Return the constant False.                                       |
-| read                                        | Read a subarray from the `SOMADenseNDArray`.                       |
-| write                                       | Write a subarray to the `SOMADenseNDArray`.                        |
+| read                                        | Read a subarray from the `SOMADenseNDArray`.                     |
+| write                                       | Write a subarray to the `SOMADenseNDArray`.                      |
 
 ### Operation: create()
 
@@ -703,11 +703,11 @@ create(string uri, type, shape, platform_config, context) -> SOMADenseNDArray
 
 Parameters:
 
-* `uri`: location at which to create the object
-* `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
-* `shape`: the length of each domain as a list, e.g. [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
-* [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
-* [`context`](#long-lived-context-data)`: optional context to use for this new object.
+- `uri`: location at which to create the object
+- `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
+- `shape`: the length of each domain as a list, e.g. [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- [`context`](#long-lived-context-data)`: optional context to use for this new object.
 
 Returns: The newly created `SOMADenseNDArray`, opened for writing.
 
@@ -716,8 +716,8 @@ Returns: The newly created `SOMADenseNDArray`, opened for writing.
 Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` returned
 by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema will be:
 
-* `soma_dim_N`: the type of the Nth dimension. This will always be an `int64` in the range `[0, 2^63-1]`.
-* `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
+- `soma_dim_N`: the type of the Nth dimension. This will always be an `int64` in the range `[0, 2^63-1]`.
+- `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
 
 ### Operation: read()
 
@@ -734,10 +734,10 @@ read(
 ) -> Arrow.Tensor
 ```
 
-* `coords`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a per-dimension list of scalar or range.
-* `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-* `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- `coords`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a per-dimension list of scalar or range.
+- `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
 
@@ -759,9 +759,9 @@ Values are specified as an Arrow Tensor.
 
 Parameters:
 
-* `coords`: per-dimension slice, expressed as a per-dimension list of scalar or range.
-* `values`: values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNDArray.
-* [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- `coords`: per-dimension slice, expressed as a per-dimension list of scalar or range.
+- `values`: values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNDArray.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
 
 ## SOMASparseNDArray
 
@@ -771,15 +771,15 @@ Summary of operations:
 
 | Operation                                    | Description                                                             |
 | -------------------------------------------- | ----------------------------------------------------------------------- |
-| static create(uri, ...) -> SOMASparseNDArray | Create a `SOMASparseNDArray` named with the URI.                          |
+| static create(uri, ...) -> SOMASparseNDArray | Create a `SOMASparseNDArray` named with the URI.                        |
 | get soma_type                                | Returns the constant "SOMASparseNDArray".                               |
 | get shape -> (int, ...)                      | Return length of each dimension, always a list of length `ndim`.        |
 | get ndim -> int                              | Return number of dimensions.                                            |
-| get schema -> Arrow.Schema                   | Return data schema, in the form of an Arrow `Schema`.                     |
+| get schema -> Arrow.Schema                   | Return data schema, in the form of an Arrow `Schema`.                   |
 | get is_sparse -> True                        | Return the constant True.                                               |
 | get nnz -> uint                              | Return the number stored values in the array, including explicit zeros. |
-| read                                         | Read a slice of data from the `SOMASparseNDArray`.                        |
-| write                                        | Write a slice of data to the `SOMASparseNDArray`.                         |
+| read                                         | Read a slice of data from the `SOMASparseNDArray`.                      |
+| write                                        | Write a slice of data to the `SOMASparseNDArray`.                       |
 
 ### Operation: create()
 
@@ -791,11 +791,11 @@ create(string uri, type, shape, platform_config, context) -> SOMASparseNDArray
 
 Parameters:
 
-* `uri`: location at which to create the object
-* `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
-* `shape`: the length of each domain as a list, e.g. [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
-* [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
-* [`context`](#long-lived-context-data)`: optional context to use for this new object.
+- `uri`: location at which to create the object
+- `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
+- `shape`: the length of each domain as a list, e.g. [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- [`context`](#long-lived-context-data)`: optional context to use for this new object.
 
 Returns: The newly created `SOMASparseNDArray`, opened for writing.
 
@@ -804,8 +804,8 @@ Returns: The newly created `SOMASparseNDArray`, opened for writing.
 Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` returned
 by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema will be:
 
-* `soma_dim_N`: the type of the Nth dimension. This will always be a `int64` in the range `[0, 2^63-1]`.
-* `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
+- `soma_dim_N`: the type of the Nth dimension. This will always be a `int64` in the range `[0, 2^63-1]`.
+- `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
 
 ### Operation: read()
 
@@ -824,12 +824,12 @@ read(
 ) -> delayed iterator over ReadResult
 ```
 
-* `slice`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
-* `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-* `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
-* `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-* `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
-* [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
+- `slice`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
+- `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
+- `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
+- `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
+- [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
 
@@ -843,15 +843,15 @@ write(values, platform_config)
 
 Values to write may be provided in a variety of formats:
 
-* `Tensor`: caller provides values as an `Arrow.Tensor`, and the coordinates at which the dense tensor is written.
-* `SparseTensor`: caller provides a Arrow COO, CSC or CSR `SparseTensor`>
-* `RecordBatch`: caller provides COO-encoded coordinates and data as an `Arrow.RecordBatch`>
-* `Table`: caller provides COO-encoded coordinates and data as an `Arrow.Table`>
+- `Tensor`: caller provides values as an `Arrow.Tensor`, and the coordinates at which the dense tensor is written.
+- `SparseTensor`: caller provides a Arrow COO, CSC or CSR `SparseTensor`>
+- `RecordBatch`: caller provides COO-encoded coordinates and data as an `Arrow.RecordBatch`>
+- `Table`: caller provides COO-encoded coordinates and data as an `Arrow.Table`>
 
 Parameters:
 
-* `values`: values to be written. The type of elements in `values` must match the type of the `SOMASparseNDArray`.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- `values`: values to be written. The type of elements in `values` must match the type of the `SOMASparseNDArray`.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
 
 ## Enumeration types
 
@@ -919,11 +919,11 @@ The following operations will exist to manipulate the mapping, providing a gette
 
 Read operations on foundational types return an iterator over "batches" of data, enabling the processing of larger-than-core datasets. The `SOMABatchSize` allows user control over read batch size, and accepts the following methods of determining batch size:
 
-| BatchSize type | Description                                                                                                                                         |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BatchSize type | Description                                                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `count`        | Batch size defined by result count. For a SOMADataFrame this indicates row count returned per `Arrow.Table`, or for an ND array the number of values. |
-| `size`         | Partition defined by size, in bytes, e.g. max `Arrow.Table` size returned by `SOMADataFRame` read operation.                                           |
-| `auto`         | An automatically determined, "reasonable" default partition size. This is the default batch size.                                                   |
+| `size`         | Partition defined by size, in bytes, e.g. max `Arrow.Table` size returned by `SOMADataFRame` read operation.                                          |
+| `auto`         | An automatically determined, "reasonable" default partition size. This is the default batch size.                                                     |
 
 ### SOMAReadPartitions
 
@@ -940,11 +940,11 @@ Array read operations can return results in a variety of formats. The `SOMABatch
 | Batch format   | Description                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------------- |
 | `dense`        | Return the coordinates of the slice (e.g. origin, shape) and an Arrow Tensor containing slice values. |
-| `coo`          | Return an `Arrow.SparseCOOTensor`                                                                       |
-| `csr`          | Return an `Arrow.SparseCSRTensor`                                                                       |
-| `csc`          | Return an A`rrow.SparseCSCTensor`                                                                       |
-| `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                            |
-| `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                  |
+| `coo`          | Return an `Arrow.SparseCOOTensor`                                                                     |
+| `csr`          | Return an `Arrow.SparseCSRTensor`                                                                     |
+| `csc`          | Return an A`rrow.SparseCSCTensor`                                                                     |
+| `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                          |
+| `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                |
 
 ## General Utilities
 
@@ -974,10 +974,10 @@ open(string uri, OpenMode mode, PlatformConfig platform_config, Context context)
 
 Parameters:
 
-* `uri`: The URI to open.
-* `mode`: The mode to open in. Defaults to **read** mode.
-* [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
-* [`context`](#long-lived-context-data): optional context to use for this new object.
+- `uri`: The URI to open.
+- `mode`: The mode to open in. Defaults to **read** mode.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 For example, a Java-based implementation might look like this:
 
@@ -994,14 +994,14 @@ writeExperiment.mode();  // WRITE
 
 ## Indexing and slicing
 
-* In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
-* Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
-* Slices define a closed interval, i.e. are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
-* Slices may include the lower bound, upper bound, both, or neither:
-  * Slicing with neither (e.g. Python's `[:]`) means select all
-  * Slicing with lower bound 2 and no upper bound selects indices 2 through the highest index present in the given data
-  * Slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4
-* Slice steps, or stride,  if supported in the implementation language, may only be 1
+- In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
+- Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
+- Slices define a closed interval, i.e. are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
+- Slices may include the lower bound, upper bound, both, or neither:
+  - Slicing with neither (e.g. Python's `[:]`) means select all
+  - Slicing with lower bound 2 and no upper bound selects indices 2 through the highest index present in the given data
+  - Slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4
+- Slice steps, or stride, if supported in the implementation language, may only be 1
 
 ## Value Filters
 
@@ -1013,16 +1013,16 @@ The specific means to create and manipulate a value filter is delegated to per-l
 
 Value filter expressions will have the following capabilities:
 
-* per-column filter expressions which define:
-  * a column name,
-  * a comparison operator, supporting `==`, `!=`, `<`, `>`, `<=`, `>=`,
-  * and a constant.
-* compound expressions combining other expressions with AND and OR boolean operations.
+- per-column filter expressions which define:
+  - a column name,
+  - a comparison operator, supporting `==`, `!=`, `<`, `>`, `<=`, `>=`,
+  - and a constant.
+- compound expressions combining other expressions with AND and OR boolean operations.
 
 Examples, using a pseudo-syntax:
 
-* `col_A > 0`
-* `(col_A > 0) AND (col_B != "deleted")`
+- `col_A > 0`
+- `(col_A > 0) AND (col_B != "deleted")`
 
 ## Platform-Specific Configuration
 
@@ -1056,21 +1056,21 @@ When a `SOMADataFrame` is passed into this code, the function does not need to c
 
 #### Configuration data structure
 
-The exact contents of each platform’s entry in the configuration mapping are fully specified by that platform’s implementation itself, but it should conform to certain conventions. While the specification or its generic implementation cannot *enforce* these guidelines, following them will ensure that API users have a consistent and predictable interface.
+The exact contents of each platform’s entry in the configuration mapping are fully specified by that platform’s implementation itself, but it should conform to certain conventions. While the specification or its generic implementation cannot _enforce_ these guidelines, following them will ensure that API users have a consistent and predictable interface.
 
-* At the top level, each individual platform’s configuration should be a string-keyed mapping.
-  * In Python, these keys should be `snake_case`.
-* The contents of these configuration entries should be represented declaratively, using built-in data structures from the host language to the extent possible (for example, strings, dicts, lists and tuples, etc. in Python). This allows libraries that use SOMA objects to provide configuration data to multiple platforms without having to depend upon implementation it *may* want to use.
-  * An implementation may also use objects and types from libraries that the generic SOMA interface specification uses, like Arrow types.
-  * For highly-specialized cases, a storage platform implementation may also accept its internal object types. However, to the extent possible, using platform-specific objects should be an option *in addition to* a fully delcarative structure, and should *not* be the *only* way to provide configuration data.
-* In situations where a configuration setting of the same name, but with different type, semantics, or values will be used across operations, a separate string key should be provided for that setting for each operation. This allows for the same `platform_config` data to be reused across multiple operations by the user.
-  * For example, a storage backend may provide a way to read and write data in a given block size. However, the performance characteristics of these operations may be very different. The implementation should provide `read_block_size` and `write_block_size` parameters (or use some similar disambiguation strategy) rather than only allowing a single `shard_size` parameter.
+- At the top level, each individual platform’s configuration should be a string-keyed mapping.
+  - In Python, these keys should be `snake_case`.
+- The contents of these configuration entries should be represented declaratively, using built-in data structures from the host language to the extent possible (for example, strings, dicts, lists and tuples, etc. in Python). This allows libraries that use SOMA objects to provide configuration data to multiple platforms without having to depend upon implementation it _may_ want to use.
+  - An implementation may also use objects and types from libraries that the generic SOMA interface specification uses, like Arrow types.
+  - For highly-specialized cases, a storage platform implementation may also accept its internal object types. However, to the extent possible, using platform-specific objects should be an option _in addition to_ a fully delcarative structure, and should _not_ be the _only_ way to provide configuration data.
+- In situations where a configuration setting of the same name, but with different type, semantics, or values will be used across operations, a separate string key should be provided for that setting for each operation. This allows for the same `platform_config` data to be reused across multiple operations by the user.
+  - For example, a storage backend may provide a way to read and write data in a given block size. However, the performance characteristics of these operations may be very different. The implementation should provide `read_block_size` and `write_block_size` parameters (or use some similar disambiguation strategy) rather than only allowing a single `shard_size` parameter.
 
 #### Implementation and usage guidelines
 
 The configuration passed in the `platform_config` object is intended for operation-specific tuning (though it may make sense for user code to use the same `platform_config` across multiple operations). A `platform_config` should only be used for the operation it was provided to (and to directly dependent operations); it should not be stored for later calls. Environmental configuration (like login credentials or backend storage region) should be provided via the (to-be-defined) Context object.
 
-Operations should not *require* a `platform_config` entry to complete; the platform should use a sensible default if a given configuration value is not provided. Required environmental data generally belongs in the Context object.
+Operations should not _require_ a `platform_config` entry to complete; the platform should use a sensible default if a given configuration value is not provided. Required environmental data generally belongs in the Context object.
 
 A platform should only ever examine its own entry in the `platform_config` mapping. Since the structure and contents of each entry is wholly implementation-defined, one platform cannot make any assumptions at all about another’s configuration, and for predictability should avoid even trying to extract any information from any other configuration entries.
 
@@ -1080,9 +1080,9 @@ In addition to the `platform_config` parameters described above, implementations
 This read-only field should be used to store long-lived implementation-specific settings that are used to access SOMA datasets.
 Examples of settings that might belong in a context includes:
 
-* Storage credentials or API keys
-* Endpoint URLs
-* Database connections
+- Storage credentials or API keys
+- Endpoint URLs
+- Database connections
 
 In other words, the `context` contains what is effectively shared configuration information across multiple individual SOMA objects.
 A context can be specified when instantiating a SOMA object, whether in the process of creating new SOMA data in storage, or in the process of opening existing stored SOMA data.
@@ -1131,9 +1131,9 @@ Issues to be resolved:
 1. Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
 2. What (if any) additional semantics around writes need to be defined?
 3. Value filter support in `NDArray` has been proposed:
-   * Is there a use case to motivate it?
-   * This effectively requires that all `read()` return batches be sparse, as the value filter will remove values.
-   * Where the requested `batch_format` is `dense` (i.e. the user wants a tensor back), this would require that we also provide coordinates and/or a mask in addition to the tensor (values). Or disallow that combination: if you specify a value filter, you can only ask for a sparse-capable `batch_format`.
+   - Is there a use case to motivate it?
+   - This effectively requires that all `read()` return batches be sparse, as the value filter will remove values.
+   - Where the requested `batch_format` is `dense` (i.e. the user wants a tensor back), this would require that we also provide coordinates and/or a mask in addition to the tensor (values). Or disallow that combination: if you specify a value filter, you can only ask for a sparse-capable `batch_format`.
 
 # Changelog
 
