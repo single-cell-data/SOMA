@@ -190,7 +190,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         uri: str,
         *,
         type: pa.DataType,
-        shape: Sequence[Union[int, None]],
+        shape: Sequence[Optional[int]],
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
