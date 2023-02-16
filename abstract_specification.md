@@ -9,10 +9,10 @@ with any and all feedback, comments, or concerns.
 
 The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible, and open-source API providing access to annotated, 2D matrix data stored in multiple underlying formats and systems. The vision for this API family includes:
 
-- support access to persistent, cloud-resident datasets
-- enable use within popular data-science environments (e.g., R, Python), using the tools of that environment (e.g., Python Pandas integration)
-- enable "out-of-core" access to data aggregations much larger than single-host main memory
-- enable distributed computation over datasets
+- support access to persistent, cloud-resident datasets.
+- enable use within popular data-science environments (e.g., R, Python), using the tools of that environment (e.g., Python Pandas integration).
+- enable "out-of-core" access to data aggregations much larger than single-host main memory.
+- enable distributed computation over datasets.
 - provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g., a cell "atlas").
 
 The SOMA data model is centered on annotated 2-D matrices, conceptually similar to commonly used single-cell 'omics data structures including Seurat Assay, Bioconductor SingleCellExperiment, and Scanpy AnnData. Where possible, the SOMA API attempts to be general-purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
@@ -58,7 +58,7 @@ If a class, method, or parameter is not explicitly marked with a lifecycle stage
 
 The data model comprises two layers:
 
-- a set of _foundational_ types which are general in nature
+- a set of _foundational_ types which are general in nature.
 - a set of _composed_ types, which are composed from the foundational types and are intended to improve ease of dataset use and interoperability.
 
 The foundational types are:
@@ -73,9 +73,9 @@ The composed types are:
 
 In this document, the term `dataframe` implies something akin to an Arrow `Table` (or `RecordBatch`), R `data.frame` or Python `pandas.DataFrame`, where:
 
-- multiple columns may exist, each with a string column name
-- all columns are individually typed and contain simple data types (e.g., `int64`)
-- all columns are of equal length
+- multiple columns may exist, each with a string column name.
+- all columns are individually typed and contain simple data types (e.g., `int64`).
+- all columns are of equal length.
 - rows are addressed by one or more dataframe columns.
 
 All SOMA data objects are named with URIs.
@@ -91,7 +91,7 @@ Where SOMA requires an explicit typing system, it utilizes the Arrow types and s
 In the following:
 
 - `primitive` types in this specification refer to Arrow primitive types, e.g., `int32`, `float`, etc.
-- `string` refers to Arrow UTF-8 variable-length `string`, i.e., `List<Char>`
+- `string` refers to Arrow UTF-8 variable-length `string`, i.e., `List<Char>`.
 - `simple` types include all primitive types, plus `string`.
 
 Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
@@ -122,7 +122,7 @@ The foundational types represent the core data structures used to store and inde
 
 `SOMACollection` is an unordered, `string`-keyed map of values. Values may be any SOMA foundational or composed type, including other (nested) `SOMACollection` objects. Keys in the map are unique and singular (no duplicates, i.e., the `SOMACollection` is _not_ a multi-map). The `SOMACollection` is expected to be used for a variety of use cases:
 
-- as a container of independent objects (e.g., a collection of single-cell datasets, each manifest as a [`SOMAExperiment`](#soma-experiment) object)
+- as a container of independent objects (e.g., a collection of single-cell datasets, each manifest as a [`SOMAExperiment`](#soma-experiment) object).
 - as the basis for building other composed types (e.g., using `SOMACollection` to organize pre-defined fields in [`SOMAExperiment`](#soma-experiment) such as multiple layers of `X`).
 
 #### Collection entry URIs
@@ -160,9 +160,9 @@ Consider a directory tree of a SOMA implementation that uses a file named `.coll
 
 When `file:///soma-dataset/collection` is opened, the URIs will be resolved as follows:
 
-- `absolute`: `file:///soma-dataset/collection/abspath`
-- `external-absolute`: `file:///soma-dataset/more-data/other-data`
-- `relative`: `file:///soma-dataset/collection/relpath`
+- `absolute`: `file:///soma-dataset/collection/abspath`.
+- `external-absolute`: `file:///soma-dataset/more-data/other-data`.
+- `relative`: `file:///soma-dataset/collection/relpath`.
 
 If the entire `collection` directory is moved to a new path:
 
@@ -210,7 +210,7 @@ Most language-specific bindings will provide convertors between `SOMADataFrame` 
 
 `SOMADenseNDArray` is a dense, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMADenseNDArray` has a user-defined schema, which includes:
 
-- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
+- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array.
 - shape: the shape of the array, i.e., number and length of each dimension.
 
 All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g., `soma_dim_0`), and elements are named `soma_data`.
@@ -223,7 +223,7 @@ The default "fill" value for `SOMADenseNDArray` is the zero or null value of the
 
 `SOMASparseNDArray` is a sparse, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMASparseNDArray` has a user-defined schema, which includes:
 
-- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array
+- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array.
 - shape: the shape of the array, i.e., number and length of each dimension.
 
 All dimensions must have a positive (in particular, non-zero) length, and there must be 1 or more dimensions. Implicitly stored elements (i.e., those not explicitly stored in the array) are assumed to have a value of zero. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g., `soma_dim_0`), and elements are named `soma_data`.
@@ -242,7 +242,7 @@ Composed types are defined as a composition of foundational types, adding name, 
 
 The `SOMAExperiment` and `SOMAMeasurement` types comprise [foundational types](#foundational-types):
 
-- `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations
+- `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations.
 - `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
 
 In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
@@ -372,8 +372,8 @@ SomeSOMAType.create(string uri, [additional per-type parameters], PlatformConfig
 
 Parameters:
 
-- `uri`: The URI where the object should be created
-- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration
+- `uri`: The URI where the object should be created.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Each SOMA type will have its own distinct set of parameters for `create`, described in its own section.
@@ -390,9 +390,9 @@ SomeSOMAType.open(string uri, OpenMode mode = READ, PlatformConfig platform_conf
 
 Parameters:
 
-- `uri`: URI of the object to open
-- `mode`: The mode to open this object in. Defaults to **read** mode
-- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration
+- `uri`: URI of the object to open.
+- `mode`: The mode to open this object in. Defaults to **read** mode.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
 ### Operation: close
@@ -710,7 +710,7 @@ create(string uri, type, shape, platform_config, context) -> SOMADenseNDArray
 
 Parameters:
 
-- `uri`: location at which to create the object
+- `uri`: location at which to create the object.
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
 - [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
@@ -798,7 +798,7 @@ create(string uri, type, shape, platform_config, context) -> SOMASparseNDArray
 
 Parameters:
 
-- `uri`: location at which to create the object
+- `uri`: location at which to create the object.
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
 - [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
@@ -1087,9 +1087,9 @@ In addition to the `platform_config` parameters described above, implementations
 This read-only field should be used to store long-lived implementation-specific settings that are used to access SOMA datasets.
 Examples of settings that might belong in a context includes:
 
-- Storage credentials or API keys
-- Endpoint URLs
-- Database connections
+- Storage credentials or API keys.
+- Endpoint URLs.
+- Database connections.
 
 In other words, the `context` contains what is effectively shared configuration information across multiple individual SOMA objects.
 A context can be specified when instantiating a SOMA object, whether in the process of creating new SOMA data in storage, or in the process of opening existing stored SOMA data.
