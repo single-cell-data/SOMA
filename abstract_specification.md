@@ -3,16 +3,16 @@
 The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible, and open-source API providing access to annotated, 2D matrix data stored in multiple underlying formats and systems. The vision for this API family includes:
 
 - support access to persistent, cloud-resident datasets,
-- enable use within popular data-science environments (e.g. R, Python), using the tools of that environment (e.g. Python Pandas integration),
+- enable use within popular data-science environments (e.g., R, Python), using the tools of that environment (e.g., Python Pandas integration),
 - enable "out-of-core" access to data aggregations much larger than single-host main memory,
 - enable distributed computation over datasets, and
-- provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g. a cell "atlas").
+- provide a building block for higher-level API that may embody domain-specific conventions or schema around annotated 2D matrices (e.g., a cell "atlas").
 
 The SOMA data model is centered on annotated 2-D matrices, conceptually similar to commonly used single-cell 'omics data structures including Seurat Assay, Bioconductor SingleCellExperiment, and Scanpy AnnData. Where possible, the SOMA API attempts to be general-purpose and agnostic to the specifics of any given environment, or to the specific conventions of the Single Cell scientific ecosystem.
 
 SOMA is an abstract _API specification_, with the goal of enabling multiple concrete API implementations within different computing environments and data-storage systems. SOMA does not specify an at-rest serialization format or underlying storage system.
 
-This document attemptss to codify the abstract, language-neutral SOMA data model and functional operations. Other specifications will document specific language bindings and particular storage-system implementations. Where the term _language-specific SOMA specification_ is used below, it implies a specification of the SOMA API as it is presented in a given language or computing environment (e.g. the SOMA Python API), common across all storage-engine implementations in that language.
+This document attempts to codify the abstract, language-neutral SOMA data model and functional operations. Other specifications will document specific language bindings and particular storage-system implementations. Where the term _language-specific SOMA specification_ is used below, it implies a specification of the SOMA API as it is presented in a given language or computing environment (e.g., the SOMA Python API), common across all storage-engine implementations in that language.
 
 # API Maturity Lifecycle Stages
 
@@ -56,7 +56,7 @@ The data model comprises two layers:
 
 The foundational types are:
 
-- `SOMACollection`: a string-keyed container (key-value map) of other SOMA data types, e.g. `SOMADataFrame`, `SOMASparseNDArray`, and `SOMACollection`.
+- `SOMACollection`: a string-keyed container (key-value map) of other SOMA data types, e.g., `SOMADataFrame`, `SOMASparseNDArray`, and `SOMACollection`.
 - `SOMADataFrame`: a multi-column table -- essentially a dataframe with indexing on user-specified columns.
 - `SOMADenseNDArray` and `SOMASparseNDArray`: an offset-addressed (zero-based), single-type N-D array, available in either sparse or dense instantiations.
 
@@ -67,7 +67,7 @@ The composed types are:
 In this document, the term `dataframe` implies something akin to an Arrow `Table` (or `RecordBatch`), R `data.frame` or Python `pandas.DataFrame`, where:
 
 - multiple columns may exist, each with a string column name;
-- all columns are individually typed and contain simple data types (e.g. `int64`);
+- all columns are individually typed and contain simple data types (e.g., `int64`);
 - all columns are of equal length; and
 - rows are addressed by one or more dataframe columns.
 
@@ -75,27 +75,27 @@ All SOMA data objects are named with URIs.
 
 ## Base Type System
 
-The SOMA API borrows its base type system from the Arrow language-agnostic in-memory system for data typing and serialization ([format](https://arrow.apache.org/docs/format/Columnar.html)). The SOMA API is intended to be used with an Arrow implementation such as [PyArrow](https://arrow.apache.org/docs/python/) or the [Arrow R package](https://arrow.apache.org/docs/r/), or other libraries which interoperate with Arrow (e.g. Pandas).
+The SOMA API borrows its base type system from the Arrow language-agnostic in-memory system for data typing and serialization ([format](https://arrow.apache.org/docs/format/Columnar.html)). The SOMA API is intended to be used with an Arrow implementation such as [PyArrow](https://arrow.apache.org/docs/python/) or the [Arrow R package](https://arrow.apache.org/docs/r/), or other libraries which interoperate with Arrow (e.g., Pandas).
 
-Where SOMA requires an explicit typing system, it utilizes the Arrow types and schema. SOMA has no specific requirements on the type or serialization system used by the underlying storage engine, other than it be capable of understanding and representing the Arrow types. It is expected that any given implementation of SOMA will have limits on the underlying capabilities of its data-type system (e.g. just because you can express a type in the Arrow type system does not mean all SOMA implementations will understand it).
+Where SOMA requires an explicit typing system, it utilizes the Arrow types and schema. SOMA has no specific requirements on the type or serialization system used by the underlying storage engine, other than it be capable of understanding and representing the Arrow types. It is expected that any given implementation of SOMA will have limits on the underlying capabilities of its data-type system (e.g., just because you can express a type in the Arrow type system does not mean all SOMA implementations will understand it).
 
 ### Type definitions used in this document
 
 In the following:
 
-- `primitive` types in this specification refer to Arrow primitive types, e.g. `int32`, `float`, etc.;
+- `primitive` types in this specification refer to Arrow primitive types, e.g., `int32`, `float`, etc.;
 - `string` refers to Arrow UTF-8 variable-length `string`, i.e. `List<Char>`;
 - `simple` types include all primitive types, plus `string`.
 
-Other Arrow types are explicitly noted as such, e.g. `Arrow RecordBatch`.
+Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
-Numeric index types (e.g. offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1]`. In other words, non-negative `int64` values are used for offset indexing.
+Numeric index types (e.g., offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1]`. In other words, non-negative `int64` values are used for offset indexing.
 
-> ⚠️ **Issue**: are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (i.e. no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (e.g. `RecordBatch`, `List`, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
+> ⚠️ **Issue**: are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (i.e. no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (e.g., `RecordBatch`, `List`, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
 
 ### Type conformance and promotion
 
-SOMA is intended to be strongly typed. With one exception noted below, all requests for a given Arrow type must be fulfilled or generate an error based upon the capabilities of the underlying storage system. Silently casting to a less capable type (e.g. `float64` to `float32`) is _not_ permitted. All operations specifying or introspecting the type system must be self-consistent, e.g. if object `create` accepts a given Arrow type or schema, the `get schema` operation must return the same types.
+SOMA is intended to be strongly typed. With one exception noted below, all requests for a given Arrow type must be fulfilled or generate an error based upon the capabilities of the underlying storage system. Silently casting to a less capable type (e.g., `float64` to `float32`) is _not_ permitted. All operations specifying or introspecting the type system must be self-consistent, e.g., if object `create` accepts a given Arrow type or schema, the `get schema` operation must return the same types.
 
 SOMA _does_ permit one form of type promotion: variable-length types (`string`, `binary`) may be promoted to their 64-bit-length variants (`large_string`, `large_binary`) at the time of object creation. However, this promotion must be explicit and visible to the API user via the `get schema` operation.
 
@@ -103,20 +103,20 @@ SOMA places no constraints on the underlying types used by the storage system, a
 
 ## Metadata
 
-All SOMA objects may be annotated with a small amounts of simple metadata. Metadata for any SOMA object is a `string`-keyed map of values. Metadata values are Arrow primitive types and Arrow strings. The metadata lifecycle is the same as its containing object, e.g. it will be deleted when the containing object is deleted.
+All SOMA objects may be annotated with a small amounts of simple metadata. Metadata for any SOMA object is a `string`-keyed map of values. Metadata values are Arrow primitive types and Arrow strings. The metadata lifecycle is the same as its containing object, e.g., it will be deleted when the containing object is deleted.
 
 > ℹ️ **Note**: larger or more complex types should be stored using `SOMADataFrame`, `SOMADenseNDArray` or `SOMASparseNDArray` and added to a `SOMACollection`.
 
 ## Foundational Types
 
-The foundational types represent the core data structures used to store and index data. They are intended to be moderately general-purpose, and to serve as building blocks for the [composed types](#composed-types) which codify domain-specific use cases (e.g. single-cell experimental datasets).
+The foundational types represent the core data structures used to store and index data. They are intended to be moderately general-purpose, and to serve as building blocks for the [composed types](#composed-types) which codify domain-specific use cases (e.g., single-cell experimental datasets).
 
 ### SOMACollection
 
 `SOMACollection` is an unordered, `string`-keyed map of values. Values may be any SOMA foundational or composed type, including other (nested) `SOMACollection` objects. Keys in the map are unique and singular (no duplicates, i.e. the `SOMACollection` is _not_ a multi-map). The `SOMACollection` is expected to be used for a variety of use cases:
 
-- as a container of independent objects (e.g. a collection of single-cell datasets, each manifest as a [`SOMAExperiment`](#soma-experiment) object);
-- as the basis for building other composed types (e.g. using `SOMACollection` to organize pre-defined fields in [`SOMAExperiment`](#soma-experiment) such as multiple layers of `X`).
+- as a container of independent objects (e.g., a collection of single-cell datasets, each manifest as a [`SOMAExperiment`](#soma-experiment) object);
+- as the basis for building other composed types (e.g., using `SOMACollection` to organize pre-defined fields in [`SOMAExperiment`](#soma-experiment) such as multiple layers of `X`).
 
 #### Collection entry URIs
 
@@ -195,7 +195,7 @@ For instance, a purely filesystem-based implementation may support only relative
 
 Every `SOMADataFrame` must contain a column called `soma_joinid`, of type `int64` and domain `[0, 2^63-1]`. The `soma_joinid` column contains a unique value for each row in the `SOMADataFrame`, and intended to act as a joint key for other objects, such as `SOMASparseNDArray`.
 
-The default "fill" value for `SOMADataFrame` is the zero or null value of the respective column data type (e.g. `Arrow.float32` defaults to 0.0, `Arrow.string` to `""`, etc).
+The default "fill" value for `SOMADataFrame` is the zero or null value of the respective column data type (e.g., `Arrow.float32` defaults to 0.0, `Arrow.string` to `""`, etc).
 
 Most language-specific bindings will provide convertors between `SOMADataFrame` and other convenient data structures, such as Python `pandas.DataFrame`, R `data.frame`.
 
@@ -203,12 +203,12 @@ Most language-specific bindings will provide convertors between `SOMADataFrame` 
 
 `SOMADenseNDArray` is a dense, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMADenseNDArray` has a user-defined schema, which includes:
 
-- type: a `primitive` type, expressed as an Arrow type (e.g. `int64`, `float32`, etc), indicating the type of data contained within the array;
+- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array;
 - shape: the shape of the array, i.e. number and length of each dimension.
 
-All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g. `soma_dim_0`), and elements are named `soma_data`.
+All dimensions must have a positive, non-zero length, and there must be 1 or more dimensions. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g., `soma_dim_0`), and elements are named `soma_data`.
 
-The default "fill" value for `SOMADenseNDArray` is the zero or null value of the array type (e.g. `Arrow.float32` defaults to 0.0).
+The default "fill" value for `SOMADenseNDArray` is the zero or null value of the array type (e.g., `Arrow.float32` defaults to 0.0).
 
 > ℹ️ **Note**: on TileDB this is an dense array with `N` `int64` dimensions of domain [0, maxInt64), and a single attribute.
 
@@ -216,12 +216,12 @@ The default "fill" value for `SOMADenseNDArray` is the zero or null value of the
 
 `SOMASparseNDArray` is a sparse, N-dimensional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMASparseNDArray` has a user-defined schema, which includes:
 
-- type: a `primitive` type, expressed as an Arrow type (e.g. `int64`, `float32`, etc), indicating the type of data contained within the array;
+- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array;
 - shape: the shape of the array, i.e. number and length of each dimension.
 
-All dimensions must have a positive (in particular, non-zero) length, and there must be 1 or more dimensions. Implicitly stored elements (i.e. those not explicitly stored in the array) are assumed to have a value of zero. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g. `soma_dim_0`), and elements are named `soma_data`.
+All dimensions must have a positive (in particular, non-zero) length, and there must be 1 or more dimensions. Implicitly stored elements (i.e. those not explicitly stored in the array) are assumed to have a value of zero. Where explicitly referenced in the API, the dimensions are named `soma_dim_N`, where `N` is the dimension number (e.g., `soma_dim_0`), and elements are named `soma_data`.
 
-The default "fill" value for `SOMASparseNDArray` is the zero or null value of the array type (e.g. Arrow.float32 defaults to 0.0).
+The default "fill" value for `SOMASparseNDArray` is the zero or null value of the array type (e.g., Arrow.float32 defaults to 0.0).
 
 > ℹ️ **Note**: on TileDB this is an sparse array with `N` `int64` dimensions of domain `[0, maxInt64)`, and a single attribute.
 
@@ -236,7 +236,7 @@ Composed types are defined as a composition of foundational types, adding name, 
 The `SOMAExperiment` and `SOMAMeasurement` types comprise [foundational types](#foundational-types):
 
 - `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations;
-- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g. measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
+- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
 
 In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
 
@@ -350,7 +350,7 @@ class Collection:
 bool soma_dataframe_exists(char *uri, ...) { ... }
 ```
 
-Where possible, the lifecycle should be integrated into language-specific resource-management frameworks (e.g. context management with `with` in Python, try-with-resources in Java).
+Where possible, the lifecycle should be integrated into language-specific resource-management frameworks (e.g., context management with `with` in Python, try-with-resources in Java).
 
 ### Operation: create
 
@@ -554,7 +554,7 @@ set(string key, SOMAObject value, URIType uri_type)
 Parameters:
 
 - `key`: The key to set.
-- `value`: The value to set the key to. If a user sets a collection entry to a type inconsistent with the type of that key (e.g. a defined key in a `SOMAExperiment`) or with the general type of the collection (e.g. a collection of `SOMAMeasurement`s), behavior is unspecified. Implementations are encouraged to raise an error if possible, to prevent latent errors when later attempting to use the data.
+- `value`: The value to set the key to. If a user sets a collection entry to a type inconsistent with the type of that key (e.g., a defined key in a `SOMAExperiment`) or with the general type of the collection (e.g., a collection of `SOMAMeasurement`s), behavior is unspecified. Implementations are encouraged to raise an error if possible, to prevent latent errors when later attempting to use the data.
 - `uri_type`: How the collection should refer to the URI of the newly-added element, whether by absolute or relative URI. The default is `auto`, which will use a relative URI if possible but otherwise use an absolute URI. If `absolute`, the entry will always use an absolute URI. If `relative`, the entry will always use a relative URI, and an error will be raised if a relative URI cannot be used.
 
 ### Operation: add_new\_<var>object_type</var>
@@ -616,7 +616,7 @@ Parameters:
 
 - `uri`: location at which to create the object.
 - `schema`: an Arrow Schema defining the per-column schema.
-- `index_column_names`: a list of column names to use as index columns, AKA "dimensions" (e.g. `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g. read result order). The `soma_joinid` column may be indexed.
+- `index_column_names`: a list of column names to use as index columns, AKA "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g., read result order). The `soma_joinid` column may be indexed.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
@@ -705,7 +705,7 @@ Parameters:
 
 - `uri`: location at which to create the object
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
-- `shape`: the length of each domain as a list, e.g. [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
+- `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
 - [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
 - [`context`](#long-lived-context-data)`: optional context to use for this new object.
 
@@ -793,7 +793,7 @@ Parameters:
 
 - `uri`: location at which to create the object
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
-- `shape`: the length of each domain as a list, e.g. [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
+- `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
 - [`platform_config`](#platform-specific-configuration)`: optional storage-engine specific configuration.
 - [`context`](#long-lived-context-data)`: optional context to use for this new object.
 
@@ -900,7 +900,7 @@ The following are interfaces defined only to make the subsequent specification s
 
 ### SOMAMetadataMapping
 
-The `SOMAMetadataMapping` is an interface to a string-keyed mutable map, representing the available operations on the metadata field in all foundational objects. In most implementations, it will be presented with a language-appropriate interface, e.g. Python `MutableMapping`.
+The `SOMAMetadataMapping` is an interface to a string-keyed mutable map, representing the available operations on the metadata field in all foundational objects. In most implementations, it will be presented with a language-appropriate interface, e.g., Python `MutableMapping`.
 
 The following operations will exist to manipulate the mapping, providing a getter/setter interface plus the ability to iterate on the collection:
 
@@ -922,7 +922,7 @@ Read operations on foundational types return an iterator over "batches" of data,
 | BatchSize type | Description                                                                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `count`        | Batch size defined by result count. For a SOMADataFrame this indicates row count returned per `Arrow.Table`, or for an ND array the number of values. |
-| `size`         | Partition defined by size, in bytes, e.g. max `Arrow.Table` size returned by `SOMADataFRame` read operation.                                          |
+| `size`         | Partition defined by size, in bytes, e.g., max `Arrow.Table` size returned by `SOMADataFRame` read operation.                                          |
 | `auto`         | An automatically determined, "reasonable" default partition size. This is the default batch size.                                                     |
 
 ### SOMAReadPartitions
@@ -939,7 +939,7 @@ Array read operations can return results in a variety of formats. The `SOMABatch
 
 | Batch format   | Description                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------------- |
-| `dense`        | Return the coordinates of the slice (e.g. origin, shape) and an Arrow Tensor containing slice values. |
+| `dense`        | Return the coordinates of the slice (e.g., origin, shape) and an Arrow Tensor containing slice values. |
 | `coo`          | Return an `Arrow.SparseCOOTensor`                                                                     |
 | `csr`          | Return an `Arrow.SparseCSRTensor`                                                                     |
 | `csc`          | Return an A`rrow.SparseCSCTensor`                                                                     |
@@ -955,9 +955,9 @@ Summary:
 ```
 open(string uri, ...) -> SOMA object      # identify a SOMA object and open it
 get_SOMA_version() -> string              # return semver-compatible version of the supported SOMA API
-get_implementation() -> string            # return the implementation name, e.g. "R-tiledb"
+get_implementation() -> string            # return the implementation name, e.g., "R-tiledb"
 get_implementation_version() -> string    # return the package implementation version as a semver-compatible string
-get_storage_engine() -> string            # return underlying storage engine name, e.g. "tiledb"
+get_storage_engine() -> string            # return underlying storage engine name, e.g., "tiledb"
 ```
 
 Semver compatible strings comply with the specification at [semver.org](https://semver.org).
@@ -998,7 +998,7 @@ writeExperiment.mode();  // WRITE
 - Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
 - Slices define a closed interval, i.e. are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
 - Slices may include the lower bound, upper bound, both, or neither:
-  - Slicing with neither (e.g. Python's `[:]`) means select all
+  - Slicing with neither (e.g., Python's `[:]`) means select all
   - Slicing with lower bound 2 and no upper bound selects indices 2 through the highest index present in the given data
   - Slicing with no lower bound and upper bound 4 selects from the lower index present in the given data up to and including 4
 - Slice steps, or stride, if supported in the implementation language, may only be 1
