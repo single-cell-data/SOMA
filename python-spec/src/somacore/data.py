@@ -467,6 +467,9 @@ class SparseRead:
 
     __slots__ = ()
 
+    def coos(self) -> ReadIter[pa.SparseCOOTensor]:
+        raise NotImplementedError()
+
     def dense_tensors(self) -> ReadIter[pa.Tensor]:
         raise NotImplementedError()
 
