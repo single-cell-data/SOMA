@@ -231,7 +231,7 @@ Composed types are defined as a composition of foundational types, adding name, 
 
 ### SOMAExperiment and SOMAMeasurement
 
-`SOMAExperiment` is a specialized `SOMACollection`, representing an annotated 2-D matrix of measurements. In the single-cell-biology use case, a `SOMAExperiment` can represent multiple modes of measurement across a single collection of cells (AKA a "multimodal dataset"). Within a `SOMAExperiment`, a set of measurements on a single set of variables (features) is represented as a `SOMAMeasurement`.
+`SOMAExperiment` is a specialized `SOMACollection`, representing an annotated 2-D matrix of measurements. In the single-cell-biology use case, a `SOMAExperiment` can represent multiple modes of measurement across a single collection of cells (also knows as a "multimodal dataset"). Within a `SOMAExperiment`, a set of measurements on a single set of variables (features) is represented as a `SOMAMeasurement`.
 
 The `SOMAExperiment` and `SOMAMeasurement` types comprise [foundational types](#foundational-types):
 
@@ -250,26 +250,26 @@ These types have pre-defined fields, each of which have well-defined naming, typ
 
 The shape of each axis (`obs` and `var`) are defined by their respective dataframes, and the indexing of matrices is defined by the `soma_joinid` of the respective axis dataframe.
 
-- `obs`: the observation annotations are shared across the entire `SOMAExperiment`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `obs` SOMADataFrame (AKA `obsid`).
-- `var`: the variable annotations are shared within any given `SOMAMeasurement`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `var` SOMADataFrame (AKA `varid`).
+- `obs`: the observation annotations are shared across the entire `SOMAExperiment`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `obs` SOMADataFrame (also knows as `obsid`).
+- `var`: the variable annotations are shared within any given `SOMAMeasurement`. Matrices indexed on this dimension use the domain defined by the `soma_joinid` values of the `var` SOMADataFrame (also knows as `varid`).
 
 The pre-defined fields of a `SOMAExperiment` object are:
 
-| Field name | Field type                                | Field description                                                                                                                                                                                                                 |
-| ---------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `obs`      | `SOMADataFrame`                           | Primary annotations on the _observation_ axis. The contents of the `soma_joinid` pseudo-column define the _observation_ index domain, AKA `obsid`. All observations for the `SOMAExperiment` _must_ be defined in this dataframe. |
-| `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurements.                                                                                                                                                                                               |
+| Field name | Field type                                | Field description                                                                                                                                                                                                                           |
+| ---------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `obs`      | `SOMADataFrame`                           | Primary annotations on the _observation_ axis. The contents of the `soma_joinid` pseudo-column define the _observation_ index domain, also knows as `obsid`. All observations for the `SOMAExperiment` _must_ be defined in this dataframe. |
+| `ms`       | `SOMACollection[string, SOMAMeasurement]` | A collection of named measurements.                                                                                                                                                                                                         |
 
 The `SOMAMeasurement` is a sub-element of a `SOMAExperiment`, and is otherwise a specialized `SOMACollection` with pre-defined fields:
 
-| Field name | Field type                                                    | Field description                                                                                                                                                                                                                                                                       |
-| ---------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `var`      | `SOMADataFrame`                                               | Primary annotations on the _variable_ axis, for variables in this measurement (i.e. annotates columns of `X`). The contents of the `soma_joinid` pseudo-column define the _variable_ index domain, AKA `varid`. All variables for this measurement _must_ be defined in this dataframe. |
-| `X`        | `SOMACollection[string, SOMASparseNDArray\|SOMADenseNDArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                    |
-| `obsm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                      |
-| `obsp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                   |
-| `varm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`.                                                                                                                                                      |
-| `varp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                    |
+| Field name | Field type                                                    | Field description                                                                                                                                                                                                                                                                                 |
+| ---------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `var`      | `SOMADataFrame`                                               | Primary annotations on the _variable_ axis, for variables in this measurement (i.e. annotates columns of `X`). The contents of the `soma_joinid` pseudo-column define the _variable_ index domain, also knows as `varid`. All variables for this measurement _must_ be defined in this dataframe. |
+| `X`        | `SOMACollection[string, SOMASparseNDArray\|SOMADenseNDArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                              |
+| `obsm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                                |
+| `obsp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                             |
+| `varm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`.                                                                                                                                                                |
+| `varp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                              |
 
 For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm` and `X` (first dimension) are the values defined by the `obs` dataframe `soma_joinid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm` and `X` (second dimension) are the values defined by the `var` dataframe `soma_joinid` column in the same measurement. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` dataframes.
 
@@ -598,7 +598,7 @@ add_new_collection(string key, CollectionType type, string uri = "", PlatformCon
 | read                                     | Read a subset of data from the `SOMADataFrame`.       |
 | write                                    | Write a subset of data to the `SOMADataFrame`.        |
 
-A `SOMADataFrame` is indexed by one or more dataframe columns (AKA "dimensions"). The name and order of dimensions is specified at the time of creation. [Slices](#indexing-and-slicing) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
+A `SOMADataFrame` is indexed by one or more dataframe columns (also knows as "dimensions"). The name and order of dimensions is specified at the time of creation. [Slices](#indexing-and-slicing) are addressable by the user-specified dimensions. The `soma_joinid` column may be specified as an index column.
 
 `SOMADataFrame` rows require unique coordinates. In other words, the read and write operations will assume that any given coordinate tuple for indexed columns uniquely identifies a single dataframe row.
 
@@ -616,7 +616,7 @@ Parameters:
 
 - `uri`: location at which to create the object.
 - `schema`: an Arrow Schema defining the per-column schema.
-- `index_column_names`: a list of column names to use as index columns, AKA "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g., read result order). The `soma_joinid` column may be indexed.
+- `index_column_names`: a list of column names to use as index columns, also knows as "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g., read result order). The `soma_joinid` column may be indexed.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
@@ -922,7 +922,7 @@ Read operations on foundational types return an iterator over "batches" of data,
 | BatchSize type | Description                                                                                                                                           |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `count`        | Batch size defined by result count. For a SOMADataFrame this indicates row count returned per `Arrow.Table`, or for an ND array the number of values. |
-| `size`         | Partition defined by size, in bytes, e.g., max `Arrow.Table` size returned by `SOMADataFRame` read operation.                                          |
+| `size`         | Partition defined by size, in bytes, e.g., max `Arrow.Table` size returned by `SOMADataFRame` read operation.                                         |
 | `auto`         | An automatically determined, "reasonable" default partition size. This is the default batch size.                                                     |
 
 ### SOMAReadPartitions
@@ -937,14 +937,14 @@ To facilitate distributed computation, read operations on foundational types acc
 
 Array read operations can return results in a variety of formats. The `SOMABatchFormat` format indicates the format encoding.
 
-| Batch format   | Description                                                                                           |
-| -------------- | ----------------------------------------------------------------------------------------------------- |
+| Batch format   | Description                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------ |
 | `dense`        | Return the coordinates of the slice (e.g., origin, shape) and an Arrow Tensor containing slice values. |
-| `coo`          | Return an `Arrow.SparseCOOTensor`                                                                     |
-| `csr`          | Return an `Arrow.SparseCSRTensor`                                                                     |
-| `csc`          | Return an A`rrow.SparseCSCTensor`                                                                     |
-| `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                          |
-| `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                |
+| `coo`          | Return an `Arrow.SparseCOOTensor`                                                                      |
+| `csr`          | Return an `Arrow.SparseCSRTensor`                                                                      |
+| `csc`          | Return an A`rrow.SparseCSCTensor`                                                                      |
+| `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                           |
+| `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                 |
 
 ## General Utilities
 
@@ -1157,7 +1157,7 @@ Issues to be resolved:
 18. Removed var_ms/obs_ms.
 19. Editorial cleanup and clarifications.
 20. Simplified dataframe indexing to indexed/non-indexed. Removed from data model; isolated to only those operations affected.
-21. Add parameter for storage engine-specific config, to read/write/create ops.
+21. Add parameter for storage-engine-specific config, to read/write/create ops.
 22. Support both sparse and dense ndarray in SOMAExperiment X slot.
 23. Split read batch_size and partitioning, and clarify intent.
 24. Allow multiple format support for NDArray read/write ops.
