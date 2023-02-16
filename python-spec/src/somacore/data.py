@@ -69,7 +69,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             index column name is required.
         :param shape: The maximum capacity (domain) of the dataframe, including room
             for any intended future appends. This must be in the postive int64
-            range, or `None`.  If `None` then the maximum possible int64 will be
+            range, or ``None``.  If ``None`` then the maximum possible int64 will be
             used.  This makes a `SOMADataFrame` growable.
         """
         raise NotImplementedError()
@@ -202,7 +202,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
             If the type is unsupported, an error will be raised.
         :param shape: The maximum capacity of each dimension, including room
             for any intended future appends, as a sequence.  E.g. ``(100, 10)``.
-            All lengths must be in the postive int64 range, or `None`.
+            All lengths must be in the postive int64 range, or ``None``.
 
             For `SOMASparseNDArray` only, if a slot is None, then the maximum
             possible int64 will be used.  This makes a `SOMASparseNDArray`
