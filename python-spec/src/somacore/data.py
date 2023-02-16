@@ -206,10 +206,12 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
             For `SOMASparseNDArray` only, if a slot is None, then the maximum
             possible int64 will be used.  This makes a `SOMASparseNDArray`
-            growable.  It's necessary to say `shape=(None, None)` or
-            `shape=(None, None, None)` rather than more simply `shape=None`
-            since the first two are how one specifies N=2 or N=3, respectively,
-            for N-dimensional arrays.
+            growable.
+
+            It's necessary to say `shape=(None, None)` or `shape=(None, None, None)`
+            rather than more simply `shape=None` since the first two are how one
+            specifies N=2 or N=3, respectively, for N-dimensional arrays: the length
+            of this sequence is the number of dimensions of the array.
         """
         raise NotImplementedError()
 
