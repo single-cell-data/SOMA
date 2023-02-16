@@ -67,10 +67,10 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             index columns (e.g., ``['cell_type', 'tissue_type']``).
             All named columns must exist in the schema, and at least one
             index column name is required.
-        :param shape: The maximum capacity of the dataframe, including room
-            for any intended future appends. This must be in the postive
-            int64 range, or `None`.  If `None` then the maximum possible
-            int64 will be used.  This makes a `SOMADataFrame` growable.
+        :param shape: The maximum capacity (domain) of the dataframe, including room
+            for any intended future appends. This must be in the postive int64
+            range, or `None`.  If `None` then the maximum possible int64 will be
+            used.  This makes a `SOMADataFrame` growable.
         """
         raise NotImplementedError()
 
@@ -202,10 +202,14 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
             If the type is unsupported, an error will be raised.
         :param shape: The maximum capacity of each dimension, including room
             for any intended future appends, as a sequence.  E.g. ``(100, 10)``.
-            All lengths must be in the postive int64 range, or `None`.  If a
-            slot is `None` -- only supported for `SparseNDArray`, not
-            `DenseNDArray` -- then the maximum possible int64 will be used.
-            This makes a `SOMASparseNDArray` growable.
+            All lengths must be in the postive int64 range, or `None`.
+
+            For `SOMASparseNDArray` only, if a slot is None then the maximum
+            possible int64 will be used.  This makes a `SOMASparseNDArray`
+            growable.  It's necessary to say `shape=(None, None)` or
+            `shape=(None, None, None)` rather than more simply `shape=None`
+            since the first two are how one specifies N=2 or N=3, respectively,
+            for N-dimensional arrays.
         """
         raise NotImplementedError()
 
@@ -214,7 +218,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def shape(self) -> Tuple[int, ...]:
-        """The capacity of each dimension of this array.
+        """The maximum capacity (domain) of each dimension of this array.
         [lifecycle: experimental]
         """
         raise NotImplementedError()
