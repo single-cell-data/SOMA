@@ -1,5 +1,12 @@
 # Introduction
 
+<!-- Note to editors: this version string is independent of GitHub release tags on this repo. In particular, it needs to match `get_SOMA_version()` in impls. -->
+
+**Status**: in active development. Version: `0.2.0-dev`
+
+ℹ️ **Note**: Feedback on this spec is encouraged. Please [file an issue](https://github.com/single-cell-data/SOMA/issues)
+with any and all feedback, comments, or concerns.
+
 The goal of SOMA (“stack of matrices, annotated”) is a flexible, extensible, and open-source API providing access to annotated, 2D matrix data stored in multiple underlying formats and systems. The vision for this API family includes:
 
 - support access to persistent, cloud-resident datasets,
@@ -942,7 +949,7 @@ Array read operations can return results in a variety of formats. The `SOMABatch
 | `dense`        | Return the coordinates of the slice (e.g., origin, shape) and an Arrow Tensor containing slice values. |
 | `coo`          | Return an `Arrow.SparseCOOTensor`                                                                      |
 | `csr`          | Return an `Arrow.SparseCSRTensor`                                                                      |
-| `csc`          | Return an A`rrow.SparseCSCTensor`                                                                      |
+| `csc`          | Return an `Arrow.SparseCSCTensor`                                                                      |
 | `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                           |
 | `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                 |
 
