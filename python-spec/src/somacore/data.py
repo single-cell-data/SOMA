@@ -199,12 +199,12 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
             for any intended future appends, as a sequence.  E.g. ``(100, 10)``.
             All lengths must be in the postive int64 range, or ``None``.
 
-            For `SOMASparseNDArray` only, if a slot is None, then the maximum
-            possible int64 will be used.  This makes a `SOMASparseNDArray`
+            For ``SOMASparseNDArray`` only, if a slot is None, then the maximum
+            possible int64 will be used.  This makes a ``SOMASparseNDArray``
             growable.
 
-            It's necessary to say `shape=(None, None)` or `shape=(None, None, None)`
-            rather than more simply `shape=None` since the first two are how one
+            It's necessary to say ``shape=(None, None)`` or ``shape=(None, None, None)``
+            rather than more simply ``shape=None`` since the first two are how one
             specifies N=2 or N=3, respectively, for N-dimensional arrays: the length
             of this sequence is the number of dimensions of the array.
         """
