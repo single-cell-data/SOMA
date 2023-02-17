@@ -616,7 +616,7 @@ Create a new `SOMADataFrame` with user-specified URI and schema.
 The schema parameter must define all user-specified columns. The schema may optionally include `soma_joinid`, but an error will be raised if it is not of type Arrow.int64. If `soma_joinid` is not specified, it will be added to the schema. All other column names beginning with `soma_` are reserved, and if present in the schema, will generate an error. If the schema includes types unsupported by the SOMA implementation, an error will be raised.
 
 ```
-create(string uri, Arrow.Schema schema, string[] index_column_names, shape, platform_config, context) -> SOMADataFrame
+create(string uri, Arrow.Schema schema, string[] index_column_names, platform_config, context) -> SOMADataFrame
 ```
 
 Parameters:
@@ -624,7 +624,6 @@ Parameters:
 - `uri`: location at which to create the object.
 - `schema`: an Arrow Schema defining the per-column schema.
 - `index_column_names`: a list of column names to use as index columns, also known as "dimensions" (e.g., `['cell_type', 'tissue_type']`). All named columns must exist in the schema, and at least one index column name is required. Index column order is significant and may affect other operations (e.g., read result order). The `soma_joinid` column may be indexed.
-- `shape`: an optional sequence of positive int64 values specifying the shape of each index column. If provided, this must have the same length as `index_column_names`, and the index-column domains will be as specified. If omitted, the index-column domains will use the maximum possible int64 value.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 - [`context`](#long-lived-context-data): optional context to use for this new object.
 
