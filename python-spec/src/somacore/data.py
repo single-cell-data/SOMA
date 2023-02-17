@@ -45,7 +45,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        shape: Optional[int] = None,
+        shape: Optional[Sequence[int]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -67,10 +67,12 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             index columns (e.g., ``['cell_type', 'tissue_type']``).
             All named columns must exist in the schema, and at least one
             index column name is required.
-        :param shape: The maximum capacity (domain) of the dataframe, including room
-            for any intended future appends. This must be in the postive int64
-            range, or ``None``.  If ``None`` then the maximum possible int64 will be
-            used.  This makes a `SOMADataFrame` growable.
+        :param shape: An optional sequence of positive int64 values specifying the
+            shape of each index column, including room for any intended future
+            appends. If provided, this must have the same length as
+            `index_column_names`, and the index-column domains will be as specified.
+            If omitted, the index-column domains will use the maximum possible int64
+            value.  This makes a `SOMADataFrame` growable.
         """
         raise NotImplementedError()
 
