@@ -1,6 +1,6 @@
 import itertools
-from typing import Any, Iterable
 import unittest
+from typing import Any, Iterable
 
 from somacore import types
 

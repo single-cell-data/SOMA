@@ -1,13 +1,13 @@
 from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
-from typing_extensions import Self
 
-from .. import options
+from typing_extensions import Self
 
 from .. import base
 from .. import collection
 from .. import data
 from .. import experiment
 from .. import measurement
+from .. import options
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 

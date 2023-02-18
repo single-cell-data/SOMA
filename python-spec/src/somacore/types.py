@@ -1,7 +1,8 @@
 """Type and interface declarations that are not specific to options."""
 
 import sys
-from typing import Any, NoReturn, Optional, Type, TypeVar, Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, NoReturn, Optional, Sequence, Type, TypeVar
+
 from typing_extensions import Protocol, TypeGuard
 
 
