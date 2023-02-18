@@ -185,7 +185,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         uri: str,
         *,
         type: pa.DataType,
-        shape: Sequence[int],
+        shape: Sequence[Optional[int]],
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -195,8 +195,16 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         :param uri: The URI where the array will be created.
         :param type: The Arrow type to store in the array.
             If the type is unsupported, an error will be raised.
-        :param shape: The length of each dimension as a sequence,
-            e.g. ``(100, 10)``. All lengths must be in the postive int64 range.
+        :param shape: The maximum capacity of each dimension, including room
+            for any intended future appends, as a sequence.  E.g. ``(100, 10)``.
+            All lengths must be in the postive int64 range, or ``None``.  It's
+            necessary to say ``shape=(None, None)`` or ``shape=(None, None,
+            None)``, as the sequence length determines the number of dimensions
+            N in the N-dimensional array.
+
+            For ``SOMASparseNDArray`` only, if a slot is None, then the maximum
+            possible int64 will be used.  This makes a ``SOMASparseNDArray``
+            growable.
         """
         raise NotImplementedError()
 
@@ -205,7 +213,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def shape(self) -> Tuple[int, ...]:
-        """The length of each dimension of this array.
+        """The maximum capacity (domain) of each dimension of this array.
         [lifecycle: experimental]
         """
         raise NotImplementedError()
@@ -339,8 +347,6 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
             some_dense_array.read(...).tables()
             # -> an iterator of Arrow Tables
-            some_dense_array.read(...).csrs().all()
-            # -> a single flattened sparse CSR matrix
 
         :param coords: A per-dimension sequence of coordinates defining
             the range to be read.
@@ -455,12 +461,6 @@ class SparseRead:
     __slots__ = ()
 
     def coos(self) -> ReadIter[pa.SparseCOOTensor]:
-        raise NotImplementedError()
-
-    def cscs(self) -> ReadIter[pa.SparseCSCMatrix]:
-        raise NotImplementedError()
-
-    def csrs(self) -> ReadIter[pa.SparseCSRMatrix]:
         raise NotImplementedError()
 
     def dense_tensors(self) -> ReadIter[pa.Tensor]:
