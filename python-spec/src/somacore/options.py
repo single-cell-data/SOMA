@@ -7,13 +7,13 @@ SOMA types that require them, not reimplemented by the implementing package.
 import enum
 from typing import Any, Mapping, Optional, Sequence, Union
 
-from . import types
-
 import attrs
 import numpy as np
 import numpy.typing as npt
 import pyarrow as pa
 from typing_extensions import Final, Literal
+
+from . import types
 
 SOMA_JOINID: Final = "soma_joinid"
 """Global constant for the SOMA join ID."""

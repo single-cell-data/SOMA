@@ -5,5 +5,5 @@
 global-exclude *
 include pyproject.toml
 include MANIFEST.in
-recursive-include python-spec/README.md
+include python-spec/README.md
 recursive-include python-spec/src *.py py.typed

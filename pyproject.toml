@@ -37,6 +37,9 @@ write_to = "python-spec/src/somacore/_version.py"
 # by requiring `python-` at the start of the tag (e.g. `python-v1.2.3`).
 tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
+[tool.ruff]
+extend-select = ["I"]
+
 [tool.ruff.isort]
 force-single-line = true
 known-first-party = ["somacore"]
