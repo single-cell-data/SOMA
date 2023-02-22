@@ -33,7 +33,7 @@ def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:
     # NOTE: Keep this in sync with the `SparseDFCoord` type.
     if coord is None or isinstance(
         coord,
-        (bytes, int, slice, str, pa.Array, pa.ChunkedArray, np.ndarray),
+        (bytes, float, int, slice, str, pa.Array, pa.ChunkedArray, np.ndarray),
     ):
         return coord
     if isinstance(coord, Sequence):
