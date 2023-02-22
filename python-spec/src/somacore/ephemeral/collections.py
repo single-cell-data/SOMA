@@ -1,6 +1,6 @@
 from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
 
-from typing_extensions import Self
+from typing_extensions import Literal, Self
 
 from .. import base
 from .. import collection
@@ -49,6 +49,12 @@ class BaseCollection(collection.BaseCollection[_Elem]):
         raise TypeError(
             "Ephemeral collections are in-memory only and cannot be opened."
         )
+
+    @classmethod
+    def exists(cls, uri: str, *, context: Any = None) -> Literal[False]:
+        del uri, context  # All unused.
+        # Ephemeral collections are in-memory only and do not otherwise exist.
+        return False
 
     @classmethod
     def create(cls, *args, **kwargs) -> Self:
