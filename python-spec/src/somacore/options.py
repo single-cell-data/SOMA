@@ -127,10 +127,12 @@ DenseNDCoords = Sequence[DenseCoord]
 SparseDFCoord = Union[
     DenseCoord,
     Sequence[int],
+    Sequence[float],
     Sequence[str],
     Sequence[bytes],
-    types.Slice[bytes],
+    types.Slice[float],
     types.Slice[str],
+    types.Slice[bytes],
     pa.Array,
     pa.ChunkedArray,
     npt.NDArray[np.integer],

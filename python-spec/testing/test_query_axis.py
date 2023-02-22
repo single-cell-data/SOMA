@@ -14,7 +14,9 @@ from somacore import options
         ((), ()),
         ((slice(1, 10),), (slice(1, 10),)),
         ([0, 1, 2], (0, 1, 2)),
+        ([1, 1.5, 2], (1, 1.5, 2)),
         ((slice(None), [0, 88, 1001]), (slice(None), (0, 88, 1001))),
+        ((slice(2.5, 3.5),), (slice(2.5, 3.5),)),
         (("string-coord", [b"lo", b"hi"]), ("string-coord", (b"lo", b"hi"))),
     ],
 )
@@ -36,7 +38,6 @@ def test_canonicalization_nparray() -> None:
     [
         ("forbid bare strings",),
         (b"forbid bare byteses",),
-        ([1, 1.5, 2],),
         (999,),
     ],
 )
