@@ -38,6 +38,18 @@ class SOMAObject(metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
+    @classmethod
+    @abc.abstractmethod
+    def exists(cls, uri: str, *, context: Optional[Any] = None) -> bool:
+        """Checks whether a SOMA object of this type is stored at the URI.
+
+        :param uri: The URI to check.
+        :param context: The Context value to use when checking existence.
+        :return: True if the object exists and is of the correct type.
+            False if the object does not exist, or is of a different type.
+        """
+        raise NotImplementedError()
+
     @property
     @abc.abstractmethod
     def uri(self) -> str:
