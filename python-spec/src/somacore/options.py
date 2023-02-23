@@ -130,12 +130,15 @@ SparseDFCoord = Union[
     Sequence[float],
     Sequence[str],
     Sequence[bytes],
+    Sequence[npt.NDArray[np.datetime64]],
     types.Slice[float],
     types.Slice[str],
     types.Slice[bytes],
+    types.Slice[npt.NDArray[np.datetime64]],
     pa.Array,
     pa.ChunkedArray,
     npt.NDArray[np.integer],
+    npt.NDArray[np.datetime64],
 ]
 """A single coordinate range for one dimension of a sparse dataframe."""
 SparseDFCoords = Sequence[SparseDFCoord]
