@@ -17,6 +17,10 @@ from somacore import options
         ([1, 1.5, 2], (1, 1.5, 2)),
         ((slice(None), [0, 88, 1001]), (slice(None), (0, 88, 1001))),
         ((slice(2.5, 3.5),), (slice(2.5, 3.5),)),
+        (
+            (slice(np.datetime64(946684802, "s"), np.datetime64(946684803, "s")),),
+            (slice(np.datetime64(946684802, "s"), np.datetime64(946684803, "s")),),
+        ),
         (("string-coord", [b"lo", b"hi"]), ("string-coord", (b"lo", b"hi"))),
     ],
 )
