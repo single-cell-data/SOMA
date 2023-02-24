@@ -43,7 +43,7 @@ def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:
             pa.ChunkedArray,
             np.ndarray,
             np.datetime64,
-            pa.lib.TimestampType,
+            pa.TimestampType,
         ),
     ):
         return coord
