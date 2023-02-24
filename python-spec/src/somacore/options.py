@@ -5,7 +5,7 @@ SOMA types that require them, not reimplemented by the implementing package.
 """
 
 import enum
-from typing import Any, Mapping, Optional, Sequence, Union
+from typing import Any, Mapping, Optional, Sequence, TypeVar, Union
 
 import attrs
 import numpy as np
@@ -110,36 +110,42 @@ class ResultOrder(enum.Enum):
 ResultOrderStr = Union[ResultOrder, Literal["auto", "row-major", "column-major"]]
 """A ResultOrder, or the str representing it."""
 
+# Coordinate types are specified as TypeVars instead of Unions to ensure that
+# sequences and slices are homogeneous:
+#
+#     BadCoord = Union[int, str]
+#     BadCoords = Union[BadCoord, Sequence[BadCoord]]
+#     # ["this", 1] is bad, but is a valid as a BadCoords value
+#
+#     GoodCoord = TypeVar("GoodCoord", int, str)
+#     GoodCoords = Union[GoodCoord, Sequence[GoodCoord]]
+#     # ["this", 1] is bad, and is *not* valid as a GoodCoords value
+#     # ["this", "that"] is a valid as a GoodCoords value
+#     # [1, 2] is valid as a GoodCoords value
 
-DenseCoord = Union[None, int, types.Slice[int]]
+DenseCoord = TypeVar("DenseCoord", None, int, types.Slice[int])
 """A single coordinate range for reading dense data.
 
 ``None`` indicates the entire domain of a dimension; values of this type are
 not ``Optional``, but may be ``None``.
 """
+
+
 DenseNDCoords = Sequence[DenseCoord]
 """A sequence of ranges to read dense data."""
 
-# TODO: Add support for non-integer types.
+SparseCoord = TypeVar(
+    "SparseCoord", bytes, float, int, slice, str, np.datetime64, pa.TimestampType
+)
+"""Types that can be put into a single sparse coordinate."""
+
 # NOTE: Keep this in sync with the types accepted in `_canonicalize_coord`
 # in ./query/axis.py.
-# https://github.com/single-cell-data/TileDB-SOMA/issues/960
 SparseDFCoord = Union[
     DenseCoord,
-    float,
-    np.datetime64,
-    pa.TimestampType,
-    Sequence[int],
-    Sequence[float],
-    Sequence[str],
-    Sequence[bytes],
-    Sequence[np.datetime64],
-    Sequence[pa.TimestampType],
-    types.Slice[float],
-    types.Slice[str],
-    types.Slice[bytes],
-    types.Slice[np.datetime64],
-    types.Slice[pa.TimestampType],
+    SparseCoord,
+    Sequence[SparseCoord],
+    types.Slice[SparseCoord],
     pa.Array,
     pa.ChunkedArray,
     npt.NDArray[np.integer],
