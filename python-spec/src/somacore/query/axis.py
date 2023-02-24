@@ -34,6 +34,7 @@ def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:
     if coord is None or isinstance(
         coord,
         (
+            bool,
             bytes,
             float,
             int,

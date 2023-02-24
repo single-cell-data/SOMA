@@ -22,6 +22,7 @@ from somacore import options
             (slice(np.datetime64(946684802, "s"), np.datetime64(946684803, "s")),),
         ),
         (("string-coord", [b"lo", b"hi"]), ("string-coord", (b"lo", b"hi"))),
+        ((slice(4, 5), True, None), (slice(4, 5), True, None)),
     ],
 )
 def test_canonicalization(coords: Any, want: Tuple[options.SparseDFCoord, ...]) -> None:
