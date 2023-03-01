@@ -19,7 +19,7 @@ import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
 from scipy import sparse
-from typing_extensions import Literal, Protocol, TypedDict, assert_never
+from typing_extensions import Literal, Protocol, Self, TypedDict, assert_never
 
 from .. import data
 from .. import measurement
@@ -136,7 +136,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     @property
     def indexer(self) -> "AxisIndexer":
-        """Returns a ``soma_joinid`` indexer for both ``obs`` and ``var`` axes."""
+        """Returns a ``soma_joinid`` indexer for both ``obs`` and ``var`` axes
+        [lifecyle: experimental]."""
         return self._indexer
 
     def X(self, layer_name: str) -> data.SparseRead:
@@ -202,8 +203,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         pool.shutdown()
         self._threadpool_ = None
 
-    # TODO: This should be "Self" once mypy supports that.
-    def __enter__(self) -> "ExperimentAxisQuery":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *_: Any) -> None:
