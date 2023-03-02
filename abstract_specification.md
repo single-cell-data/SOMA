@@ -662,7 +662,7 @@ Parameters:
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-- `value_filter``: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
+- `value_filter`: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more Arrow `Table` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
