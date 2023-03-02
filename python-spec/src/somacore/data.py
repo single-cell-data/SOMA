@@ -45,6 +45,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -58,14 +59,28 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         is provided, one will be added.  It may be used as an indexed column.
 
         :param uri: The URI where the ``DataFrame`` will be created.
+
         :param schema: Arrow schema defining the per-column schema. This schema
             must define all columns, including columns to be named as index
             columns.  If the schema includes types unsupported by the SOMA
             implementation, an error will be raised.
+
         :param index_column_names: A list of column names to use as user-defined
             index columns (e.g., ``['cell_type', 'tissue_type']``).
             All named columns must exist in the schema, and at least one
             index column name is required.
+
+        :param domain: An optional sequence of tuples specifying the domain of each
+            index column. Each tuple should be a pair consisting of the minimum and
+            maximum values storable in the index column. For example, if there is a
+            single int64-valued index column, then ``domain`` might be ``[(100,
+            200)]`` to indicate that values between 100 and 200, inclusive, can be
+            stored in that column.  If provided, this sequence must have the same
+            length as `index_column_names`, and the index-column domain will be as
+            specified.  If omitted entirely, or if ``None`` in a given dimension,
+            the corresponding index-column domain will use the minimum and maximum
+            possible values for the column's datatype.  This makes a
+            ``SOMADataFrame`` growable.
         """
         raise NotImplementedError()
 
@@ -167,6 +182,15 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def index_column_names(self) -> Tuple[str, ...]:
         """The names of the index (dimension) columns.
         [lifecycle: experimental]
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def domain(self) -> Tuple[Tuple[Any, Any], ...]:
+        """
+        Returns a tuple of minimum and maximum values, inclusive, storable
+        on each index column of the dataframe.
         """
         raise NotImplementedError()
 
