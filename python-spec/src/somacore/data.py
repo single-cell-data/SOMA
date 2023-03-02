@@ -45,7 +45,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        domains: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -70,13 +70,13 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             All named columns must exist in the schema, and at least one
             index column name is required.
 
-        :param domains: An optional sequence of tuples specifying the domain of each
+        :param domain: An optional sequence of tuples specifying the domain of each
             index column. Each tuple should be a pair consisting of the minimum and
             maximum values storable in the index column. For example, if there is a
-            single int64-valued index column, then ``domains`` might be ``[(100,
+            single int64-valued index column, then ``domain`` might be ``[(100,
             200)]`` to indicate that values between 100 and 200, inclusive, can be
             stored in that column.  If provided, this sequence must have the same
-            length as `index_column_names`, and the index-column domains will be as
+            length as `index_column_names`, and the index-column domain will be as
             specified.  If omitted entirely, or if ``None`` in a given dimension,
             the corresponding index-column domain will use the minimum and maximum
             possible values for the column's datatype.  This makes a
@@ -182,6 +182,14 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def index_column_names(self) -> Tuple[str, ...]:
         """The names of the index (dimension) columns.
         [lifecycle: experimental]
+        """
+        raise NotImplementedError()
+
+    @property
+    def domain(self) -> Tuple[Tuple[Any, Any], ...]:
+        """
+        Returns a tuple of minimum and maximum values, inclusive, storable
+        on each index column of the dataframe.
         """
         raise NotImplementedError()
 
