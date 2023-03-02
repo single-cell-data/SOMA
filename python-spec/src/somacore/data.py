@@ -186,6 +186,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
+    @abc.abstractmethod
     def domain(self) -> Tuple[Tuple[Any, Any], ...]:
         """
         Returns a tuple of minimum and maximum values, inclusive, storable
