@@ -645,7 +645,7 @@ Summary:
 
 ```
 read(
-    coords=[[id,...]|all, ...],
+    coords=[[coord,...]|all, ...],
     column_names=[`string`, ...]|all,
     batch_size,
     partitions,
