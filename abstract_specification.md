@@ -645,7 +645,7 @@ Summary:
 
 ```
 read(
-    ids=[[id,...]|all, ...],
+    coords=[[id,...]|all, ...],
     column_names=[`string`, ...]|all,
     batch_size,
     partitions,
@@ -657,7 +657,7 @@ read(
 
 Parameters:
 
-- `ids`: the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
+- `coords`: the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
 - `column_names`: the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
@@ -1001,8 +1001,8 @@ writeExperiment.mode();  // WRITE
 
 ## Indexing and slicing
 
-- In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
-- Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
+- In the above `read()` methods, indexing by an empty list of coordinates must result in zero-length query results.
+- Negative indices must not be interpreted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
 - Slices define a closed interval, i.e., are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
 - Slices may include the lower bound, upper bound, both, or neither:
   - Slicing with neither (e.g., Python's `[:]`) means select all.
