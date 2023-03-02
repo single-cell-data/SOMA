@@ -713,8 +713,8 @@ Parameters:
 - `uri`: location at which to create the object.
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
-- [`context`](#long-lived-context-data)`: optional context to use for this new object.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Returns: The newly created `SOMADenseNDArray`, opened for writing.
 
@@ -768,7 +768,7 @@ Parameters:
 
 - `coords`: per-dimension slice, expressed as a per-dimension list of scalar or range.
 - `values`: values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNDArray.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 ## SOMASparseNDArray
 
@@ -801,8 +801,8 @@ Parameters:
 - `uri`: location at which to create the object.
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
-- [`context`](#long-lived-context-data)`: optional context to use for this new object.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Returns: The newly created `SOMASparseNDArray`, opened for writing.
 
@@ -836,7 +836,7 @@ read(
 - `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
 - `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
 
