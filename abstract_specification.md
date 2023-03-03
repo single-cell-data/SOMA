@@ -243,7 +243,7 @@ Composed types are defined as a composition of foundational types, adding name, 
 The `SOMAExperiment` and `SOMAMeasurement` types comprise [foundational types](#foundational-types):
 
 - `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations.
-- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
+- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNDArray` and `SOMASparseNDArray`.
 
 In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
 
