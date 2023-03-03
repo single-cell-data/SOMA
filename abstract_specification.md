@@ -70,6 +70,7 @@ The foundational types are:
 The composed types are:
 
 - `SOMAExperiment`: a specialization and extension of `SOMACollection`, codifying a set of naming and indexing conventions to represent an annotated, 2-D matrix of observations across _multiple_ sets of variables.
+- `SOMAMeasurement`: a specialization and extension of `SOMACollection`, that contains a set of annotated observables that are common to one or more sets of measurements and/or derived calculations.
 
 In this document, the term `dataframe` implies something akin to an Arrow `Table` (or `RecordBatch`), R `data.frame` or Python `pandas.DataFrame`, where:
 
@@ -1164,4 +1165,5 @@ However, client code should treat the `context` object on any instantiated SOMA 
 49. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
 50. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
 51. Renamed `Collection.add_new_collection()` `type` param to `kind`.
-52. Removed ⚠️-marked commentary
+52. Removed ⚠️-marked commentary.
+53. Added `SOMAMeasurement` to "Data Model" section, under "composed types".
