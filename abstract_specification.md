@@ -98,8 +98,6 @@ Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
 Numeric index types (e.g., offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1]`. In other words, non-negative `int64` values are used for offset indexing.
 
-> ⚠️ **Issue**: are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (i.e., no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (e.g., `RecordBatch`, `List`, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
-
 ### Type conformance and promotion
 
 SOMA is intended to be strongly typed. With one exception noted below, all requests for a given Arrow type must be fulfilled or generate an error based upon the capabilities of the underlying storage system. Silently casting to a less capable type (e.g., `float64` to `float32`) is _not_ permitted. All operations specifying or introspecting the type system must be self-consistent, e.g., if object `create` accepts a given Arrow type or schema, the `get schema` operation must return the same types.
@@ -250,8 +248,6 @@ In other words, every `SOMAMeasurement` has a distinct set of variables (feature
 <figure>
     <img src="images/SOMAExperiment.png" alt="SOMAExperiment">
 </figure>
-
-> ⚠️ **Issue**: it would be a good idea to factor `SOMAExperiment` and `SOMAMeasurement` into separate sections.
 
 These types have pre-defined fields, each of which have well-defined naming, typing, dimensionality and indexing constraints. Other user-defined data may be added to a `SOMAExperiment` and `SOMAMeasurement`, as both are a specialization of the `SOMACollection`. Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
 
@@ -591,9 +587,7 @@ add_new_collection(string key, CollectionType kind, string uri = "", PlatformCon
 
 ## SOMADataFrame
 
-> ⚠️ **To be further specified**: all methods need specification.
->
-> Summary of operations:
+Summary of operations:
 
 | Operation                                | Description                                           |
 | ---------------------------------------- | ----------------------------------------------------- |
@@ -685,8 +679,6 @@ All columns, including index columns and `soma_joinid` must be specified in the 
 
 ## SOMADenseNDArray
 
-> ⚠️ **To be further specified**: this is incomplete.
-
 Summary of operations:
 
 | Operation                                   | Description                                                      |
@@ -748,15 +740,13 @@ read(
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
 
-> ⚠️ **Issue**: support for other formats, such as Arrow `Table`, is under discussion.
-
 ### Operation: write()
 
 Write an Arrow `Tensor` to a dense subarray of the persistent object.
 
 ```
 write(
-    [slice, ...]
+    coords,
     values,
     platform_config
 )
@@ -771,8 +761,6 @@ Parameters:
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 ## SOMASparseNDArray
-
-> ⚠️ **To be further specified**: this is incomplete.
 
 Summary of operations:
 
@@ -951,8 +939,6 @@ To facilitate distributed computation, read operations on foundational types acc
 
 ## General Utilities
 
-> ⚠️ **To be further specified**
-
 Summary:
 
 ```
@@ -1007,8 +993,6 @@ writeExperiment.mode();  // WRITE
 - Slice steps, or stride, if supported in the implementation language, may only be 1.
 
 ## Value Filters
-
-> ⚠️ **To be further specified**
 
 Value filters are expressions used to filter the results of a `read` operation, and specify which results should be returned. Value filters operate on materialized columns, including `soma_joinid`, and will not filter pseudo-columns such as `soma_rowid`.
 
@@ -1126,17 +1110,6 @@ While this example code is Python-based, the core concepts and data flow apply t
 The format and contents of a Context object is completely implementation-defined.
 An implementation may provide a way to construct its specific context type, which can be used by user setup code to connect to the SOMA data store (represented above as the `somaimpl.create_context` call).
 However, client code should treat the `context` object on any instantiated SOMA objects as an opaque value, and only pass it directly as the context parameter when creating or opening other SOMA data.
-
-# ⚠️ Other Issues (open issues with this doc)
-
-Issues to be resolved:
-
-1. Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
-2. What (if any) additional semantics around writes need to be defined?
-3. Value filter support in `NDArray` has been proposed:
-   - Is there a use case to motivate it?
-   - This effectively requires that all `read()` return batches be sparse, as the value filter will remove values.
-   - Where the requested `batch_format` is `dense` (i.e., the user wants a tensor back), this would require that we also provide coordinates and/or a mask in addition to the tensor (values). Or disallow that combination: if you specify a value filter, you can only ask for a sparse-capable `batch_format`.
 
 # Changelog
 
