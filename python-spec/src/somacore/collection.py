@@ -54,7 +54,7 @@ class BaseCollection(
     def add_new_collection(
         self,
         key: str,
-        cls: None = None,
+        kind: None = None,
         *,
         uri: Optional[str] = ...,
         platform_config: Optional[options.PlatformConfig] = ...,
@@ -66,7 +66,7 @@ class BaseCollection(
     def add_new_collection(
         self,
         key: str,
-        cls: Type[_CT],
+        kind: Type[_CT],
         *,
         uri: Optional[str] = ...,
         platform_config: Optional[options.PlatformConfig] = ...,
@@ -77,7 +77,7 @@ class BaseCollection(
     def add_new_collection(
         self,
         key: str,
-        cls: Optional[Type["BaseCollection"]] = None,
+        kind: Optional[Type["BaseCollection"]] = None,
         *,
         uri: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
@@ -115,7 +115,7 @@ class BaseCollection(
 
         :param key: The key that this child should live at (i.e., it will be
             accessed via ``the_collection[key]``).
-        :param cls: The type of child that should be added.
+        :param kind: The type of child that should be added.
         :param uri: If provided, overrides the default URI that would be used
             to create this object. This may be absolute or relative.
         :param platform_config: Platform-specific configuration options used
