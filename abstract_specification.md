@@ -851,7 +851,7 @@ write(values, platform_config)
 Values to write may be provided in a variety of formats:
 
 - `Tensor`: caller provides values as an `Arrow.Tensor`, and the coordinates at which the dense tensor is written.
-- `SparseTensor`: caller provides a Arrow COO, CSC or CSR `SparseTensor.
+- `SparseTensor`: caller provides a Arrow COO, CSC or CSR `SparseTensor`.
 - `RecordBatch`: caller provides COO-encoded coordinates and data as an `Arrow.RecordBatch`.
 - `Table`: caller provides COO-encoded coordinates and data as an `Arrow.Table`.
 
