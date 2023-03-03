@@ -946,6 +946,7 @@ To facilitate distributed computation, read operations on foundational types acc
 |----------------|-----------------------------------------------------------------------------------------------|
 | `dense`        | Return an iterator of `Arrow Tensor`s containing slice values.                                |
 | `coos`         | Return an iterator of `Arrow.SparseCOOTensor`s containing COO-encoded coordinates and values. |
+| `record-batch` | Return an iterator `Arrow.RecordBatch` containing COO-encoded coordinates and values.         |
 | `table`        | Return an iterator of `Arrow.Table`s containing COO-encoded coordinates and values.           |
 
 ## General Utilities
