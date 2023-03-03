@@ -720,8 +720,8 @@ Returns: The newly created `SOMADenseNDArray`, opened for writing.
 
 ### Operation: get schema
 
-Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` returned
-by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema will be:
+Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` objects returned
+by the `read`, `record_batches` chained operations. Field names in the schema will be:
 
 - `soma_dim_N`: the type of the Nth dimension. This will always be an `int64` in the range `[0, 2^63-1]`.
 - `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
@@ -808,8 +808,8 @@ Returns: The newly created `SOMASparseNDArray`, opened for writing.
 
 ### Operation: get schema
 
-Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` returned
-by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema will be:
+Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` objects returned
+by the `read`, `record_batches` chained operations. Field names in the schema will be:
 
 - `soma_dim_N`: the type of the Nth dimension. This will always be a `int64` in the range `[0, 2^63-1]`.
 - `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
