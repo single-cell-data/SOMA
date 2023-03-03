@@ -110,20 +110,7 @@ class ResultOrder(enum.Enum):
 ResultOrderStr = Union[ResultOrder, Literal["auto", "row-major", "column-major"]]
 """A ResultOrder, or the str representing it."""
 
-# Coordinate types are specified as TypeVars instead of Unions to ensure that
-# sequences and slices are homogeneous:
-#
-#     BadCoord = Union[int, str]
-#     BadCoords = Union[BadCoord, Sequence[BadCoord]]
-#     # ["this", 1] is bad, but is a valid as a BadCoords value
-#
-#     GoodCoord = TypeVar("GoodCoord", int, str)
-#     GoodCoords = Union[GoodCoord, Sequence[GoodCoord]]
-#     # ["this", 1] is bad, and is *not* valid as a GoodCoords value
-#     # ["this", "that"] is a valid as a GoodCoords value
-#     # [1, 2] is valid as a GoodCoords value
-
-DenseCoord = TypeVar("DenseCoord", None, int, types.Slice[int])
+DenseCoord = Union[None, int, types.Slice[int]]
 """A single coordinate range for reading dense data.
 
 ``None`` indicates the entire domain of a dimension; values of this type are
@@ -134,18 +121,21 @@ not ``Optional``, but may be ``None``.
 DenseNDCoords = Sequence[DenseCoord]
 """A sequence of ranges to read dense data."""
 
-SparseCoord = TypeVar(
-    "SparseCoord", bytes, float, int, slice, str, np.datetime64, pa.TimestampType
-)
-"""Types that can be put into a single sparse coordinate."""
+_T = TypeVar("_T")
+ValSliceOrSequence = Union[_T, types.Slice[_T], types.Sequence[_T]]
+"""A value of a type, a Slice of that type, or a Sequence of that type."""
 
 # NOTE: Keep this in sync with the types accepted in `_canonicalize_coord`
 # in ./query/axis.py.
 SparseDFCoord = Union[
-    DenseCoord,
-    SparseCoord,
-    Sequence[SparseCoord],
-    types.Slice[SparseCoord],
+    None,
+    ValSliceOrSequence[bytes],
+    ValSliceOrSequence[float],
+    ValSliceOrSequence[int],
+    ValSliceOrSequence[slice],
+    ValSliceOrSequence[str],
+    ValSliceOrSequence[np.datetime64],
+    ValSliceOrSequence[pa.TimestampType],
     pa.Array,
     pa.ChunkedArray,
     npt.NDArray[np.integer],
@@ -156,13 +146,11 @@ SparseDFCoords = Sequence[SparseDFCoord]
 """A sequence of coordinate ranges for reading dense dataframes."""
 
 SparseNDCoord = Union[
-    DenseCoord,
-    Sequence[int],
+    None,
+    ValSliceOrSequence[int],
     npt.NDArray[np.integer],
     pa.IntegerArray,
 ]
 """A single coordinate range for one dimension of a sparse nd-array."""
-
-
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
