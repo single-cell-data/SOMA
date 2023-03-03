@@ -836,7 +836,7 @@ read(
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
-The `read` operation will return a `SOMASparseNDArrayRead` type, allowing the a result encoding type to be selected. The encoding type, in turn, will provide a language-specific iterator over the result data, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
+The `read` operation will return a `SOMASparseNDArrayRead` type, allowing the result encoding type to be selected. The encoding type, in turn, will provide a language-specific iterator over the result data, allowing for the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 ### Operation: write()
 
