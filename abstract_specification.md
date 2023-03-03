@@ -1185,5 +1185,7 @@ Issues to be resolved:
 44. Pull description of common operations into its own section.
 45. Specify object lifecycle and related operations (`create`, `open`, `add_new_*`, etc.).
 46. Uniformize backticks, punctuation, etc.
-47. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
-48. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
+47. Fixed erroneous backticks, spelling, and capitalization. 
+48. Renamed `SOMADataFrame.read()` `ids` param and `SOMASparseNDArray.read()` `slice` param to `coords`, for consistency between `SOMADataFrame`, `SOMASparseNDArray` and `SOMADenseNDArray` types. 
+49. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
+50. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
