@@ -581,13 +581,13 @@ Parameters:
 
 The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the current collection's context.
 
-`add_new_collection` has an extra parameter allowing control over the type of collection added:
+`add_new_collection` has an extra parameter allowing control over the kind of collection to be added:
 
 ```
-add_new_collection(string key, CollectionType type, string uri = "", PlatformConfig platform_config) -> SOMACollection
+add_new_collection(string key, CollectionType kind, string uri = "", PlatformConfig platform_config) -> SOMACollection
 ```
 
-- `type`: The type of collection to add. For instance, if `SOMAExperiment` is provided, the newly-added collection, and the returned instance, will be a `SOMAExperiment`.
+- `kind`: The kind of collection to add. For instance, if `SOMAExperiment` is provided, the newly-added collection, and the returned instance, will be a `SOMAExperiment`.
 
 ## SOMADataFrame
 
@@ -1190,3 +1190,4 @@ Issues to be resolved:
 48. Renamed `SOMADataFrame.read()` `ids` param and `SOMASparseNDArray.read()` `slice` param to `coords`, for consistency between `SOMADataFrame`, `SOMASparseNDArray` and `SOMADenseNDArray` types. 
 49. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
 50. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
+51. Renamed `Collection.add_new_collection()` `type` param to `kind`.
