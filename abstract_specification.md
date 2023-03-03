@@ -822,7 +822,7 @@ Summary:
 
 ```
 read(
-    [slice, ...],
+    coords,
     batch_size,
     partitions,
     result_order,
@@ -831,7 +831,7 @@ read(
 ) -> delayed iterator over ReadResult
 ```
 
-- `slice`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
+- `coords`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
