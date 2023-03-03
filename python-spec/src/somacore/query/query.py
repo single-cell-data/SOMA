@@ -55,10 +55,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     IMPORTANT: this query class assumes it can store the full result of both
     axis dataframe queries in memory, and only provides incremental access to
-    the underlying X NDArray. API features such as `n_obs` and `n_vars` codify
+    the underlying X NDArray. API features such as ``n_obs`` and ``n_vars`` codify
     this in the API.
 
-    IMPORTANT: you must call `close()` on any instance of this class in order to
+    IMPORTANT: you must call ``close()`` on any instance of this class in order to
     release underlying resources. The ExperimentAxisQuery is a context manager,
     and it is recommended that you use the following pattern to make this easy
     and safe::
@@ -194,8 +194,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         This method must be idempotent.
         """
-        # Because this may be called during `__del__` when we might be getting
-        # disassembled, sometimes `_threadpool_` is simply missing.
+        # Because this may be called during ``__del__`` when we might be getting
+        # disassembled, sometimes ``_threadpool_`` is simply missing.
         # Only try to shut it down if it still exists.
         pool = getattr(self, "_threadpool_", None)
         if pool is None:
@@ -322,7 +322,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         ).concat()
 
         # Update the cache if needed. We can do this because no matter what
-        # other columns are queried for, the contents of the `soma_joinid`
+        # other columns are queried for, the contents of the ``soma_joinid``
         # column will be the same and can be safely stored.
         if not joinids_cached:
             setattr(
