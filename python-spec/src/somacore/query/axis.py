@@ -62,8 +62,8 @@ class AxisQuery:
     [lifecycle: experimental]
     Per dimension, the AxisQuery can have value of:
 
-    * None - all data
-    * Coordinates - a set of coordinates on the axis dataframe index,
+    * None -- all data
+    * Coordinates -- a set of coordinates on the axis dataframe index,
       expressed in any type or format supported by ``DataFrame.read()``.
     * A SOMA ``value_filter`` across columns in the axis dataframe,
       expressed as string
