@@ -826,19 +826,17 @@ read(
     batch_size,
     partitions,
     result_order,
-    batch_format,
     platform_config,
-) -> delayed iterator over ReadResult
+) -> SOMASparseNDArrayRead
 ```
 
 - `coords`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
 - `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-- `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
-The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
+The `read` operation will return a `SOMASparseNDArrayRead` type, allowing the a result encoding type to be selected. The encoding type, in turn, will provide a language-specific iterator over the result data, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 ### Operation: write()
 
@@ -940,18 +938,15 @@ To facilitate distributed computation, read operations on foundational types acc
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `IofN`         | Given I and N, read operations will return the Ith partition of N approximately equal size partitions. Partition boundaries will be stable for any given N and array or dataframe. |
 
-### SOMABatchFormat
+### SOMASparseNDArrayRead
 
-Array read operations can return results in a variety of formats. The `SOMABatchFormat` format indicates the format encoding.
+`SparseNDArray` `read` operations can return results in a variety of formats. The `SOMASparseNDArrayRead` type is an intermediate result type that allows the client to choose the encoding format that will be used to return the result data.
 
-| Batch format   | Description                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| `dense`        | Return the coordinates of the slice (e.g., origin, shape) and an Arrow Tensor containing slice values. |
-| `coo`          | Return an `Arrow.SparseCOOTensor`                                                                      |
-| `csr`          | Return an `Arrow.SparseCSRTensor`                                                                      |
-| `csc`          | Return an `Arrow.SparseCSCTensor`                                                                      |
-| `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                           |
-| `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                 |
+| Format         | Description                                                                                   |
+|----------------|-----------------------------------------------------------------------------------------------|
+| `dense`        | Return an iterator of `Arrow Tensor`s containing slice values.                                |
+| `coos`         | Return an iterator of `Arrow.SparseCOOTensor`s containing COO-encoded coordinates and values. |
+| `table`        | Return an iterator of `Arrow.Table`s containing COO-encoded coordinates and values.           |
 
 ## General Utilities
 
@@ -1190,3 +1185,5 @@ Issues to be resolved:
 44. Pull description of common operations into its own section.
 45. Specify object lifecycle and related operations (`create`, `open`, `add_new_*`, etc.).
 46. Uniformize backticks, punctuation, etc.
+47. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
+48. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
