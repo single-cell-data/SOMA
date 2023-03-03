@@ -660,7 +660,7 @@ Parameters:
 - `coords`: the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
 - `column_names`: the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-- `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
 - `value_filter`: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
@@ -833,7 +833,7 @@ read(
 
 - `slice`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-- `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
 - `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
