@@ -28,13 +28,15 @@ class SOMAObject(metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Opens the SOMA object of this type at the given URI.
-        [lifecycle: experimental]
 
-        :param uri: The URI of the object to open.
-        :param mode: The mode to open this in, either `r` or `w`.
-        :param context: The Context value to use when opening the object.
-        :param platform_config: Platform configuration options specific to
-            this open operation.
+        Args:
+            uri: The URI of the object to open.
+            mode: The mode to open this in, either `r` or `w`.
+            context: The Context value to use when opening the object.
+            platform_config: Platform configuration options specific to
+                this open operation.
+        Returns: The SOMA object, opened for reading.
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -43,23 +45,28 @@ class SOMAObject(metaclass=abc.ABCMeta):
     def exists(cls, uri: str, *, context: Optional[Any] = None) -> bool:
         """Checks whether a SOMA object of this type is stored at the URI.
 
-        :param uri: The URI to check.
-        :param context: The Context value to use when checking existence.
-        :return: True if the object exists and is of the correct type.
+        Args:
+            uri: The URI to check.
+            context: The Context value to use when checking existence.
+        Returns:
+            True if the object exists and is of the correct type.
             False if the object does not exist, or is of a different type.
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def uri(self) -> str:
-        """Returns the URI of this SOMA object. [lifecycle: experimental]"""
+        """The URI of this SOMA object.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @property
     def context(self) -> Any:
         """A value storing implementation-specific configuration information.
-        [lifecycle: experimental]
 
         This contains long-lived (i.e., not call-specific) information that is
         used by the SOMA implementation to access storage. This may include
@@ -68,17 +75,21 @@ class SOMAObject(metaclass=abc.ABCMeta):
         End users should treat this as an opaque value. While it may be passed
         from an existing SOMA object to be used in the creation of a new SOMA
         object, it should not be inspected.
+
+        Lifecycle: experimental
         """
         return None
 
     @property
     @abc.abstractmethod
     def metadata(self) -> MutableMapping[str, Any]:
-        """The metadata of this SOMA object. [lifecycle: experimental]
+        """The metadata of this SOMA object.
 
         The returned value directly references the stored metadata; reads from
         and writes to it (provided the object is opened) are reflected in
         storage.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -86,15 +97,17 @@ class SOMAObject(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def mode(self) -> options.OpenMode:
         """Returns the mode this object was opened in, either ``r`` or ``w``.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def closed(self) -> bool:
-        """Returns True if this object has been closed; False if still open.
-        [lifecycle: experimental]
+        """True if this object has been closed; False if still open.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -111,9 +124,13 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
     def close(self) -> None:
         """Releases any external resources held by this object.
-        [lifecycle: experimental]
 
-        An implementation of close must be idempotent.
+        For objects opened for write, this also finalizes the write operation
+        and ensures that all writes are completed before returning.
+
+        This is also called automatically by the Python interpreter via
+        ``__del__`` when this object is garbage collected, so the implementation
+        must be idempotent.
         """
         # Default implementation does nothing.
 
