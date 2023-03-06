@@ -119,8 +119,8 @@ class BaseCollection(
 
         The way the URI is constructed is left unspecified so that an
         implementation can create a URI based on its own needs. Users should
-        directly get the URI of the new child if they need it; they should never
-        assume what it will be.
+        directly get the URI of the new child using ``new_child.uri`` if needed;
+        they should never assume what it will be.
 
         Args:
             key: The key that this child should live at

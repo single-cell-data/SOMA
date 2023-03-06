@@ -131,6 +131,8 @@ class SOMAObject(metaclass=abc.ABCMeta):
         This is also called automatically by the Python interpreter via
         ``__del__`` when this object is garbage collected, so the implementation
         must be idempotent.
+
+        Lifecycle: experimental
         """
         # Default implementation does nothing.
 
