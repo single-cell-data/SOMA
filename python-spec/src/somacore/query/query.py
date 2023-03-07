@@ -41,7 +41,7 @@ _Exp = TypeVar("_Exp", bound="_Experimentish")
 
 
 class ExperimentAxisQuery(Generic[_Exp]):
-    """Axis-based query against a SOMA Experiment. [lifecycle: experimental]
+    """Axis-based query against a SOMA Experiment.
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
     single soma.Measurement in a soma.Experiment, by obs/var (axis) coordinates
@@ -55,10 +55,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     IMPORTANT: this query class assumes it can store the full result of both
     axis dataframe queries in memory, and only provides incremental access to
-    the underlying X NDArray. API features such as ``n_obs`` and ``n_vars`` codify
-    this in the API.
+    the underlying X NDArray. API features such as ``n_obs`` and ``n_vars``
+    codify this in the API.
 
-    IMPORTANT: you must call ``close()`` on any instance of this class in order to
+    IMPORTANT: you must call ``close()`` on any instance of this class to
     release underlying resources. The ExperimentAxisQuery is a context manager,
     and it is recommended that you use the following pattern to make this easy
     and safe::
@@ -69,6 +69,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
     This base query implementation is designed to work against any SOMA
     implementation that fulfills the basic APIs. A SOMA implementation may
     include a custom query implementation optimized for its own use.
+
+    Lifecycle: experimental
     """
 
     def __init__(
@@ -93,7 +95,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def obs(
         self, *, column_names: Optional[Sequence[str]] = None
     ) -> data.ReadIter[pa.Table]:
-        """Returns ``obs`` as an Arrow table iterator. [lifecycle: experimental]"""
+        """Returns ``obs`` as an Arrow table iterator.
+
+        Lifecycle: experimental
+        """
         obs_query = self._matrix_axis_query.obs
         return self._obs_df.read(
             obs_query.coords,
@@ -104,7 +109,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def var(
         self, *, column_names: Optional[Sequence[str]] = None
     ) -> data.ReadIter[pa.Table]:
-        """Returns ``var`` as an Arrow table iterator. [lifecycle: experimental]"""
+        """Returns ``var`` as an Arrow table iterator.
+
+        Lifecycle: experimental
+        """
         var_query = self._matrix_axis_query.var
         return self._var_df.read(
             var_query.coords,
@@ -114,36 +122,49 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     def obs_joinids(self) -> pa.Array:
         """Returns ``obs`` ``soma_joinids`` as an Arrow array.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         return self._joinids.obs
 
     def var_joinids(self) -> pa.Array:
         """Returns ``var`` ``soma_joinids`` as an Arrow array.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         return self._joinids.var
 
     @property
     def n_obs(self) -> int:
-        """The number of ``obs`` axis query results. [lifecycle: experimental]"""
+        """The number of ``obs`` axis query results.
+
+        Lifecycle: experimental
+        """
         return len(self.obs_joinids())
 
     @property
     def n_vars(self) -> int:
-        """The number of ``var`` axis query results. [lifecycle: experimental]"""
+        """The number of ``var`` axis query results.
+
+        Lifecycle: experimental
+        """
         return len(self.var_joinids())
 
     @property
     def indexer(self) -> "AxisIndexer":
-        """Returns a ``soma_joinid`` indexer for both ``obs`` and ``var`` axes
-        [lifecyle: experimental]."""
+        """A ``soma_joinid`` indexer for both ``obs`` and ``var`` axes.
+
+        Lifecycle: experimental
+        """
         return self._indexer
 
     def X(self, layer_name: str) -> data.SparseRead:
-        """Returns an ``X`` layer as ``SparseRead`` data. [lifecycle: experimental]
+        """Returns an ``X`` layer as a sparse read.
 
-        :param layer_name: The X layer name to return.
+        Args:
+            layer_name: The X layer name to return.
+
+        Lifecycle: experimental
         """
         try:
             x_layer = self._ms.X[layer_name]
@@ -156,11 +177,17 @@ class ExperimentAxisQuery(Generic[_Exp]):
         return x_layer.read((self._joinids.obs, self._joinids.var))
 
     def obsp(self, layer: str) -> data.SparseRead:
-        """Return an ``obsp`` layer as a sparse read. [lifecycle: experimental]"""
+        """Returns an ``obsp`` layer as a sparse read.
+
+        Lifecycle: experimental
+        """
         return self._axisp_inner(_Axis.OBS, layer)
 
     def varp(self, layer: str) -> data.SparseRead:
-        """Return an ``varp`` layer as a sparse read. [lifecycle: experimental]"""
+        """Returns an ``varp`` layer as a sparse read.
+
+        Lifecycle: experimental
+        """
         return self._axisp_inner(_Axis.VAR, layer)
 
     def to_anndata(
@@ -171,15 +198,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
         X_layers: Sequence[str] = (),
     ) -> anndata.AnnData:
         """
-        Execute the query and return result as an ``AnnData`` in-memory object.
-        [lifecycle: experimental]
+        Executes the query and return result as an ``AnnData`` in-memory object.
 
-        :param X_name: The name of the X layer to read and return
-            in the ``X`` slot.
-        :param column_names: The columns in the ``var`` and ``obs`` dataframes
-            to read.
-        :param X_layers: Additional X layers to read and return
-            in the ``layers`` slot.
+        Args:
+            X_name: The X layer to read and return in the ``X`` slot.
+            column_names: The columns in the ``var`` and ``obs`` dataframes
+                to read.
+            X_layers: Additional X layers to read and return
+                in the ``layers`` slot.
         """
         return self._read(
             X_name,
@@ -190,9 +216,11 @@ class ExperimentAxisQuery(Generic[_Exp]):
     # Context management
 
     def close(self) -> None:
-        """Releases resources associated with this query. [lifecycle: experimental]
+        """Releases resources associated with this query.
 
         This method must be idempotent.
+
+        Lifecycle: experimental
         """
         # Because this may be called during ``__del__`` when we might be getting
         # disassembled, sometimes ``_threadpool_`` is simply missing.
@@ -231,13 +259,12 @@ class ExperimentAxisQuery(Generic[_Exp]):
         in-core formats, such as AnnData, which can be created from the
         resulting Tables.
 
-        :param X_name: The name of the X layer to read and return
-            in the ``AnnData.X`` slot
-        :param column_names: Specify which column names in ``var`` and ``obs``
-            dataframes to read and return.
-        :param X_layers: Addtional X layers read read and return in the
-            ``AnnData.layers`` slot
-
+        Args:
+            X_name: The X layer to read and return in the ``X`` slot.
+            column_names: The columns in the ``var`` and ``obs`` dataframes
+                to read.
+            X_layers: Additional X layers to read and return
+                in the ``layers`` slot.
         """
         x_collection = self._ms.X
         all_x_names = [X_name] + list(X_layers)
@@ -287,9 +314,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis_column_names: AxisColumnNames,
     ) -> pa.Table:
         """Reads the specified axis. Will cache join IDs if not present."""
-        # mypy is not currently clever enough to figure out the type of the
-        # column names here, so we have to help it out.
-        column_names: Optional[Sequence[str]] = axis_column_names.get(axis.value)
+        column_names = axis_column_names.get(axis.value)
         if axis is _Axis.OBS:
             axis_df = self._obs_df
             axis_query = self._matrix_axis_query.obs
@@ -384,7 +409,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
 @attrs.define(frozen=True)
 class _AxisQueryResult:
-    """Return type for the ExperimentAxisQuery.read() method"""
+    """The result of running :meth:`ExperimentAxisQuery.read`. Private."""
 
     obs: pa.Table
     """Experiment.obs query slice, as an Arrow Table"""
@@ -396,7 +421,6 @@ class _AxisQueryResult:
     """Any additional X layers requested, as SciPy sparse.csr_matrix(s)"""
 
     def to_anndata(self) -> anndata.AnnData:
-        """Convert to AnnData"""
         obs = self.obs.to_pandas()
         obs.index = obs.index.astype(str)
 
@@ -419,7 +443,7 @@ class _Axis(enum.Enum):
 
 @attrs.define(frozen=True)
 class _MatrixAxisQuery:
-    """Private: store per-axis user query definition"""
+    """The per-axis user query definition. Private."""
 
     obs: axis.AxisQuery
     var: axis.AxisQuery
@@ -427,7 +451,7 @@ class _MatrixAxisQuery:
 
 @attrs.define
 class _JoinIDCache:
-    """Private: cache per-axis join ids in the query"""
+    """A cache for per-axis join ids in the query. Private."""
 
     owner: ExperimentAxisQuery
 
@@ -489,7 +513,7 @@ _Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 
 @attrs.define
 class AxisIndexer:
-    """Given a query, providing index-bulding services for obs/var axis."""
+    """Given a query, provides index-bulding services for obs/var axis."""
 
     query: ExperimentAxisQuery
     _cached_obs: Optional[pd.Index] = None
@@ -510,15 +534,11 @@ class AxisIndexer:
         return self._cached_var
 
     def by_obs(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
-        """
-        Reindex the coords (soma_joinids) over the ``obs`` axis.
-        """
+        """Reindex the coords (soma_joinids) over the ``obs`` axis."""
         return self._obs_index.get_indexer(_to_numpy(coords))
 
     def by_var(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
-        """
-        Reindex for the coords (soma_joinids) over the ``var`` axis.
-        """
+        """Reindex for the coords (soma_joinids) over the ``var`` axis."""
         return self._var_index.get_indexer(_to_numpy(coords))
 
 
