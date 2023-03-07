@@ -59,7 +59,6 @@ def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:
 class AxisQuery:
     """Single-axis dataframe query with coordinates and a value filter.
 
-    [lifecycle: experimental]
     Per dimension, the AxisQuery can have value of:
 
     * None -- all data
@@ -78,6 +77,8 @@ class AxisQuery:
         AxisQuery(coords=(slice(None), numpy.array([0,88,1001])))  # 2D
         AxisQuery(value_filter="tissue == 'lung'")
         AxisQuery(coords=(slice(1,None),), value_filter="tissue == 'lung'")
+
+    Lifecycle: experimental
     """
 
     value_filter: Optional[str] = attrs.field(
