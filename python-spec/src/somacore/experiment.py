@@ -18,7 +18,15 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 
 
 class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _RootSO]):
-    """Mixin for Experiment types [lifecycle: experimental]."""
+    """A collection subtype representing an annotated 2D matrix of measurements.
+
+    In single cell biology, this can represent multiple modes of measurement
+    across a single collection of cells (i.e., a "multimodal dataset").
+    Within an experiment, a set of measurements on a single set of variables
+    (i.e., features) is represented as a :class:`~measurement.Measurement`.
+
+    Lifecycle: experimental
+    """
 
     # This class is implemented as a mixin to be used with SOMA classes.
     # For example, a SOMA implementation would look like this:
@@ -56,9 +64,11 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
         obs_query: Optional[query.AxisQuery] = None,
         var_query: Optional[query.AxisQuery] = None,
     ) -> "query.ExperimentAxisQuery[Self]":
-        """Creates an axis query over this experiment [lifecycle: experimental].
+        """Creates an axis query over this experiment.
 
         See :class:`query.ExperimentAxisQuery` for details on usage.
+
+        Lifecycle: experimental
         """
         # mypy doesn't quite understand descriptors so it issues a spurious
         # error here.

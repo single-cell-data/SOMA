@@ -1,12 +1,17 @@
-"""Type and interface declarations that are not specific to options."""
+"""Type and interface declarations that are not specific to options.
+
+These declarations and functions are not directly part of the user-facing API,
+but are intended to be used by SOMA implementations for annotations and
+their own internal type-checking purposes.
+"""
 
 import sys
-from typing import TYPE_CHECKING, Any, NoReturn, Optional, Sequence, Type, TypeVar
+from typing import TYPE_CHECKING, NoReturn, Optional, Sequence, Type, TypeVar
 
 from typing_extensions import Protocol, TypeGuard
 
 
-def is_nonstringy_sequence(it: Any) -> TypeGuard[Sequence]:
+def is_nonstringy_sequence(it: object) -> TypeGuard[Sequence]:
     """Returns true if a sequence is a "normal" sequence and not str or bytes.
 
     str and bytes are "weird" sequences because iterating them gives you

@@ -27,7 +27,19 @@ class Measurement(
     collection.BaseCollection[_RootSO],
     Generic[_DF, _NDColl, _DenseNDColl, _SparseNDColl, _RootSO],
 ):
-    """A set of observations defined by a DataFrame, with measurements."""
+    """A set of observations defined by a dataframe, with measurements.
+
+    This is a common set of annotated variables (defined by the ``var``
+    dataframe) for which values (e.g., measurements or calculations) are stored
+    in sparse and dense ND arrays.
+
+    The observables are inherited from the parent ``Experiment``'s
+    ``obs`` dataframe. The ``soma_joinid`` of these observables (``obsid``),
+    along with those of the measurement's ``var`` dataframe (``varid``),
+    are the indices for all the other matrices stored in the measurement.
+
+    Lifecycle: experimental
+    """
 
     # This class is implemented as a mixin to be used with SOMA classes.
     # For example, a SOMA implementation would look like this:

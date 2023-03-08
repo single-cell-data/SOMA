@@ -283,12 +283,14 @@ def _create_scipy_csr_matrix(
     indptr: npt.NDArray[np.integer],
     shape: Tuple[int, int],
 ) -> sparse.csr_matrix:
-    """
-    Create a Scipy sparse.csr_matrix from component elements. Conceptually this
-    is identical to:
+    """Create a Scipy sparse.csr_matrix from component elements.
+
+    Conceptually, this is identical to::
+
         sparse.csr_matrix((data, indices, indptr), shape=shape)
 
-    This ugliness is to bypass the O(N) scan that scipy.sparse._cs_matrix.__init__
+    This ugliness is to bypass the O(N) scan that
+    :meth:`scipy.sparse._cs_matrix.__init__`
     does when a new compressed matrix is created.
 
     See https://github.com/scipy/scipy/issues/11496 for details on the bug.
@@ -298,16 +300,4 @@ def _create_scipy_csr_matrix(
     matrix.indices = indices
     matrix.indptr = indptr
     matrix._shape = shape
-    return matrix
-
-
-def _SparseCSRMatrix_to_scipy(csr: pa.SparseCSRMatrix) -> sparse.csr_matrix:
-    """
-    Convert pyarrow.SparseCSRMatrix to scipy.sparse.csr_matrix. Semantically the same
-    as ``csr.to_scipy()``, but without the performance penalty/bug noted in
-    https://github.com/scipy/scipy/issues/11496
-    """
-    data, indptr, indices = csr.to_numpy()
-    data, indptr, indices = data.ravel(), indptr.ravel(), indices.ravel()
-    matrix = _create_scipy_csr_matrix(data, indices, indptr, csr.shape)
     return matrix

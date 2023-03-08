@@ -29,7 +29,8 @@ _RO_AUTO = options.ResultOrder.AUTO
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     """A multi-column table with a user-defined schema.
-    [lifecycle: experimental]
+
+    Lifecycle: experimental
     """
 
     __slots__ = ()
@@ -50,7 +51,6 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         context: Optional[Any] = None,
     ) -> Self:
         """Creates a new ``DataFrame`` at the given URI.
-        [lifecycle: experimental]
 
         The schema of the created dataframe will include a column named
         ``soma_joinid`` of type ``pyarrow.int64``, with negative values
@@ -58,29 +58,36 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         schema, it must be of the correct type.  If no ``soma_joinid`` column
         is provided, one will be added.  It may be used as an indexed column.
 
-        :param uri: The URI where the ``DataFrame`` will be created.
+        Args:
+            uri: The URI where the dataframe will be created.
 
-        :param schema: Arrow schema defining the per-column schema. This schema
-            must define all columns, including columns to be named as index
-            columns.  If the schema includes types unsupported by the SOMA
-            implementation, an error will be raised.
+            schema: Arrow schema defining the per-column schema. This schema
+                must define all columns, including columns to be named as index
+                columns.  If the schema includes types unsupported by the SOMA
+                implementation, an error will be raised.
 
-        :param index_column_names: A list of column names to use as user-defined
-            index columns (e.g., ``['cell_type', 'tissue_type']``).
-            All named columns must exist in the schema, and at least one
-            index column name is required.
+            index_column_names: A list of column names to use as user-defined
+                index columns (e.g., ``['cell_type', 'tissue_type']``).
+                All named columns must exist in the schema, and at least one
+                index column name is required.
 
-        :param domain: An optional sequence of tuples specifying the domain of each
-            index column. Each tuple should be a pair consisting of the minimum and
-            maximum values storable in the index column. For example, if there is a
-            single int64-valued index column, then ``domain`` might be ``[(100,
-            200)]`` to indicate that values between 100 and 200, inclusive, can be
-            stored in that column.  If provided, this sequence must have the same
-            length as `index_column_names`, and the index-column domain will be as
-            specified.  If omitted entirely, or if ``None`` in a given dimension,
-            the corresponding index-column domain will use the minimum and maximum
-            possible values for the column's datatype.  This makes a
-            ``SOMADataFrame`` growable.
+            domain: An optional sequence of tuples specifying the domain of each
+                index column. Each tuple should be a pair consisting of
+                the minimum and maximum values storable in the index column.
+                For example, if there is a single int64-valued index column,
+                then ``domain`` might be ``[(100, 200)]`` to indicate that
+                values between 100 and 200, inclusive, can be stored in that
+                column.  If provided, this sequence must have the same length as
+                ``index_column_names``, and the index-column domain will be as
+                specified.  If omitted entirely, or if ``None`` in a given
+                dimension, the corresponding index-column domain will use
+                the minimum and maximum possible values for the column's
+                datatype.  This makes a dataframe growable.
+
+        Returns:
+            The newly created dataframe, opened for writing.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -99,20 +106,23 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "ReadIter[pa.Table]":
         """Reads a user-defined slice of data into Arrow tables.
-        [lifecycle: experimental]
 
-        :param coords: for each index dimension, which rows to read.
-            Defaults to ``()``, meaning no constraint -- all IDs.
-        :param column_names: the named columns to read and return.
-            Defaults to ``None``, meaning no constraint -- all column names.
-        :param partitions: If present, specifies that this is part of
-            a partitioned read, and which part of the data to include.
-        :param result_order: the order to return results, specified as a
-            :class:`~options.ResultOrder` or its string value.
-        :param value_filter: an optional value filter to apply to the results.
-            The default of ``None`` represents no filter. Value filter syntax
-            is implementation-defined; see the documentation for a particular
-            SOMA implementation for details.
+        Args:
+            coords: for each index dimension, which rows to read.
+                Defaults to ``()``, meaning no constraint -- all IDs.
+            column_names: the named columns to read and return.
+                Defaults to ``None``, meaning no constraint -- all column names.
+            partitions: If present, specifies that this is part of
+                a partitioned read, and which part of the data to include.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
+            value_filter: an optional value filter to apply to the results.
+                The default of ``None`` represents no filter. Value filter
+                syntax is implementation-defined; see the documentation
+                for the particular SOMA implementation for details.
+        Returns:
+            A :class:`ReadIter` of :class:`pa.Table`s.
+
 
         **Indexing:**
 
@@ -144,6 +154,8 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
           and not as indices relative to the end, unlike traditional Python
           sequence indexing. For instance, ``slice(-10, 3)`` indicates the range
           from −10 to 3 on the given dimension.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -155,15 +167,18 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Writes the data from an Arrow table to the persistent object.
-        [lifecycle: experimental]
 
         As duplicate index values are not allowed, index values already present
         in the object are overwritten and new index values are added.
 
-        :param values: An Arrow table containing all columns, including
-            the index columns. The schema for the values must match
-            the schema for the ``DataFrame``.
-        :return: ``self``, to enable method chaining.
+        Args:
+            values: An Arrow table containing all columns, including
+                the index columns. The schema for the values must match
+                the schema for the ``DataFrame``.
+
+        Returns: ``self``, to enable method chaining.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -173,7 +188,8 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def schema(self) -> pa.Schema:
         """The schema of the data in this dataframe.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -181,16 +197,20 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def index_column_names(self) -> Tuple[str, ...]:
         """The names of the index (dimension) columns.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def domain(self) -> Tuple[Tuple[Any, Any], ...]:
-        """
-        Returns a tuple of minimum and maximum values, inclusive, storable
-        on each index column of the dataframe.
+        """The allowable range of values in each index column.
+
+        Returns: a tuple of minimum and maximum values, inclusive,
+            storable on each index column of the dataframe.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -214,21 +234,25 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         context: Optional[Any] = None,
     ) -> Self:
         """Creates a new ND array of the current type at the given URI.
-        [lifecycle: experimental]
 
-        :param uri: The URI where the array will be created.
-        :param type: The Arrow type to store in the array.
-            If the type is unsupported, an error will be raised.
-        :param shape: The maximum capacity of each dimension, including room
-            for any intended future appends, as a sequence.  E.g. ``(100, 10)``.
-            All lengths must be in the postive int64 range, or ``None``.  It's
-            necessary to say ``shape=(None, None)`` or ``shape=(None, None,
-            None)``, as the sequence length determines the number of dimensions
-            N in the N-dimensional array.
+        Args:
+            uri: The URI where the array will be created.
+            type: The Arrow type to store in the array.
+                If the type is unsupported, an error will be raised.
+            shape: The maximum capacity of each dimension, including room
+                for any intended future appends, specified as one element
+                per dimension, e.g. ``(100, 10)``.  All lengths must be in
+                the postive int64 range, or ``None``.  It's necessary to say
+                ``shape=(None, None)`` or ``shape=(None, None, None)``,
+                as the sequence length determines the number of dimensions
+                (N) in the N-dimensional array.
 
-            For ``SOMASparseNDArray`` only, if a slot is None, then the maximum
-            possible int64 will be used.  This makes a ``SOMASparseNDArray``
-            growable.
+                For sparse arrays only, if a slot is None, then the maximum
+                possible int64 will be used, making a sparse array growable.
+
+        Returns: The newly created array, opened for writing.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -238,24 +262,32 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def shape(self) -> Tuple[int, ...]:
         """The maximum capacity (domain) of each dimension of this array.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @property
     def ndim(self) -> int:
-        """The number of dimensions in this array. [lifecycle: experimental]"""
+        """The number of dimensions in this array.
+
+        Lifecycle: experimental
+        """
         return len(self.shape)
 
     @property
     @abc.abstractmethod
     def schema(self) -> pa.Schema:
-        """The schema of the data in this array. [lifecycle: experimental]"""
+        """The schema of the data in this array.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     is_sparse: ClassVar[Literal[True, False]]
-    """True if the array is sparse. False if it is dense.
-    [lifecycle: experimental]
+    """True if the array is sparse, False if it is dense.
+
+    Lifecycle: experimental
     """
 
 
@@ -275,7 +307,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pa.Tensor:
-        """Reads the specified subarray as a Tensor. [lifecycle: experimental]
+        """Reads the specified subarray as a Tensor.
 
         Coordinates must specify a contiguous subarray, and the number of
         coordinates must be less than or equal to the number of dimensions.
@@ -283,12 +315,15 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         include ``()``, ``(3, 4)``, ``[slice(5, 10)]``, and
         ``[slice(5, 10), slice(6, 12)]``.
 
-        :param coords: A per-dimension sequence of coordinates defining
-            the range to read.
-        :param partitions: If present, specifies that this is part of
-            a partitioned read, and which part of the data to include.
-        :param result_order: the order to return results, specified as a
-            :class:`~options.ResultOrder` or its string value.
+        Args:
+            coords: A per-dimension sequence of coordinates defining
+                the range to read.
+            partitions: If present, specifies that this is part of
+                a partitioned read, and which part of the data to include.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
+
+        Returns: The data over the requested range as a tensor.
 
         **Indexing:**
 
@@ -311,6 +346,8 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
           all indices up to and including the value, and all indices
           starting from and including the value.
         - Negative indexing is not supported.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -323,17 +360,18 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Writes an Arrow tensor to a subarray of the persistent object.
-        [lifecycle: experimental]
 
         The subarray written is defined by ``coords`` and ``values``. This will
         overwrite existing values in the array.
 
-        :param coords: A per-dimension tuple of scalars or slices
-            defining the bounds of the subarray to be written.
-            See :meth:`read` for details about indexing.
-        :param values: The values to be written to the subarray.  Must have
-            the same shape as ``coords``, and matching type to the array.
-        :return: ``self``, to enable method chaining.
+        Args:
+            coords: A per-dimension tuple of scalars or slices
+                defining the bounds of the subarray to be written.
+                See :meth:`read` for details about indexing.
+            values: The values to be written to the subarray.  Must have
+                the same shape as ``coords``, and matching type to the array.
+        Returns: ``self``, to enable method chaining.
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -348,7 +386,10 @@ SparseArrowData = Union[
 
 
 class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
-    """A N-dimensional array stored sparsely. [lifecycle: experimental]"""
+    """A N-dimensional array stored sparsely.
+
+    Lifecycle: experimental
+    """
 
     __slots__ = ()
     soma_type: Final = "SOMASparseNDArray"  # type: ignore[misc]
@@ -364,7 +405,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SparseRead":
-        """Reads the specified subarray in batches. [lifecycle: experimental]
+        """Reads the specified subarray in batches.
 
         Values returned are a :class:`SparseRead` object which can be converted
         to any number of formats::
@@ -372,14 +413,18 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
             some_dense_array.read(...).tables()
             # -> an iterator of Arrow Tables
 
-        :param coords: A per-dimension sequence of coordinates defining
-            the range to be read.
-        :param batch_size: The size of batches that should be returned
-            from a read. See :class:`options.BatchSize` for details.
-        :param partitions: Specifies that this is part of a partitioned read,
-            and which partition to include, if present.
-        :param result_order: the order to return results, specified as a
-            :class:`~options.ResultOrder` or its string value.
+        Args:
+            coords: A per-dimension sequence of coordinates defining
+                the range to be read.
+            batch_size: The size of batches that should be returned from a read.
+            See :class:`options.BatchSize` for details.
+            partitions: Specifies that this is part of a partitioned read,
+                and which partition to include, if present.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
+
+        Returns: The data that was requested in a :class:`SparseRead`,
+            allowing access in any supported format.
 
         **Indexing:**
 
@@ -406,6 +451,8 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
           all indices up to and including the value, and all indices
           starting from and including the value.
         - Negative indexing is not supported.
+
+        Lifecycle: experimental
         """
 
     @abc.abstractmethod
@@ -416,27 +463,30 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Writes a Tensor to a subarray of the persistent object.
-        [lifecycle: experimental]
 
-        :param values: The values to write to the array.
-        :return: ``self``, to enable method chaining.
+        Args:
+            values: The values to write to the array. Supported types are:
 
-        **Value types:**
+                Arrow sparse tensor: the coordinates in the tensor are
+                interpreted as the coordinates to write to.  Supports the
+                *experimental* types SparseCOOTensor, SparseCSRMatrix, and
+                SparseCSCMatrix. There is currently no support for
+                SparseCSFTensor or dense Tensor.
 
-        Arrow sparse tensor: the coordinates in the tensor are interpreted as
-        the coordinates to write to.  Supports the *experimental* types
-        SparseCOOTensor, SparseCSRMatrix and SparseCSCMatrix. There is currently
-        no support for Arrow SparseCSFTensor or dense Tensor.
+                Arrow table: a COO table, with columns named ``soma_dim_0``,
+                    ..., ``soma_dim_N`` and ``soma_data``.
 
-        Arrow table: a COO table, with columns named ``soma_dim_0``, ...,
-        ``soma_dim_N`` and ``soma_data``, to be written to the array.
+        Returns: ``self``, to enable method chaining.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @property
     def nnz(self) -> int:
         """The number of values stored in the array, including explicit zeros.
-        [lifecycle: experimental]
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -453,7 +503,8 @@ _T = TypeVar("_T")
 
 class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
     """SparseRead result iterator allowing users to flatten the iteration.
-    [lifecycle: experimental]
+
+    Lifecycle: experimental
     """
 
     __slots__ = ()
@@ -464,22 +515,24 @@ class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def concat(self) -> _T:
         """Returns all the requested data in a single operation.
-        [lifecycle: experimental]
 
         If some data has already been retrieved using ``next``, this will return
-        the rest of the data after that which has already been returned.
+        the remaining data, excluding that which as already been returned.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
 
 class SparseRead:
     """Intermediate type to choose result format when reading a sparse array.
-    [lifecycle: experimental]
 
     A query may not be able to return all of these formats. The concrete result
     may raise a ``NotImplementedError`` or may choose to raise a different
     exception (likely a ``TypeError``) containing more specific information
     about why the given format is not supported.
+
+    Lifecycle: experimental
     """
 
     __slots__ = ()

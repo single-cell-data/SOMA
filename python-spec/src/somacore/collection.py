@@ -17,12 +17,13 @@ _CT = TypeVar("_CT", bound="BaseCollection")
 class BaseCollection(
     base.SOMAObject, MutableMapping[str, _Elem], metaclass=abc.ABCMeta
 ):
-    """A generic string-keyed collection of :class:`SOMAObject`s.
-    [lifecycle: experimental]
+    """A generic string-keyed collection of :class:`base.SOMAObject`s.
 
     The generic type specifies what type the Collection may contain. At its
     most generic, a Collection may contain any SOMA object, but a subclass
     may specify that it is a Collection of a specific type of SOMA object.
+
+    Lifecycle: experimental
     """
 
     __slots__ = ()
@@ -37,9 +38,12 @@ class BaseCollection(
         context: Optional[Any] = None,
     ) -> Self:
         """Creates a new collection of this type at the given URI.
-        [lifecycle: experimental]
 
-        The collection will be returned opened for writing.
+        Args:
+            uri: The URI where the collection will be created.
+        Returns:
+            The newly created collection, opened for writing.
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -54,7 +58,7 @@ class BaseCollection(
     def add_new_collection(
         self,
         key: str,
-        cls: None = None,
+        kind: None = None,
         *,
         uri: Optional[str] = ...,
         platform_config: Optional[options.PlatformConfig] = ...,
@@ -66,7 +70,7 @@ class BaseCollection(
     def add_new_collection(
         self,
         key: str,
-        cls: Type[_CT],
+        kind: Type[_CT],
         *,
         uri: Optional[str] = ...,
         platform_config: Optional[options.PlatformConfig] = ...,
@@ -77,49 +81,61 @@ class BaseCollection(
     def add_new_collection(
         self,
         key: str,
-        cls: Optional[Type["BaseCollection"]] = None,
+        kind: Optional[Type["BaseCollection"]] = None,
         *,
         uri: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "BaseCollection":
         """Creates a new sub-collection of this collection.
-        [lifecycle: experimental]
-
         To add an existing collection as a sub-element of this collection,
-        use :meth:`set` or indexed access instead.
+        use :meth:`set` or indexed access (``coll[name] = value``) instead.
 
         The type provided is used to create the skeleton of this collection
         as in :meth:`create`. By default, this will create a basic collection::
 
             # Create a child Measurement object at the key "density"
             # with default settings.
-            #
-            # This creates both the backing Measurement collection, as well as
-            # the necessary sub-elements to have a complete Measurement.
             density = the_collection.add_new_collection("density", somacore.Measurement)
 
-            # This will create a basic Collection as a child.
-            sub_child = density.add_new_collection("sub_child")
+            # This will create a basic Collection as a child at the location
+            # storage://authority/path/to/sub-child.
+            sub_child = density.add_new_collection(
+                "sub_child", uri="storage://authority/path/to/sub-child")
 
-        In situations where relative URIs are supported, the default URI of the
-        child should be a sub-path of the parent URI. The final component
-        should be a path-sanitized version of the new key. For instance, adding
-        sub-element ``data`` to a Collection located at ``file:///path/to/coll``
-        would have a default path of ``file:///path/to/coll/data``. For
-        non–URI-safe keys, no specific path-sanitization method is required,
-        but as an example, a child named ``non/path?safe`` could use
-        ``file:///path/to/coll/non_path_safe`` as its full URI.
+        The URI provided may be absolute or relative. If a child URI is not
+        provided, the collection should construct a default child URI based
+        on the key of the new entry, making a relative URI (when possible)::
 
-        When a specific child URI is specified, that exact URI should be used
-        (whether relative or absolute).
+            # coll URI is "file:///path/to/coll"
+            coll.add_new_collection("new child!")
+            # The URI of the child collection might be:
+            # "file:///path/to/coll/new_child"
 
-        :param key: The key that this child should live at (i.e., it will be
-            accessed via ``the_collection[key]``).
-        :param cls: The type of child that should be added.
-        :param uri: If provided, overrides the default URI that would be used
-            to create this object. This may be absolute or relative.
-        :param platform_config: Platform-specific configuration options used
-            when creating the child.
+            # flat_ns_coll URI is "flat://authority/key" in a flat namespace
+            # where relative paths are unsupported.
+            flat_ns_coll.add_new_collection("flat child")
+            # The URI of the child collection might be:
+            # "flat://authority/flat_child"
+
+        The way the URI is constructed is left unspecified so that an
+        implementation can create a URI based on its own needs. Users should
+        directly get the URI of the new child using ``new_child.uri`` if needed;
+        they should never assume what it will be.
+
+        Args:
+            key: The key that this child should live at
+                (i.e., it will be accessed via ``the_collection[key]``).
+            kind: The type of child that should be added.
+            uri: If provided, overrides the default URI that would be used
+                to create this object. This may be absolute or relative.
+                If not provided,
+            platform_config: Platform-specific configuration options used
+                when creating the child.
+
+        Returns:
+            The newly created collection, opened for writing.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -134,10 +150,14 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.DataFrame:
         """Creates a new DataFrame as a child of this collection.
-        [lifecycle: experimental]
 
         Parameters are as in :meth:`data.DataFrame.create`.
-        See :meth:`add_new_collection` for details about child creation.
+        See :meth:`add_new_collection` for details about child URIs.
+
+        Returns:
+            The newly created DataFrame, opened for writing.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -152,10 +172,14 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.DenseNDArray:
         """Creates a new dense NDArray as a child of this collection.
-        [lifecycle: experimental]
 
         Parameters are as in :meth:`data.DenseNDArray.create`.
-        See :meth:`add_new_collection` for details about child creation.
+        See :meth:`add_new_collection` for details about child URIs.
+
+        Returns:
+            The newly created dense NDArray, opened for writing.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -170,10 +194,14 @@ class BaseCollection(
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.SparseNDArray:
         """Creates a new sparse NDArray as a child of this collection.
-        [lifecycle: experimental]
 
         Parameters are as in :meth:`data.SparseNDArray.create`.
         See :meth:`add_new_collection` for details about child creation.
+
+        Returns:
+            The newly created sparse NDArray, opened for writing.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -185,7 +213,7 @@ class BaseCollection(
     def set(
         self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
     ) -> Self:
-        """Sets an entry of this collection. [lifecycle: experimental]
+        """Sets an entry of this collection.
 
         Important note: Because parent objects may need to share
         implementation-internal state with children, when you set an item in a
@@ -198,23 +226,31 @@ class BaseCollection(
 
         The two objects *will* refer to the same stored data.
 
-        :param use_relative_uri: Determines whether to store the collection
-            entry with a relative URI (provided the storage engine supports it).
-            If ``None`` (the default), will automatically determine whether to
-            use an absolute or relative URI based on their relative location
-            (if supported by the storage engine).
-            If ``True``, will always use a relative URI. If the new child does
-            not share a relative URI base, or use of relative URIs is not
-            possible at all, the collection should throw an exception.
-            If ``False``, will always use an absolute URI.
-        :return: ``self``, to enable method chaining.
+        Args:
+            key: The string key to set.
+            value: The SOMA object to insert into the collection.
+            use_relative_uri: Determines whether to store the collection
+                entry with a relative URI (provided the storage engine
+                supports it).
+                If ``None`` (the default), will automatically determine whether
+                to use an absolute or relative URI based on their relative
+                location.
+                If ``True``, will always use a relative URI. If the new child
+                does not share a relative URI base, or use of relative URIs
+                is not possible at all, the collection should raise an error.
+                If ``False``, will always use an absolute URI.
+
+        Returns: ``self``, to enable method chaining.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
 
 class Collection(BaseCollection[_Elem]):
     """SOMA Collection imposing no semantics on the contained values.
-    [lifecycle: experimental]
+
+    Lifecycle: experimental
     """
 
     soma_type: Final = "SOMACollection"  # type: ignore[misc]
