@@ -513,7 +513,7 @@ _Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 
 @attrs.define
 class AxisIndexer:
-    """Given a query, provides index-bulding services for obs/var axis."""
+    """Given a query, provides index-building services for obs/var axis."""
 
     query: ExperimentAxisQuery
     _cached_obs: Optional[pd.Index] = None

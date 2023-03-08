@@ -70,6 +70,7 @@ The foundational types are:
 The composed types are:
 
 - `SOMAExperiment`: a specialization and extension of `SOMACollection`, codifying a set of naming and indexing conventions to represent an annotated, 2-D matrix of observations across _multiple_ sets of variables.
+- `SOMAMeasurement`: a specialization and extension of `SOMACollection`, that contains a set of annotated observables that are common to one or more sets of measurements and/or derived calculations.
 
 In this document, the term `dataframe` implies something akin to an Arrow `Table` (or `RecordBatch`), R `data.frame` or Python `pandas.DataFrame`, where:
 
@@ -97,8 +98,6 @@ In the following:
 Other Arrow types are explicitly noted as such, e.g., `Arrow RecordBatch`.
 
 Numeric index types (e.g., offset indexing into dense arrays) are specified with `int64` type and a domain of `[0, 2^63-1]`. In other words, non-negative `int64` values are used for offset indexing.
-
-> ⚠️ **Issue**: are there parts of the Arrow type system that we wish to _explicitly exclude_ from SOMA? I have left this issue open (i.e., no specific text) for now, thinking that we can come back and subset as we understand what complex types are required, and how much flexibility should be in this spec. We clearly need some complex types (e.g., `RecordBatch`, `List`, etc) as they are implied by `string`, etc. My own preference would be to mandate a small set of primitive types, and leave the rest open to implementations to support as they feel useful.
 
 ### Type conformance and promotion
 
@@ -243,15 +242,13 @@ Composed types are defined as a composition of foundational types, adding name, 
 The `SOMAExperiment` and `SOMAMeasurement` types comprise [foundational types](#foundational-types):
 
 - `SOMAExperiment`: a well-defined set of annotated observations defined by a `SOMADataFrame`, and one or more "measurement" on those observations.
-- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNdArray` and `SOMASparseNdArray`.
+- `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNDArray` and `SOMASparseNDArray`.
 
 In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`.
 
 <figure>
     <img src="images/SOMAExperiment.png" alt="SOMAExperiment">
 </figure>
-
-> ⚠️ **Issue**: it would be a good idea to factor `SOMAExperiment` and `SOMAMeasurement` into separate sections.
 
 These types have pre-defined fields, each of which have well-defined naming, typing, dimensionality and indexing constraints. Other user-defined data may be added to a `SOMAExperiment` and `SOMAMeasurement`, as both are a specialization of the `SOMACollection`. Implementations _should_ enforce the constraints on these pre-defined fields. Pre-defined fields are distinguished from other user-defined collection elements, where no schema or indexing semantics are presumed or enforced.
 
@@ -581,19 +578,17 @@ Parameters:
 
 The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the current collection's context.
 
-`add_new_collection` has an extra parameter allowing control over the type of collection added:
+`add_new_collection` has an extra parameter allowing control over the kind of collection to be added:
 
 ```
-add_new_collection(string key, CollectionType type, string uri = "", PlatformConfig platform_config) -> SOMACollection
+add_new_collection(string key, CollectionType kind, string uri = "", PlatformConfig platform_config) -> SOMACollection
 ```
 
-- `type`: The type of collection to add. For instance, if `SOMAExperiment` is provided, the newly-added collection, and the returned instance, will be a `SOMAExperiment`.
+- `kind`: The kind of collection to add. For instance, if `SOMAExperiment` is provided, the newly-added collection, and the returned instance, will be a `SOMAExperiment`.
 
 ## SOMADataFrame
 
-> ⚠️ **To be further specified**: all methods need specification.
->
-> Summary of operations:
+Summary of operations:
 
 | Operation                                | Description                                           |
 | ---------------------------------------- | ----------------------------------------------------- |
@@ -645,7 +640,7 @@ Summary:
 
 ```
 read(
-    ids=[[id,...]|all, ...],
+    coords=[[coord,...]|all, ...],
     column_names=[`string`, ...]|all,
     batch_size,
     partitions,
@@ -657,12 +652,12 @@ read(
 
 Parameters:
 
-- `ids`: the rows to read. Defaults to 'all'. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
+- `coords`: the rows to read. Defaults to all. Coordinates for each dimension may be specified by value, a value range (slice -- see the [indexing and slicing](#indexing-and-slicing) section below), an Arrow array of values, or a list of both.
 - `column_names`: the named columns to read and return. Defaults to all, including system-defined columns (`soma_joinid`).
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-- `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-- `value_filter``: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
+- `value_filter`: an optional [value filter](#value-filters) to apply to the results. Defaults to no filter.
 - [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 The `read` operation will return a language-specific iterator over one or more Arrow `Table` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
@@ -684,8 +679,6 @@ Parameters:
 All columns, including index columns and `soma_joinid` must be specified in the `values` parameter.
 
 ## SOMADenseNDArray
-
-> ⚠️ **To be further specified**: this is incomplete.
 
 Summary of operations:
 
@@ -713,15 +706,15 @@ Parameters:
 - `uri`: location at which to create the object.
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be positive values the `int64` range `[0, 2^63-1]`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
-- [`context`](#long-lived-context-data)`: optional context to use for this new object.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Returns: The newly created `SOMADenseNDArray`, opened for writing.
 
 ### Operation: get schema
 
-Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` returned
-by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema will be:
+Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` objects returned
+by the `read`, `record_batches` chained operations. Field names in the schema will be:
 
 - `soma_dim_N`: the type of the Nth dimension. This will always be an `int64` in the range `[0, 2^63-1]`.
 - `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
@@ -748,15 +741,13 @@ read(
 
 The `read` operation will return an Arrow Tensor containing the requested subarray.
 
-> ⚠️ **Issue**: support for other formats, such as Arrow `Table`, is under discussion.
-
 ### Operation: write()
 
 Write an Arrow `Tensor` to a dense subarray of the persistent object.
 
 ```
 write(
-    [slice, ...]
+    coords,
     values,
     platform_config
 )
@@ -768,11 +759,9 @@ Parameters:
 
 - `coords`: per-dimension slice, expressed as a per-dimension list of scalar or range.
 - `values`: values to be written, provided as an Arrow Tensor. The type of elements in `values` must match the type of the SOMADenseNDArray.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
 ## SOMASparseNDArray
-
-> ⚠️ **To be further specified**: this is incomplete.
 
 Summary of operations:
 
@@ -801,15 +790,15 @@ Parameters:
 - `uri`: location at which to create the object.
 - `type`: an Arrow `primitive` type defining the type of each element in the array. If the type is unsupported, an error will be raised.
 - `shape`: the length of each domain as a list, e.g., [100, 10]. All lengths must be in the `int64` range `[0, 2^63-1]`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
-- [`context`](#long-lived-context-data)`: optional context to use for this new object.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
 
 Returns: The newly created `SOMASparseNDArray`, opened for writing.
 
 ### Operation: get schema
 
-Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` returned
-by the `read` operation when it is called with a `batch_format` parameter value of `record-batch`. Field names in the schema will be:
+Return the array schema as an `Arrow.Schema` object. This operation will return the schema of the `Arrow.RecordBatch` objects returned
+by the `read`, `record_batches` chained operations. Field names in the schema will be:
 
 - `soma_dim_N`: the type of the Nth dimension. This will always be a `int64` in the range `[0, 2^63-1]`.
 - `soma_data`: the user-specified type of the array elements, as specified in the `create` operation.
@@ -822,23 +811,21 @@ Summary:
 
 ```
 read(
-    [slice, ...],
+    coords,
     batch_size,
     partitions,
     result_order,
-    batch_format,
     platform_config,
-) -> delayed iterator over ReadResult
+) -> SOMASparseNDArrayRead
 ```
 
-- `slice`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
+- `coords`: per-dimension slice (see the [indexing and slicing](#indexing-and-slicing) section below), expressed as a scalar, a range, an Arrow array or chunked array of scalar, or a list of both.
 - `batch_size`: a [`SOMABatchSize`](#SOMABatchSize), indicating the size of each "batch" returned by the read iterator. Defaults to `auto`.
-- `partition`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
+- `partitions`: an optional [`SOMAReadPartitions`](#SOMAReadPartitions) to partition read operations.
 - `result_order`: a [`ResultOrder`](#resultorder) specifying the order of read results.
-- `batch_format`: a [`SOMABatchFormat`](#SOMABatchFormat) value, indicating the desired format of each batch. Default: `coo`.
-- [`platform_config`](#platform-specific-configuration)`: optional storage-engine-specific configuration.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
 
-The `read` operation will return a language-specific iterator over one or more `ReadResult` objects, allowing the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs. The contents of the batch returned by the iterator is specified by the `batch_format` parameter.
+The `read` operation will return a `SOMASparseNDArrayRead` type, allowing the result encoding type to be selected. The encoding type, in turn, will provide a language-specific iterator over the result data, allowing for the incremental processing of results larger than available memory. The actual iterator used is delegated to language-specific SOMA specs.
 
 ### Operation: write()
 
@@ -851,7 +838,7 @@ write(values, platform_config)
 Values to write may be provided in a variety of formats:
 
 - `Tensor`: caller provides values as an `Arrow.Tensor`, and the coordinates at which the dense tensor is written.
-- `SparseTensor`: caller provides a Arrow COO, CSC or CSR `SparseTensor.
+- `SparseTensor`: caller provides a Arrow COO, CSC or CSR `SparseTensor`.
 - `RecordBatch`: caller provides COO-encoded coordinates and data as an `Arrow.RecordBatch`.
 - `Table`: caller provides COO-encoded coordinates and data as an `Arrow.Table`.
 
@@ -940,22 +927,18 @@ To facilitate distributed computation, read operations on foundational types acc
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `IofN`         | Given I and N, read operations will return the Ith partition of N approximately equal size partitions. Partition boundaries will be stable for any given N and array or dataframe. |
 
-### SOMABatchFormat
+### SOMASparseNDArrayRead
 
-Array read operations can return results in a variety of formats. The `SOMABatchFormat` format indicates the format encoding.
+`SparseNDArray` `read` operations can return results in a variety of formats. The `SOMASparseNDArrayRead` type is an intermediate result type that allows the client to choose the encoding format that will be used to return the result data.
 
-| Batch format   | Description                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| `dense`        | Return the coordinates of the slice (e.g., origin, shape) and an Arrow Tensor containing slice values. |
-| `coo`          | Return an `Arrow.SparseCOOTensor`                                                                      |
-| `csr`          | Return an `Arrow.SparseCSRTensor`                                                                      |
-| `csc`          | Return an `Arrow.SparseCSCTensor`                                                                      |
-| `record-batch` | Return an `Arrow.RecordBatch` containing COO-encoded coordinates and values.                           |
-| `table`        | Return an `Arrow.Table` containing COO-encoded coordinates and values.                                 |
+| Format         | Description                                                                                   |
+|----------------|-----------------------------------------------------------------------------------------------|
+| `dense`        | Return an iterator of `Arrow Tensor`s containing slice values.                                |
+| `coos`         | Return an iterator of `Arrow.SparseCOOTensor`s containing COO-encoded coordinates and values. |
+| `record-batch` | Return an iterator `Arrow.RecordBatch` containing COO-encoded coordinates and values.         |
+| `table`        | Return an iterator of `Arrow.Table`s containing COO-encoded coordinates and values.           |
 
 ## General Utilities
-
-> ⚠️ **To be further specified**
 
 Summary:
 
@@ -1001,8 +984,8 @@ writeExperiment.mode();  // WRITE
 
 ## Indexing and slicing
 
-- In the above `read()` methods, indexing by an empty list of IDs must result in zero-length query results.
-- Negative indices must not be interpeted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
+- In the above `read()` methods, indexing by an empty list of coordinates must result in zero-length query results.
+- Negative indices must not be interpreted as aliases for positive indices (as is common in Python) or as exclusionary (as is common in R).
 - Slices define a closed interval, i.e., are doubly inclusive of specified values. For example, slicing with bounds 2 and 4 includes array indices 2, 3, and 4.
 - Slices may include the lower bound, upper bound, both, or neither:
   - Slicing with neither (e.g., Python's `[:]`) means select all.
@@ -1011,8 +994,6 @@ writeExperiment.mode();  // WRITE
 - Slice steps, or stride, if supported in the implementation language, may only be 1.
 
 ## Value Filters
-
-> ⚠️ **To be further specified**
 
 Value filters are expressions used to filter the results of a `read` operation, and specify which results should be returned. Value filters operate on materialized columns, including `soma_joinid`, and will not filter pseudo-columns such as `soma_rowid`.
 
@@ -1131,17 +1112,6 @@ The format and contents of a Context object is completely implementation-defined
 An implementation may provide a way to construct its specific context type, which can be used by user setup code to connect to the SOMA data store (represented above as the `somaimpl.create_context` call).
 However, client code should treat the `context` object on any instantiated SOMA objects as an opaque value, and only pass it directly as the context parameter when creating or opening other SOMA data.
 
-# ⚠️ Other Issues (open issues with this doc)
-
-Issues to be resolved:
-
-1. Are there operations specific to SOMAExperiment and SOMAMeasurement that need to be defined? Or do they inherit only the ops from SOMACollection?
-2. What (if any) additional semantics around writes need to be defined?
-3. Value filter support in `NDArray` has been proposed:
-   - Is there a use case to motivate it?
-   - This effectively requires that all `read()` return batches be sparse, as the value filter will remove values.
-   - Where the requested `batch_format` is `dense` (i.e., the user wants a tensor back), this would require that we also provide coordinates and/or a mask in addition to the tensor (values). Or disallow that combination: if you specify a value filter, you can only ask for a sparse-capable `batch_format`.
-
 # Changelog
 
 1. Acceptance of Arrow as base type system.
@@ -1190,3 +1160,10 @@ Issues to be resolved:
 44. Pull description of common operations into its own section.
 45. Specify object lifecycle and related operations (`create`, `open`, `add_new_*`, etc.).
 46. Uniformize backticks, punctuation, etc.
+47. Fixed erroneous backticks, spelling, and capitalization. 
+48. Renamed `SOMADataFrame.read()` `ids` param and `SOMASparseNDArray.read()` `slice` param to `coords`, for consistency between `SOMADataFrame`, `SOMASparseNDArray` and `SOMADenseNDArray` types. 
+49. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
+50. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
+51. Renamed `Collection.add_new_collection()` `type` param to `kind`.
+52. Removed ⚠️-marked commentary.
+53. Added `SOMAMeasurement` to "Data Model" section, under "composed types".
