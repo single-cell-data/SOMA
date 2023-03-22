@@ -28,7 +28,11 @@ from . import axis
 
 
 class AxisColumnNames(TypedDict, total=False):
-    """Specifies column names for experiment axis query read operations."""
+    """
+    Specifies column names for experiment axis query read operations.
+
+    Lifecycle: experimental
+    """
 
     obs: Optional[Sequence[str]]
     """obs columns to use. All columns if ``None`` or not present."""
@@ -206,6 +210,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
+
+        Lifecycle: experimental
         """
         return self._read(
             X_name,
@@ -513,7 +519,11 @@ _Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 
 @attrs.define
 class AxisIndexer:
-    """Given a query, provides index-building services for obs/var axis."""
+    """
+    Given a query, provides index-building services for obs/var axis.
+
+    Lifecycle: experimental
+    """
 
     query: ExperimentAxisQuery
     _cached_obs: Optional[pd.Index] = None
