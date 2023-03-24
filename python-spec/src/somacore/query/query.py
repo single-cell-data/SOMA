@@ -51,9 +51,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
     single soma.Measurement in a soma.Experiment, by obs/var (axis) coordinates
     and/or value filter.
 
-    The primary use for this class is slicing Experiment ``X`` layers by obs or
-    var value and/or coordinates. Slicing on SparseNDArray ``X`` matrices is
-    supported; DenseNDArray is not supported at this time.
+    The primary use for this class is slicing :class:`Experiment` ``X`` layers by obs or
+    var value and/or coordinates. Slicing on :class:`SparseNDArray` ``X`` matrices is
+    supported; :class:`DenseNDArray` is not supported at this time.
 
     IMPORTANT: this class is not thread-safe.
 
