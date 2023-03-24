@@ -28,7 +28,11 @@ from . import axis
 
 
 class AxisColumnNames(TypedDict, total=False):
-    """Specifies column names for experiment axis query read operations."""
+    """
+    Specifies column names for experiment axis query read operations.
+
+    Lifecycle: experimental
+    """
 
     obs: Optional[Sequence[str]]
     """obs columns to use. All columns if ``None`` or not present."""
@@ -47,9 +51,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
     single soma.Measurement in a soma.Experiment, by obs/var (axis) coordinates
     and/or value filter.
 
-    The primary use for this class is slicing Experiment ``X`` layers by obs or
-    var value and/or coordinates. Slicing on SparseNDArray ``X`` matrices is
-    supported; DenseNDArray is not supported at this time.
+    The primary use for this class is slicing :class:`Experiment` ``X`` layers by obs or
+    var value and/or coordinates. Slicing on :class:`SparseNDArray` ``X`` matrices is
+    supported; :class:`DenseNDArray` is not supported at this time.
 
     IMPORTANT: this class is not thread-safe.
 
@@ -206,6 +210,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
+
+        Lifecycle: experimental
         """
         return self._read(
             X_name,
@@ -513,7 +519,11 @@ _Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 
 @attrs.define
 class AxisIndexer:
-    """Given a query, provides index-building services for obs/var axis."""
+    """
+    Given a query, provides index-building services for obs/var axis.
+
+    Lifecycle: experimental
+    """
 
     query: ExperimentAxisQuery
     _cached_obs: Optional[pd.Index] = None

@@ -23,7 +23,12 @@ OpenMode = Literal["r", "w"]
 
 
 class ReadPartitions:
-    """Sentinel base class for read-partition types."""
+    """
+    Sentinel base class for read-partition types.
+
+    Lifecycle:
+        Experimental
+    """
 
     __slots__ = ()
 
@@ -35,6 +40,9 @@ class IOfN(ReadPartitions):
     For a read operation that returns ``n`` partitions, the read operation will
     return the ``i``th partition (zero-indexed) out of ``n`` partitions of
     approximately equal size.
+
+    Lifecycle:
+        Experimental
     """
 
     i: int = attrs.field()
@@ -72,6 +80,9 @@ class BatchSize:
 
         BatchSize()
         # Will return automatically-sized batches.
+
+    Lifecycle:
+        Experimental
     """
 
     count: Optional[int] = attrs.field(default=None)
@@ -100,7 +111,11 @@ an implementation-defined configuration structure.
 
 
 class ResultOrder(enum.Enum):
-    """The order results should be returned in."""
+    """
+    The order results should be returned in.
+    Lifecycle:
+        Experimental
+    """
 
     AUTO = "auto"
     ROW_MAJOR = "row-major"

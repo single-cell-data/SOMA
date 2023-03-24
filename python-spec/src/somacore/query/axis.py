@@ -93,5 +93,5 @@ class AxisQuery:
     """Query (slice) by dimension.
 
     The tuple must have a length less than or equal to the number of dimensions,
-    and be of a type supported by ``DataFrame``.
+    and be of a type supported by :class:`DataFrame`.
     """

@@ -292,7 +292,11 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
 
 class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
-    """A N-dimensional array stored densely. [lifecycle: experimental]"""
+    """
+    An N-dimensional array stored densely.
+
+    Lifecycle: experimental
+    """
 
     __slots__ = ()
     soma_type: Final = "SOMADenseNDArray"  # type: ignore[misc]
