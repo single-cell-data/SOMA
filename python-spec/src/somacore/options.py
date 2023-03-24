@@ -27,7 +27,7 @@ class ReadPartitions:
     Sentinel base class for read-partition types.
 
     Lifecycle:
-        Experimental.
+        Experimental
     """
 
     __slots__ = ()
@@ -42,7 +42,7 @@ class IOfN(ReadPartitions):
     approximately equal size.
 
     Lifecycle:
-        Experimental.
+        Experimental
     """
 
     i: int = attrs.field()
@@ -82,7 +82,7 @@ class BatchSize:
         # Will return automatically-sized batches.
 
     Lifecycle:
-        Experimental.
+        Experimental
     """
 
     count: Optional[int] = attrs.field(default=None)
@@ -114,7 +114,7 @@ class ResultOrder(enum.Enum):
     """
     The order results should be returned in.
     Lifecycle:
-        Experimental.
+        Experimental
     """
 
     AUTO = "auto"
