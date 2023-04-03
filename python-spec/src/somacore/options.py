@@ -113,6 +113,7 @@ an implementation-defined configuration structure.
 class ResultOrder(enum.Enum):
     """
     The order results should be returned in.
+
     Lifecycle:
         Experimental
     """
