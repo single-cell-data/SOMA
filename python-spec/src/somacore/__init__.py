@@ -17,6 +17,8 @@ from .data import NDArray
 from .data import ReadIter
 from .data import SparseNDArray
 from .data import SparseRead
+from .experiment import Experiment
+from .measurement import Measurement
 from .options import BatchSize
 from .options import IOfN
 from .options import ResultOrder
@@ -44,6 +46,8 @@ __all__ = (
     "ReadIter",
     "SparseNDArray",
     "SparseRead",
+    "Experiment",
+    "Measurement",
     "BatchSize",
     "IOfN",
     "ResultOrder",
