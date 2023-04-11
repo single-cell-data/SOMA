@@ -270,9 +270,9 @@ The `SOMAMeasurement` is a sub-element of a `SOMAExperiment`, and is otherwise a
 | ---------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `var`      | `SOMADataFrame`                                               | Primary annotations on the _variable_ axis, for variables in this measurement (i.e., annotates columns of `X`). The contents of the `soma_joinid` pseudo-column define the _variable_ index domain, also known as `varid`. All variables for this measurement _must_ be defined in this dataframe. |
 | `X`        | `SOMACollection[string, SOMASparseNDArray\|SOMADenseNDArray]` | A collection of matrices, each containing measured feature values. Each matrix is indexed by `[obsid, varid]`. Both sparse and dense 2D arrays are supported in `X`.                                                                                                                               |
-| `obsm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                                 |
+| `obsm`     | `SOMACollection[string, SOMASparse\|SOMADenseNDArray]`        | A collection of dense matrices containing annotations of each _obs_ row. Has the same shape as `obs`, and is indexed with `obsid`.                                                                                                                                                                 |
 | `obsp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _obs_ row. Indexed with `[obsid_1, obsid_2].`                                                                                                                                                                              |
-| `varm`     | `SOMACollection[string, SOMADenseNDArray]`                    | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`.                                                                                                                                                                 |
+| `varm`     | `SOMACollection[string, SOMASparseNDArray\|SOMADenseNDArray]` | A collection of dense matrices containing annotations of each _var_ row. Has the same shape as `var`, and is indexed with `varid`.                                                                                                                                                                 |
 | `varp`     | `SOMACollection[string, SOMASparseNDArray]`                   | A collection of sparse matrices containing pairwise annotations of each _var_ row. Indexed with `[varid_1, varid_2]`                                                                                                                                                                               |
 
 For the entire `SOMAExperiment`, the index domain for the elements within `obsp`, `obsm` and `X` (first dimension) are the values defined by the `obs` dataframe `soma_joinid` column. For each `SOMAMeasurement`, the index domain for `varp`, `varm` and `X` (second dimension) are the values defined by the `var` dataframe `soma_joinid` column in the same measurement. In other words, all predefined fields in the `SOMAMeasurement` share a common `obsid` and `varid` domain, which is defined by the contents of the respective columns in `obs` and `var` dataframes.
@@ -932,7 +932,7 @@ To facilitate distributed computation, read operations on foundational types acc
 `SparseNDArray` `read` operations can return results in a variety of formats. The `SOMASparseNDArrayRead` type is an intermediate result type that allows the client to choose the encoding format that will be used to return the result data.
 
 | Format         | Description                                                                                   |
-|----------------|-----------------------------------------------------------------------------------------------|
+| -------------- | --------------------------------------------------------------------------------------------- |
 | `dense`        | Return an iterator of `Arrow Tensor`s containing slice values.                                |
 | `coos`         | Return an iterator of `Arrow.SparseCOOTensor`s containing COO-encoded coordinates and values. |
 | `record-batch` | Return an iterator `Arrow.RecordBatch` containing COO-encoded coordinates and values.         |
@@ -1160,10 +1160,11 @@ However, client code should treat the `context` object on any instantiated SOMA 
 44. Pull description of common operations into its own section.
 45. Specify object lifecycle and related operations (`create`, `open`, `add_new_*`, etc.).
 46. Uniformize backticks, punctuation, etc.
-47. Fixed erroneous backticks, spelling, and capitalization. 
-48. Renamed `SOMADataFrame.read()` `ids` param and `SOMASparseNDArray.read()` `slice` param to `coords`, for consistency between `SOMADataFrame`, `SOMASparseNDArray` and `SOMADenseNDArray` types. 
+47. Fixed erroneous backticks, spelling, and capitalization.
+48. Renamed `SOMADataFrame.read()` `ids` param and `SOMASparseNDArray.read()` `slice` param to `coords`, for consistency between `SOMADataFrame`, `SOMASparseNDArray` and `SOMADenseNDArray` types.
 49. Updated `SOMABatchFormat` section, renaming to `SOMASparseNDArrayRead` and removing the `csr`, `csc`, and `record-batch` format options.
-50. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`. 
+50. Removed `SOMASparseNDArray.read()` `batch_format` param and changed return type to `SOMASparseNDArrayRead`.
 51. Renamed `Collection.add_new_collection()` `type` param to `kind`.
 52. Removed ⚠️-marked commentary.
 53. Added `SOMAMeasurement` to "Data Model" section, under "composed types".
+54. Allowed all N-d arrays to be sparse.
