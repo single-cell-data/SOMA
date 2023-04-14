@@ -76,7 +76,7 @@ class Measurement(
     both be used in any combination in ``X``.
     """
 
-    obsm = _mixin.item[_DenseNDColl]()
+    obsm = _mixin.item[_NDColl]()
     """Matrices containing annotations of each ``obs`` row.
 
     This has the same shape as ``obs`` and is indexed with ``obsid``.
@@ -88,7 +88,7 @@ class Measurement(
     This is indexed by ``[obsid_1, obsid_2]``.
     """
 
-    varm = _mixin.item[_DenseNDColl]()
+    varm = _mixin.item[_NDColl]()
     """Matrices containing annotations of each ``var`` row.
 
     This has the same shape as ``var`` and is indexed with ``varid``.
