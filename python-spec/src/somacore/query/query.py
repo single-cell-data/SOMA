@@ -48,7 +48,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
     """Axis-based query against a SOMA Experiment.
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
-    single soma.Measurement in a soma.Experiment, by obs/var (axis) coordinates
+    single :class:`Measurement` in an :class:`Experiment`, by obs/var (axis) coordinates
     and/or value filter.
 
     The primary use for this class is slicing :class:`Experiment` ``X`` layers by obs or
@@ -99,7 +99,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def obs(
         self, *, column_names: Optional[Sequence[str]] = None
     ) -> data.ReadIter[pa.Table]:
-        """Returns ``obs`` as an Arrow table iterator.
+        """Returns ``obs`` as an `Arrow table
+        <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
+        iterator.
 
         Lifecycle: experimental
         """
@@ -113,7 +115,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def var(
         self, *, column_names: Optional[Sequence[str]] = None
     ) -> data.ReadIter[pa.Table]:
-        """Returns ``var`` as an Arrow table iterator.
+        """Returns ``var`` as an `Arrow table
+        <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
+        iterator.
 
         Lifecycle: experimental
         """
