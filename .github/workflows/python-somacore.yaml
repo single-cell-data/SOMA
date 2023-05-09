@@ -15,19 +15,30 @@ jobs:
       PYTHON_VERSION: "3.7"
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
-      - uses: psf/black@stable
+
       - name: Install static analysis packages
         run: |
           pip install -r python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
+
+      - name: Restore pre-commit cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: Run mypy
         run: mypy ./python-spec/src
-      - name: Run ruff
-        run: ruff .
+        # We maintain this full mypy step since running mypy in pre-commit is
+        # somewhat limited (cf. comments in .pre-commit-config.yaml).
+
+      - name: Pre-commit check
+        run: pre-commit run -a -v
 
   run-tests:
     runs-on: ubuntu-latest

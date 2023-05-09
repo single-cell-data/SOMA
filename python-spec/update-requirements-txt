@@ -26,7 +26,7 @@ CONDIR="$TEMPDIR/py-$LINTVER-lint"
 conda create -y -p "$CONDIR" "python=$LINTVER"
 (
   conda activate "$CONDIR"
-  pip install .[dev] mypy
+  pip install .[dev] mypy pre-commit
   mypy --install-types --non-interactive ./python-spec/src
   pip freeze --exclude somacore >"./python-spec/requirements-py$LINTVER-lint.txt"
 )
