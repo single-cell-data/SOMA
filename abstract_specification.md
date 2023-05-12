@@ -1020,9 +1020,14 @@ All SOMA objects expose a `context` field that contain implementation-specific c
 
 ### Per-call configuration
 
-Many operations include a `platform_config` parameter. This parameter provides a generic way to pass storage-platform–specific hints to the backend implementation that cannot effectively be exposed in SOMA’s generic, platform-agnostic API. End users and libraries can use these to tune or otherwise adjust the behavior of individual operations without needing to know exactly which backend is being used, or directly depending upon the storage platform implementation in question.
+Many operations include a `platform_config` parameter.
+This parameter provides a generic way to pass storage-platform–specific hints to the backend implementation that cannot effectively be exposed in SOMA’s generic, platform-agnostic API.
+End users and libraries can use these to tune or otherwise adjust the behavior of individual operations without needing to know exactly which backend is being used, or directly depending upon the storage platform implementation in question.
 
-The `platform_config` parameter is defined as a key–value mapping from strings to configuration data. Each **key** in the mapping corresponds to the name of a particular SOMA implementation (i.e., the same string returned by the `get_storage_engine` call). The value stored in each is implementation defined. For example, a Python library that handles SOMA dataframes would make a call that looks roughly like this:
+The `platform_config` parameter is defined as a key–value mapping from strings to configuration data.
+Each **key** in the mapping corresponds to the name of a particular SOMA implementation (i.e., the same string returned by the `get_storage_engine` call).
+The value stored in each is implementation defined.
+For example, a Python library that handles SOMA dataframes would make a call that looks roughly like this:
 
 ```python
 def process(df: somacore.DataFrame) -> ...:
@@ -1042,25 +1047,49 @@ def process(df: somacore.DataFrame) -> ...:
 
 When a `SOMADataFrame` is passed into this code, the function does not need to care whether the dataframe in question is TileDB-based, OtherImpl-based, or otherwise; each platform will read the configuration necessary to tune its own reading process (and in other cases, the storage backend will simply use the default settings).
 
+Implementations may also accept an implementation-specific type as a `platform_config` parameter.
+Other implementations should ignore `platform_config` objects not specific to their implementation:
+
+```python
+df.read(
+    ...,
+    platform_config=someimpl.SomeImplConfig(...),
+)
+# A someimpl-based dataframe can use the passed-in SomeImplConfig.
+# Any other implementation, e.g. tiledbsoma, should ignore the SomeImplConfig
+# and act as if no platform_config were passed at all.
+```
+
 #### Configuration data structure
 
-The exact contents of each platform’s entry in the configuration mapping are fully specified by that platform’s implementation itself, but it should conform to certain conventions. While the specification or its generic implementation cannot _enforce_ these guidelines, following them will ensure that API users have a consistent and predictable interface.
+The exact contents of each platform’s entry in the configuration mapping are fully specified by that platform’s implementation itself, but it should conform to certain conventions.
+While the specification or its generic implementation cannot _enforce_ these guidelines, following them will ensure that API users have a consistent and predictable interface.
 
 - At the top level, each individual platform’s configuration should be a string-keyed mapping.
   - In Python, these keys should be `snake_case`.
-- The contents of these configuration entries should be represented declaratively, using built-in data structures from the host language to the extent possible (for example, strings, dicts, lists and tuples, etc. in Python). This allows libraries that use SOMA objects to provide configuration data to multiple platforms without having to depend upon implementation it _may_ want to use.
+- The contents of these configuration entries should be represented declaratively, using built-in data structures from the host language to the extent possible (for example, strings, dicts, lists and tuples, etc. in Python).
+  This allows libraries that use SOMA objects to provide configuration data to multiple platforms without having to depend upon implementation it _may_ want to use.
   - An implementation may also use objects and types from libraries that the generic SOMA interface specification uses, like Arrow types.
-  - For highly-specialized cases, a storage platform implementation may also accept its internal object types. However, to the extent possible, using platform-specific objects should be an option _in addition to_ a fully delcarative structure, and should _not_ be the _only_ way to provide configuration data.
-- In situations where a configuration setting of the same name, but with different type, semantics, or values will be used across operations, a separate string key should be provided for that setting for each operation. This allows for the same `platform_config` data to be reused across multiple operations by the user.
-  - For example, a storage backend may provide a way to read and write data in a given block size. However, the performance characteristics of these operations may be very different. The implementation should provide `read_block_size` and `write_block_size` parameters (or use some similar disambiguation strategy) rather than only allowing a single `shard_size` parameter.
+  - For highly-specialized cases, a storage platform implementation may also accept values of a platform-defined type.
+    However, to the extent possible, using platform-specific objects should be an option _in addition to_ a fully delcarative structure, and should _not_ be the _only_ way to provide configuration data.
+- In situations where a configuration setting of the same name, but with different type, semantics, or values will be used across operations, a separate string key should be provided for that setting for each operation.
+  This allows for the same `platform_config` data to be reused across multiple operations by the user.
+  - For example, a storage backend may provide a way to read and write data in a given block size.
+    However, the performance characteristics of these operations may be very different.
+    The implementation should provide `read_block_size` and `write_block_size` parameters (or use some similar disambiguation strategy) rather than only allowing a single `shard_size` parameter.
 
 #### Implementation and usage guidelines
 
-The configuration passed in the `platform_config` object is intended for operation-specific tuning (though it may make sense for user code to use the same `platform_config` across multiple operations). A `platform_config` should only be used for the operation it was provided to (and to directly dependent operations); it should not be stored for later calls. Environmental configuration (like login credentials or backend storage region) should be provided via the (to-be-defined) Context object.
+The configuration passed in the `platform_config` object is intended for operation-specific tuning (though it may make sense for user code to use the same `platform_config` across multiple operations).
+A `platform_config` should only be used for the operation it was provided to (and to directly dependent operations); it should not be stored for later calls.
+Environmental configuration (like login credentials or backend storage region) should be provided via the (to-be-defined) Context object.
 
-Operations should not _require_ a `platform_config` entry to complete; the platform should use a sensible default if a given configuration value is not provided. Required environmental data generally belongs in the Context object.
+Operations should not _require_ a `platform_config` entry to complete; the platform should use a sensible default if a given configuration value is not provided.
+Required environmental data generally belongs in the Context object.
 
-A platform should only ever examine its own entry in the `platform_config` mapping. Since the structure and contents of each entry is wholly implementation-defined, one platform cannot make any assumptions at all about another’s configuration, and for predictability should avoid even trying to extract any information from any other configuration entries.
+A platform should only ever examine its own entry in the `platform_config` mapping.
+Since the structure and contents of each entry is wholly implementation-defined, one platform cannot make any assumptions at all about another’s configuration, and for predictability should avoid even trying to extract any information from any other configuration entries.
+If the platform does not recognize the type of the `platform_config` object (e.g., it is a type provided by another implementation), the platform should ignore the value entirely.
 
 ### Long-lived context data
 
