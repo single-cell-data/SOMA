@@ -5,7 +5,7 @@ SOMA types that require them, not reimplemented by the implementing package.
 """
 
 import enum
-from typing import Any, Mapping, Optional, Sequence, TypeVar, Union
+from typing import Any, Dict, Mapping, Optional, Sequence, TypeVar, Union
 
 import attrs
 import numpy as np
@@ -101,12 +101,20 @@ class BatchSize:
             raise ValueError("Either 'count' or 'bytes' may be set, not both")
 
 
-PlatformConfig = Mapping[str, Any]
+PlatformConfig = Union[Dict[str, Mapping[str, Any]], object]
 """Type alias for the ``platform_config`` parameter.
 
 ``platform_config`` allows platform-specific configuration data to be passed
-to individual calls. Keys are the name of a SOMA implementation, each value is
-an implementation-defined configuration structure.
+to individual calls. This is either a ``dict``, or an implementation-specific
+configuration object:
+
+- If a dictionary, the keys to the dictionary are the name of a SOMA
+  implementation, and the value of the dictionary is configuration specific to
+  that implementation.
+- If an implementation-specific object, that implementation will use that object
+  for configuration data; it will be ignored by others.
+
+See the "Per-call configuration" section of the main SOMA specifiction.
 """
 
 
