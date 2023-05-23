@@ -31,7 +31,7 @@ class AxisColumnNames(TypedDict, total=False):
     """
     Specifies column names for experiment axis query read operations.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     obs: Optional[Sequence[str]]
@@ -74,7 +74,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
     implementation that fulfills the basic APIs. A SOMA implementation may
     include a custom query implementation optimized for its own use.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     def __init__(
@@ -103,7 +103,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
         iterator.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         obs_query = self._matrix_axis_query.obs
         return self._obs_df.read(
@@ -119,7 +119,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
         iterator.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         var_query = self._matrix_axis_query.var
         return self._var_df.read(
@@ -131,14 +131,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def obs_joinids(self) -> pa.Array:
         """Returns ``obs`` ``soma_joinids`` as an Arrow array.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._joinids.obs
 
     def var_joinids(self) -> pa.Array:
         """Returns ``var`` ``soma_joinids`` as an Arrow array.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._joinids.var
 
@@ -146,7 +146,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def n_obs(self) -> int:
         """The number of ``obs`` axis query results.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return len(self.obs_joinids())
 
@@ -154,7 +154,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def n_vars(self) -> int:
         """The number of ``var`` axis query results.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return len(self.var_joinids())
 
@@ -162,7 +162,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def indexer(self) -> "AxisIndexer":
         """A ``soma_joinid`` indexer for both ``obs`` and ``var`` axes.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._indexer
 
@@ -172,7 +172,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Args:
             layer_name: The X layer name to return.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         try:
             x_layer = self._ms.X[layer_name]
@@ -187,14 +187,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def obsp(self, layer: str) -> data.SparseRead:
         """Returns an ``obsp`` layer as a sparse read.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._axisp_inner(_Axis.OBS, layer)
 
     def varp(self, layer: str) -> data.SparseRead:
         """Returns an ``varp`` layer as a sparse read.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._axisp_inner(_Axis.VAR, layer)
 
@@ -215,7 +215,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._read(
             X_name,
@@ -230,7 +230,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         This method must be idempotent.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         # Because this may be called during ``__del__`` when we might be getting
         # disassembled, sometimes ``_threadpool_`` is simply missing.
@@ -526,7 +526,7 @@ class AxisIndexer:
     """
     Given a query, provides index-building services for obs/var axis.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     query: ExperimentAxisQuery

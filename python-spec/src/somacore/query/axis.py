@@ -78,7 +78,7 @@ class AxisQuery:
         AxisQuery(value_filter="tissue == 'lung'")
         AxisQuery(coords=(slice(1,None),), value_filter="tissue == 'lung'")
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     value_filter: Optional[str] = attrs.field(
