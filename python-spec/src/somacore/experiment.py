@@ -25,7 +25,7 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
     Within an experiment, a set of measurements on a single set of variables
     (i.e., features) is represented as a :class:`~measurement.Measurement`.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     # This class is implemented as a mixin to be used with SOMA classes.
@@ -68,7 +68,7 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
 
         See :class:`query.ExperimentAxisQuery` for details on usage.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         # mypy doesn't quite understand descriptors so it issues a spurious
         # error here.

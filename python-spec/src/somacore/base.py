@@ -36,7 +36,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
             platform_config: Platform configuration options specific to
                 this open operation.
         Returns: The SOMA object, opened for reading.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -51,7 +51,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         Returns:
             True if the object exists and is of the correct type.
             False if the object does not exist, or is of a different type.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -60,7 +60,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
     def uri(self) -> str:
         """The URI of this SOMA object.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -76,7 +76,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         from an existing SOMA object to be used in the creation of a new SOMA
         object, it should not be inspected.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return None
 
@@ -89,7 +89,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         and writes to it (provided the object is opened) are reflected in
         storage.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -98,7 +98,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
     def mode(self) -> options.OpenMode:
         """Returns the mode this object was opened in, either ``r`` or ``w``.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -107,7 +107,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
     def closed(self) -> bool:
         """True if this object has been closed; False if still open.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -132,7 +132,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         ``__del__`` when this object is garbage collected, so the implementation
         must be idempotent.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         # Default implementation does nothing.
 

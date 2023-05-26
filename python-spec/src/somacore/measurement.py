@@ -38,7 +38,7 @@ class Measurement(
     along with those of the measurement's ``var`` dataframe (``varid``),
     are the indices for all the other matrices stored in the measurement.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     # This class is implemented as a mixin to be used with SOMA classes.

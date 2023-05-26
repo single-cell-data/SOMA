@@ -23,7 +23,7 @@ class BaseCollection(
     most generic, a Collection may contain any SOMA object, but a subclass
     may specify that it is a Collection of a specific type of SOMA object.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     __slots__ = ()
@@ -43,7 +43,7 @@ class BaseCollection(
             uri: The URI where the collection will be created.
         Returns:
             The newly created collection, opened for writing.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -135,7 +135,7 @@ class BaseCollection(
         Returns:
             The newly created collection, opened for writing.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -157,7 +157,7 @@ class BaseCollection(
         Returns:
             The newly created DataFrame, opened for writing.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -179,7 +179,7 @@ class BaseCollection(
         Returns:
             The newly created dense NDArray, opened for writing.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -201,7 +201,7 @@ class BaseCollection(
         Returns:
             The newly created sparse NDArray, opened for writing.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -242,7 +242,7 @@ class BaseCollection(
 
         Returns: ``self``, to enable method chaining.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -250,7 +250,7 @@ class BaseCollection(
 class Collection(BaseCollection[_Elem]):
     """SOMA Collection imposing no semantics on the contained values.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     soma_type: Final = "SOMACollection"  # type: ignore[misc]

@@ -30,7 +30,7 @@ _RO_AUTO = options.ResultOrder.AUTO
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     """A multi-column table with a user-defined schema.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     __slots__ = ()
@@ -87,7 +87,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         Returns:
             The newly created dataframe, opened for writing.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -155,7 +155,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
           sequence indexing. For instance, ``slice(-10, 3)`` indicates the range
           from −10 to 3 on the given dimension.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -178,7 +178,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Returns: ``self``, to enable method chaining.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -189,7 +189,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def schema(self) -> pa.Schema:
         """The schema of the data in this dataframe.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -198,7 +198,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def index_column_names(self) -> Tuple[str, ...]:
         """The names of the index (dimension) columns.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -210,7 +210,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         Returns: a tuple of minimum and maximum values, inclusive,
             storable on each index column of the dataframe.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -252,7 +252,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Returns: The newly created array, opened for writing.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -263,7 +263,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     def shape(self) -> Tuple[int, ...]:
         """The maximum capacity (domain) of each dimension of this array.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -271,7 +271,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     def ndim(self) -> int:
         """The number of dimensions in this array.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return len(self.shape)
 
@@ -280,14 +280,14 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
     def schema(self) -> pa.Schema:
         """The schema of the data in this array.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
     is_sparse: ClassVar[Literal[True, False]]
     """True if the array is sparse, False if it is dense.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
 
@@ -295,7 +295,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
     """
     An N-dimensional array stored densely.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     __slots__ = ()
@@ -351,7 +351,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
           starting from and including the value.
         - Negative indexing is not supported.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -375,7 +375,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
             values: The values to be written to the subarray.  Must have
                 the same shape as ``coords``, and matching type to the array.
         Returns: ``self``, to enable method chaining.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -392,7 +392,7 @@ SparseArrowData = Union[
 class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     """A N-dimensional array stored sparsely.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     __slots__ = ()
@@ -456,7 +456,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
           starting from and including the value.
         - Negative indexing is not supported.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
 
     @abc.abstractmethod
@@ -482,7 +482,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Returns: ``self``, to enable method chaining.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -490,7 +490,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
     def nnz(self) -> int:
         """The number of values stored in the array, including explicit zeros.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -508,7 +508,7 @@ _T = TypeVar("_T")
 class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
     """SparseRead result iterator allowing users to flatten the iteration.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     __slots__ = ()
@@ -523,7 +523,7 @@ class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
         If some data has already been retrieved using ``next``, this will return
         the remaining data, excluding that which as already been returned.
 
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         raise NotImplementedError()
 
@@ -536,7 +536,7 @@ class SparseRead:
     exception (likely a ``TypeError``) containing more specific information
     about why the given format is not supported.
 
-    Lifecycle: experimental
+    Lifecycle: maturing
     """
 
     __slots__ = ()
