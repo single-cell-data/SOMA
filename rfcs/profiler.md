@@ -2,15 +2,15 @@
 
 # Goal
 
-Single Cell datasets and queries run across multiple platforms (Mac OSes, Linux, AWS VMs, etc.) and across multiple layers of software stack (python, C++ and R as of now!). Performance and memory monitoring for such applications is essential because:
+Single-cell datasets and queries run across multiple platforms (Mac OSes, Linux, AWS VMs, etc.) and across multiple layers of software stack (Python, C++ and R as of now!). Performance and memory monitoring for such applications is essential because all of the following are important:
 
-- Detection of regression as new features are added is very important
-- Performance comparison across different platforms and languages to spot memory and execution time hot spots for optimization is critical
-- Measuring the system scalability as the workload grows in size is very important
-- Profiling a _suite_ of various operations, which can be run as a unit, reproducibly.
+- Detection of regression as new features are added
+- Performance comparison across different platforms and languages to spot memory and execution time hot spots for optimization
+- Measuring the system scalability as the workload grows in size
+- Profiling a _suite_ of various operations, which can be run as a unit, reproducibly
 - ~~Having a tool for customers to monitor and debug their workloads~~
 
-The goal of this process is to provide a multi-layer profiler (consisting of a generic top profiler and multiple custom , language dependent, profilers) to help Single Cell detect potential regression caused by bugs or new releases ~~and also help the customers detect performance issues in their queries~~.
+The goal of this process is to provide a multi-layer profiler -- consisting of a generic top profiler and multiple custom , language-dependent profilers -- to help detect potential regression caused by bugs or new releases of TileDB-SOMA ~~and also help the customers detect performance issues in their queries~~.
 
 # Terminology & Concepts
 
@@ -26,8 +26,8 @@ The goal of this process is to provide a multi-layer profiler (consisting of a g
 - Our solution should be able to provide memory metrics for a full run.
 - Our solution should be able to be incorporated into a release pipeline to protect against / debug regressions in code.
 - Our solution must support querying and/or reporting per-process stats.
-- In addition to perf/mem metrics, our solution must capture env/context (such as host info) for the run as well. 
-**Advanced requirements:**
+- In addition to perf/mem metrics, our solution must capture env/context (such as host info) for the run as well.
+  **Advanced requirements:**
 
 - Our solution should be able to provide a breakdown of how time was spent in different components / queries
 - Our solution should be able to provide a breakdown of how memory was used in different components / queries
@@ -36,7 +36,7 @@ The goal of this process is to provide a multi-layer profiler (consisting of a g
 
 ## Future Work
 
-This work is open ended as there is a chance to add more and more custom profilers to the system. Also right now, we plan to use flamegraph to connect custom profilers and the generic main profiler. This can also be extended by using different intermediate formats or objects.
+This work is open-ended as there is a chance to add more and more custom profilers to the system. Also right now, we plan to use flamegraph to connect custom profilers and the generic main profiler. This can also be extended by using different intermediate formats or objects.
 
 ## Open Sourcing Strategy
 
@@ -48,13 +48,13 @@ Given the complexity of the system and layers of software involved, we are takin
 
 ## Generic Profiler
 
-To address the mentioned basic requirements, at the top level, we use a generic and simple profiler which only tracks end-to-end execution time and memory metrics (peak memory, page faults, etc.) of the executed queries. 
+To address the mentioned basic requirements, at the top level, we use a generic and simple profiler which only tracks end-to-end execution time and memory metrics (peak memory, page faults, etc.) of the executed queries.
 
-This profiler uses a commonly available tool such as **_time_** to keep track of this high level information across days and releases in a small database. 
-The early version can be using just the filesystem where key will be process (folder) the date/time (file in that folder) and value will be the file content. 
-And we can use GitHub to make it shared and versioned. 
+This profiler uses a commonly available tool such as **_time_** to keep track of this high level information across days and releases in a small database.
+The early version can be using just the filesystem where key will be process (folder) the date/time (file in that folder) and value will be the file content.
+And we can use GitHub to make it shared and versioned.
 
-In the future, we can use [SqliteDict](https://pythonhosted.org/sqlite_object/sqlite_dict.html) K/V database, TileDB or DynamoDB as other alternatives) across different platforms. 
+In the future, we can use [SqliteDict](https://pythonhosted.org/sqlite_object/sqlite_dict.html) K/V database, TileDB or DynamoDB as other alternatives) across different platforms.
 
 As the profiler runs the application process, a new record will be generated and stored. The record associated with each run has the following schema:
 
@@ -90,9 +90,9 @@ If a more detailed breakdown of the software stack is needed (for example if we 
 
 ### Custom Profiler API
 
-We studied a good number of python profilers including [cProfile](https://docs.python.org/3/library/profile.html), [line_profiler](https://pypi.org/project/line-profiler/), [tracemalloc](https://docs.python.org/3/library/tracemalloc.html), etc. While each of these profilers provides great information, the format and output of them is different and supporting them for languages across different systems can be challenging. Instead, we decided to have custom profilers that use a consistent format for their outputs. This provides a common and useful interface into the generic profiler.
+We studied a good number of Python profilers including [cProfile](https://docs.python.org/3/library/profile.html), [line_profiler](https://pypi.org/project/line-profiler/), [tracemalloc](https://docs.python.org/3/library/tracemalloc.html), etc. While each of these profilers provides great information, the format and output of them is different and supporting them for languages across different systems can be challenging. Instead, we decided to have custom profilers that use a consistent format for their outputs. This provides a common and useful interface into the generic profiler.
 
-We decided to use [flamegraph](https://github.com/brendangregg/FlameGraph) as this common interface. The **_framegraphs_** are a very popular interactive way of tracking performance metrics across software components. Therefore, the generic profiler will be given a set of custom profilers (and their arguments) to run and simply expect each profiler to generate a new **_flamegraph_** of the program software stack in a particular location and it adds the generated files to the Database as well. Given the overhead of tracebased profilers, custom profilers are always going to be optional. For example upon detecting a regression in the generic profiler DB, we can rerun the application with the custom profiler to get the **_flamegraphs_** of the application. For R, we can use [xProf](https://github.com/atheriel/xrprof) and for python, we can use [pyFlame](https://uwekorn.com/2018/10/05/pyflame.html) for this purpose.
+We decided to use [flamegraph](https://github.com/brendangregg/FlameGraph) as this common interface. The **_flamegraphs_** are a very popular interactive way of tracking performance metrics across software components. Therefore, the generic profiler will be given a set of custom profilers (and their arguments) to run and simply expect each profiler to generate a new **_flamegraph_** of the program software stack in a particular location and it adds the generated files to the database as well. Given the overhead of trace-based profilers, custom profilers are always going to be optional. For example upon detecting a regression in the generic profiler DB, we can rerun the application with the custom profiler to get the **_flamegraphs_** of the application. For R, we can use [xProf](https://github.com/atheriel/xrprof) and for python, we can use [pyFlame](https://uwekorn.com/2018/10/05/pyflame.html) for this purpose.
 
 ![alt_text](images/flamegraph.png "image_tooltip")
 
@@ -104,7 +104,7 @@ We decided to use [flamegraph](https://github.com/brendangregg/FlameGraph) as th
 
 ### Drawbacks
 
-One drawback here is limiting custom profilers’ API to flamegraph. As mentioned earlier, there are many profilers with different output formats. One possible solution to this problem is to allow the byte array associated with each custom profiler in the DB schema to be open to different interpretations which while more scalable is a less secure solution.
+One drawback here is limiting custom profilers’ API to flamegraph. As mentioned earlier, there are many profilers with different output formats. One possible solution to this problem is to allow the byte array associated with each custom profiler in the DB schema to be open to different interpretations which, while more scalable, is a less secure solution.
 
 ## Architecture
 
