@@ -24,8 +24,9 @@ The goal of this process is to provide a multi-layer profiler (consisting of a g
 
 - Our solution should be able to provide timing metrics for a full run.
 - Our solution should be able to provide memory metrics for a full run.
-- Our solution should be able to be incorporated into a release pipeline to protect against / debug regressions in code
-
+- Our solution should be able to be incorporated into a release pipeline to protect against / debug regressions in code.
+- Our solution must support querying and/or reporting per-process stats.
+- In addition to perf/mem metrics, our solution must capture env/context (such as host info) for the run as well. 
 **Advanced requirements:**
 
 - Our solution should be able to provide a breakdown of how time was spent in different components / queries
@@ -47,15 +48,23 @@ Given the complexity of the system and layers of software involved, we are takin
 
 ## Generic Profiler
 
-To address the mentioned basic requirements, at the top level, we use a generic and simple profiler which only tracks end-to-end execution time and memory metrics (peak memory, page faults, etc.) of the executed queries. This profiler uses a commonly available tool such as **_time_** to keep track of this high level information across days and releases in a small database (the early version can be using just the filesystem (key will be the filename and value will be the file content) and for then next phase, we can use [SqliteDict](https://pythonhosted.org/sqlite_object/sqlite_dict.html) K/V database, TileDB or DynamoDB as other alternatives) across different platforms. As the profiler runs the application process, a new record will be generated and stored. The record associated with each run has the following schema:
+To address the mentioned basic requirements, at the top level, we use a generic and simple profiler which only tracks end-to-end execution time and memory metrics (peak memory, page faults, etc.) of the executed queries. 
+
+This profiler uses a commonly available tool such as **_time_** to keep track of this high level information across days and releases in a small database. 
+The early version can be using just the filesystem where key will be process (folder) the date/time (file in that folder) and value will be the file content. 
+And we can use GitHub to make it shared and versioned. 
+
+In the future, we can use [SqliteDict](https://pythonhosted.org/sqlite_object/sqlite_dict.html) K/V database, TileDB or DynamoDB as other alternatives) across different platforms. 
+
+As the profiler runs the application process, a new record will be generated and stored. The record associated with each run has the following schema:
 
 - **Key:**
+  - _Process Information (application and its arguments)_
   - _Date_
   - _Time_
-  - _Process Information (application and its arguments)_
 - **Value:**
   - _Host information_
-  - _User Defined MD_
+  - _User Defined data_
     - _Libraries version_
     - _Git commit SHA1_
     - _Description_
@@ -66,7 +75,7 @@ To address the mentioned basic requirements, at the top level, we use a generic 
   - _Custom Profiler 1 output_
   - _Custom Profiler 2 output_
 
-As can be seen, the key is a combination of **_Date_**, **_Time_** and **_Process Info_**. The idea is to make it easy to query across time for a given process. The value consists of executed process detail info, library versions (releases and PR perhaps too). Additionally, the user can add platform information (like Single Cell library versions) and git **_SHA1_** and a _description_ for the benchmark. **_Tag_** is a value linking multiple benchmarks (a suite of runs). Finally, the profile information also includes time and memory metrics. Additionally, it includes the output info of custom profilers. Custom profilers will be discussed in the next section.
+As can be seen, the key is a combination of **_Date_**, **_Time_** and **_Process Info_**. The idea is to make it easy to query across time for a given process. The value consists of executed process detail info, library versions (releases and PR perhaps too). Additionally, the user can add platform information (like SOMA implementations) and git **_SHA1_** and a _description_ for the benchmark. **_Tag_** is a value linking multiple benchmarks (a suite of runs). Finally, the profile information also includes time and memory metrics. Additionally, it includes the output info of custom profilers. Custom profilers will be discussed in the next section.
 
 There are multiple benefits to have this top-level profiler:
 
@@ -89,7 +98,7 @@ We decided to use [flamegraph](https://github.com/brendangregg/FlameGraph) as th
 
 ### Benefits
 
-- A major benefit of this design is that the profilers (both generic and custom ones) are not necessarily targeted toward single cell applications and can be used for any services across CZI.
+- A major benefit of this design is that the profilers (both generic and custom ones) are not necessarily targeted toward single cell applications and can be used for any services.
 - Another benefit of this design is the fact that the generic profiler can be implemented and deployed in a reasonable amount of time opening the door for low-overhead perf/mem monitoring.
 - The third benefit of the design is that it can be easily extended by adding more custom profilers for different languages and software stack.
 
@@ -109,11 +118,12 @@ As shown in the figure, the following steps take place as a part of the process 
 
 ## Metrics & Alerts
 
-A metric for performance and memory regression should be designed and implemented. The use of custom profilers can be conditional on detection of regression. The idea being once a regression is detected, we rerun the process with custom profilers to avoid slowing down normal execution.
+A metric for performance and memory regression should be designed and implemented which supports profiling processes and also querying of profile stats.
+The use of custom profilers can be conditional on detection of regression. This tool supports querying its data for investigating regressions or hotspots.
 
 ## Security & Data Privacy
 
-The central DB can pose a risk if that gets compromised as it reveals the history of all of the Single Cell Dataset runs.
+The central DB can pose a risk if that gets compromised as it reveals the history of all the profiling runs.
 
 ## Estimated Cost
 
@@ -126,14 +136,6 @@ This design does not require adding new machines (nodes). It only relies on inst
 - We need to make sure all nodes across our controlled environment for profilers have **_time_** utility. Also need to figure out the right flags for them to extract the memory in addition to performance metrics.
 - A way to have a central DB (Filesystem only or **_SQLiteDict_**) across the environments (EC2 and developer machines).
 - As more custom profilers are added to the system, they must be tested and added to the controlled environment gradually.
-
-## Deployment Steps
-
-- **Internal performance tracking**
-  - We start the generic profiler on a small controlled environment (like github tests and regular performance runs before the releases) a shared DB
-- **~~External performance tracking~~**
-  - ~~And after test the profiler is fully tested, we will share the profiler with the customers so they can track their potential performance issues~~
-- ~~Custom profilers go through the same internal-external cycle~~
 
 # References
 
