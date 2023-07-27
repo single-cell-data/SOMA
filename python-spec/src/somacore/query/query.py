@@ -23,8 +23,11 @@ from typing_extensions import Literal, Protocol, Self, TypedDict, assert_never
 
 from .. import data
 from .. import measurement
+from .. import options
 from . import _fast_csr
 from . import axis
+
+_RO_AUTO = options.ResultOrder.AUTO
 
 
 class AxisColumnNames(TypedDict, total=False):
@@ -97,7 +100,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
         self._threadpool_: Optional[futures.ThreadPoolExecutor] = None
 
     def obs(
-        self, *, column_names: Optional[Sequence[str]] = None
+        self,
+        *,
+        column_names: Optional[Sequence[str]] = None,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrderStr = _RO_AUTO,
+        platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.ReadIter[pa.Table]:
         """Returns ``obs`` as an `Arrow table
         <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
@@ -110,10 +119,20 @@ class ExperimentAxisQuery(Generic[_Exp]):
             obs_query.coords,
             value_filter=obs_query.value_filter,
             column_names=column_names,
+            batch_size=batch_size,
+            partitions=partitions,
+            result_order=result_order,
+            platform_config=platform_config,
         )
 
     def var(
-        self, *, column_names: Optional[Sequence[str]] = None
+        self,
+        *,
+        column_names: Optional[Sequence[str]] = None,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrderStr = _RO_AUTO,
+        platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.ReadIter[pa.Table]:
         """Returns ``var`` as an `Arrow table
         <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
@@ -126,6 +145,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
             var_query.coords,
             value_filter=var_query.value_filter,
             column_names=column_names,
+            batch_size=batch_size,
+            partitions=partitions,
+            result_order=result_order,
+            platform_config=platform_config,
         )
 
     def obs_joinids(self) -> pa.Array:
@@ -166,11 +189,25 @@ class ExperimentAxisQuery(Generic[_Exp]):
         """
         return self._indexer
 
-    def X(self, layer_name: str) -> data.SparseRead:
+    def X(
+        self,
+        layer_name: str,
+        *,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrderStr = _RO_AUTO,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> data.SparseRead:
         """Returns an ``X`` layer as a sparse read.
 
         Args:
             layer_name: The X layer name to return.
+            batch_size: The size of batches that should be returned from a read.
+                See :class:`options.BatchSize` for details.
+            partitions: Specifies that this is part of a partitioned read,
+                and which partition to include, if present.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
 
         Lifecycle: maturing
         """
@@ -182,7 +219,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
             raise TypeError("X layers may only be sparse arrays")
 
         self._joinids.preload(self._threadpool)
-        return x_layer.read((self._joinids.obs, self._joinids.var))
+        return x_layer.read(
+            (self._joinids.obs, self._joinids.var),
+            batch_size=batch_size,
+            partitions=partitions,
+            result_order=result_order,
+            platform_config=platform_config,
+        )
 
     def obsp(self, layer: str) -> data.SparseRead:
         """Returns an ``obsp`` layer as a sparse read.
