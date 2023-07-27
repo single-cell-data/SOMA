@@ -192,6 +192,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def X(
         self,
         layer_name: str,
+        *,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
