@@ -24,6 +24,9 @@ from .options import IOfN
 from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
+from .query import AxisQueryResult
+from .query import CSRAccumulator
+from .query import EagerIterator
 from .query import ExperimentAxisQuery
 
 try:
@@ -54,4 +57,7 @@ __all__ = (
     "AxisColumnNames",
     "AxisQuery",
     "ExperimentAxisQuery",
+    "CSRAccumulator",
+    "EagerIterator",
+    "AxisQueryResult",
 )
