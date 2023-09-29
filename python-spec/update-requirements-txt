@@ -10,7 +10,7 @@ TEMPDIR="$(mktemp -d)"
 trap "trash $TEMPDIR" EXIT
 
 # The version of Python we want to run lints under.
-LINTVER=3.7
+LINTVER=3.8
 
 for PYVER in 3.7 3.8 3.9 3.10; do
   CONDIR="$TEMPDIR/py-$PYVER"

@@ -14,7 +14,7 @@ _CT = TypeVar("_CT", bound="BaseCollection")
 """Any implementation of a Collection."""
 
 
-class BaseCollection(
+class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
     base.SOMAObject, MutableMapping[str, _Elem], metaclass=abc.ABCMeta
 ):
     """A generic string-keyed collection of :class:`base.SOMAObject`s.
