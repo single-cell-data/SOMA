@@ -103,7 +103,9 @@ class BaseCollection(collection.BaseCollection[_Elem]):
         return len(self._entries)
 
 
-class Collection(BaseCollection[_Elem], collection.Collection):
+class Collection(  # type: ignore[misc]  # __eq__ false positive
+    BaseCollection[_Elem], collection.Collection
+):
     """An in-memory Collection imposing no semantics on the contents."""
 
     __slots__ = ()
@@ -119,13 +121,15 @@ _BasicAbstractMeasurement = measurement.Measurement[
 """The loosest possible constraint of the abstract Measurement type."""
 
 
-class Measurement(BaseCollection[base.SOMAObject], _BasicAbstractMeasurement):
+class Measurement(  # type: ignore[misc]  # __eq__ false positive
+    BaseCollection[base.SOMAObject], _BasicAbstractMeasurement
+):
     """An in-memory Collection with Measurement semantics."""
 
     __slots__ = ()
 
 
-class Experiment(
+class Experiment(  # type: ignore[misc]  # __eq__ false positive
     BaseCollection[base.SOMAObject],
     experiment.Experiment[
         data.DataFrame,

@@ -4,7 +4,7 @@ repos:
   # Start with the basic pre-commit hooks
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.2.0
+    rev: v4.4.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -13,8 +13,8 @@ repos:
 
   # Then others in alphabetical order:
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.265
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.0.291
     hooks:
       - id: ruff
 
@@ -23,19 +23,19 @@ repos:
     # the entire dependency list here we only install `attrs`. It will catch
     # a useful subset of errors but does not replace a full mypy run
     # (either locally or in CI).
-    rev: v1.0.0
+    rev: v1.5.1
     hooks:
       - id: mypy
         additional_dependencies: [attrs]
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v2.7.1
+    rev: v3.0.3
     hooks:
       - id: prettier
         # For now we let this act on all files; if need be we can restrict it
         # with `types_or` in the future.
 
   - repo: https://github.com/psf/black
-    rev: "22.12.0"
+    rev: "23.9.1"
     hooks:
       - id: black
