@@ -35,6 +35,18 @@ class Slice(Protocol[_T_co]):
     ``start``/``stop``/``step`` and would match, but are *not* slices.
     """
 
+    # We use @property here to indicate that these fields are read-only;
+    # just saying::
+    #
+    #     start: Optional[_T_co]
+    #
+    # would imply that doing::
+    #
+    #     some_slice.start = a_new_value
+    #
+    # was valid, thus making mypy whine (correctly!) that _T_co should be
+    # invariant rather than covariant.
+
     @property
     def start(self) -> Optional[_T_co]:
         ...
