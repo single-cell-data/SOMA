@@ -227,6 +227,20 @@ class ExperimentAxisQuery(Generic[_Exp]):
             platform_config=platform_config,
         )
 
+    def obsm(self, layer: str) -> data.SparseRead:
+        """Returns an ``obsm`` layer as a sparse read.
+
+        Lifecycle: maturing
+        """
+        return self._axism_inner(_Axis.OBS, layer)
+
+    def varm(self, layer: str) -> data.SparseRead:
+        """Returns an ``varm`` layer as a sparse read.
+
+        Lifecycle: maturing
+        """
+        return self._axism_inner(_Axis.VAR, layer)
+
     def obsp(self, layer: str) -> data.SparseRead:
         """Returns an ``obsp`` layer as a sparse read.
 
@@ -414,6 +428,25 @@ class ExperimentAxisQuery(Generic[_Exp]):
         if added_soma_joinid_to_columns:
             arrow_table = arrow_table.drop(["soma_joinid"])
         return arrow_table
+
+    def _axism_inner(
+        self,
+        axis: "_Axis",
+        layer: str,
+    ) -> data.SparseRead:
+        key = axis.value + "m"
+
+        if key not in self._ms:
+            raise ValueError(f"Measurement does not contain {key} data")
+
+        axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
+        if not (layer and layer in axism):
+            raise ValueError(f"Must specify '{key}' layer")
+        if not isinstance(axism[layer], data.SparseNDArray):
+            raise TypeError(f"Unexpected SOMA type stored in '{key}' layer")
+
+        joinids = getattr(self._joinids, axis.value)
+        return axism[layer].read((joinids, joinids))
 
     def _axisp_inner(
         self,
