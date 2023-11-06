@@ -240,6 +240,18 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: maturing
         """
         return self._axisp_inner(_Axis.VAR, layer)
+    
+    def obsm(self, layer: str) -> data.SparseRead:
+        """Returns an ``obsm`` layer as a sparse read.
+        Lifecycle: maturing
+        """
+        return self._axism_inner(_Axis.OBS, layer)
+
+    def varm(self, layer: str) -> data.SparseRead:
+        """Returns an ``varm`` layer as a sparse read.
+        Lifecycle: maturing
+        """
+        return self._axism_inner(_Axis.VAR, layer)
 
     def to_anndata(
         self,
@@ -247,6 +259,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         *,
         column_names: Optional[AxisColumnNames] = None,
         X_layers: Sequence[str] = (),
+        obsm_keys: Sequence[str] = [],
     ) -> anndata.AnnData:
         """
         Executes the query and return result as an ``AnnData`` in-memory object.
@@ -264,6 +277,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
+            obsm_keys=obsm_keys,
         ).to_anndata()
 
     # Context management
@@ -305,6 +319,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         *,
         column_names: AxisColumnNames,
         X_layers: Sequence[str],
+        obsm_keys: Sequence[str] = [], # TODO: Add obsp_keys, varm_keys, varp_keys
     ) -> "_AxisQueryResult":
         """Reads the entire query result into in-memory Arrow tables.
 
@@ -341,8 +356,18 @@ class ExperimentAxisQuery(Generic[_Exp]):
             for _xname in all_x_arrays
         }
 
+        # TODO: do it in parallel?
+        obsm = dict()
+        for key in obsm_keys:
+            obsm[key] = self._axism_inner_csr(_Axis.OBS, key)
+            # _obsm = self.obsm(key)
+            # obsm[key] = _obsm
+            # _, n_cols = _obsm.shape
+            # col_idx = pa.array(range(n_cols), type=pa.uint32())
+            # obsm[key] = _fast_csr.read_scipy_csr(_obsm, self.obs_joinids(), col_idx)
+
         x = x_matrices.pop(X_name)
-        return _AxisQueryResult(obs=obs_table, var=var_table, X=x, X_layers=x_matrices)
+        return _AxisQueryResult(obs=obs_table, var=var_table, X=x, obsm=obsm, X_layers=x_matrices)
 
     def _read_both_axes(
         self,
@@ -433,6 +458,47 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         joinids = getattr(self._joinids, axis.value)
         return axisp[layer].read((joinids, joinids))
+    
+    def _axism_inner(
+        self,
+        axis: "_Axis",
+        layer: str,
+    ) -> data.SparseRead:
+        key = axis.value + "m"
+
+        if key not in self._ms:
+            raise ValueError(f"Measurement does not contain {key} data")
+
+        axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
+        if not (layer and layer in axism):
+            raise ValueError(f"Must specify '{key}' layer")
+        
+        n_row, n_col = axism[layer].shape
+        col_joinids = pa.array(range(n_col))
+
+        joinids = getattr(self._joinids, axis.value)
+        return axism[layer].read((joinids, col_joinids))
+    
+    def _axism_inner_csr(
+        self,
+        axis: "_Axis",
+        layer: str,
+    ) -> data.SparseRead:
+        key = axis.value + "m"
+
+        if key not in self._ms:
+            raise ValueError(f"Measurement does not contain {key} data")
+
+        axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
+        if not (layer and layer in axism):
+            raise ValueError(f"Must specify '{key}' layer")
+        
+        _, n_col = axism[layer].shape
+        col_idx = pa.array(range(n_col), type=pa.int64())
+
+        joinids = getattr(self._joinids, axis.value)
+
+        return _fast_csr.read_scipy_csr(axism[layer], joinids, col_idx)
 
     @property
     def _obs_df(self) -> data.DataFrame:
@@ -472,6 +538,14 @@ class _AxisQueryResult:
     """Experiment.ms[...].X[...] query slice, as an SciPy sparse.csr_matrix """
     X_layers: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
     """Any additional X layers requested, as SciPy sparse.csr_matrix(s)"""
+    obsm: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
+    """Experiment.obsm query slice, as SciPy sparse.csr_matrix(s)"""
+    obsp: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
+    """Experiment.obsp query slice, as SciPy sparse.csr_matrix(s)"""
+    varm: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
+    """Experiment.varm query slice, as SciPy sparse.csr_matrix(s)"""
+    varp: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
+    """Experiment.varp query slice, as SciPy sparse.csr_matrix(s)"""
 
     def to_anndata(self) -> anndata.AnnData:
         obs = self.obs.to_pandas()
@@ -481,7 +555,14 @@ class _AxisQueryResult:
         var.index = var.index.astype(str)
 
         return anndata.AnnData(
-            X=self.X, obs=obs, var=var, layers=(self.X_layers or None)
+            X=self.X, 
+            obs=obs, 
+            var=var, 
+            obsm=(self.obsm or None), 
+            obsp=(self.obsp or None), 
+            varm=(self.varm or None), 
+            varp=(self.varp or None), 
+            layers=(self.X_layers or None)
         )
 
 
