@@ -360,11 +360,6 @@ class ExperimentAxisQuery(Generic[_Exp]):
         obsm = dict()
         for key in obsm_keys:
             obsm[key] = self._axism_inner_csr(_Axis.OBS, key)
-            # _obsm = self.obsm(key)
-            # obsm[key] = _obsm
-            # _, n_cols = _obsm.shape
-            # col_idx = pa.array(range(n_cols), type=pa.uint32())
-            # obsm[key] = _fast_csr.read_scipy_csr(_obsm, self.obs_joinids(), col_idx)
 
         x = x_matrices.pop(X_name)
         return _AxisQueryResult(obs=obs_table, var=var_table, X=x, obsm=obsm, X_layers=x_matrices)
