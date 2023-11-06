@@ -240,7 +240,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: maturing
         """
         return self._axisp_inner(_Axis.VAR, layer)
-    
+
     def obsm(self, layer: str) -> data.SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
         Lifecycle: maturing
@@ -319,7 +319,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         *,
         column_names: AxisColumnNames,
         X_layers: Sequence[str],
-        obsm_keys: Sequence[str] = [], # TODO: Add obsp_keys, varm_keys, varp_keys
+        obsm_keys: Sequence[str] = [],  # TODO: Add obsp_keys, varm_keys, varp_keys
     ) -> "_AxisQueryResult":
         """Reads the entire query result into in-memory Arrow tables.
 
@@ -362,7 +362,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
             obsm[key] = self._axism_inner_csr(_Axis.OBS, key)
 
         x = x_matrices.pop(X_name)
-        return _AxisQueryResult(obs=obs_table, var=var_table, X=x, obsm=obsm, X_layers=x_matrices)
+        return _AxisQueryResult(
+            obs=obs_table, var=var_table, X=x, obsm=obsm, X_layers=x_matrices
+        )
 
     def _read_both_axes(
         self,
@@ -453,7 +455,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         joinids = getattr(self._joinids, axis.value)
         return axisp[layer].read((joinids, joinids))
-    
+
     def _axism_inner(
         self,
         axis: "_Axis",
@@ -467,13 +469,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
         if not (layer and layer in axism):
             raise ValueError(f"Must specify '{key}' layer")
-        
+
         n_row, n_col = axism[layer].shape
         col_joinids = pa.array(range(n_col))
 
         joinids = getattr(self._joinids, axis.value)
         return axism[layer].read((joinids, col_joinids))
-    
+
     def _axism_inner_csr(
         self,
         axis: "_Axis",
@@ -487,7 +489,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
         if not (layer and layer in axism):
             raise ValueError(f"Must specify '{key}' layer")
-        
+
         _, n_col = axism[layer].shape
         col_idx = pa.array(range(n_col), type=pa.int64())
 
@@ -550,14 +552,14 @@ class _AxisQueryResult:
         var.index = var.index.astype(str)
 
         return anndata.AnnData(
-            X=self.X, 
-            obs=obs, 
-            var=var, 
-            obsm=(self.obsm or None), 
-            obsp=(self.obsp or None), 
-            varm=(self.varm or None), 
-            varp=(self.varp or None), 
-            layers=(self.X_layers or None)
+            X=self.X,
+            obs=obs,
+            var=var,
+            obsm=(self.obsm or None),
+            obsp=(self.obsp or None),
+            varm=(self.varm or None),
+            varp=(self.varp or None),
+            layers=(self.X_layers or None),
         )
 
 
