@@ -21,7 +21,7 @@ pandas==2.0.3
 pathspec==0.11.2
 platformdirs==3.10.0
 pre-commit==3.4.0
-pyarrow==13.0.0
+pyarrow>=14.0.1
 python-dateutil==2.8.2
 pytz==2023.3.post1
 PyYAML==6.0.1
