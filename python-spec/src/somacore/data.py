@@ -19,9 +19,6 @@ from typing import (
 )
 
 import pyarrow as pa
-
-# ruff: noqa
-import pyarrow_hotfix
 from typing_extensions import Final, Literal, Self
 
 from . import base

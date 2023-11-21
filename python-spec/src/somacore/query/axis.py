@@ -4,9 +4,6 @@ import attrs
 import numpy as np
 import pyarrow as pa
 
-# ruff: noqa
-import pyarrow_hotfix
-
 from .. import options
 from .. import types
 
