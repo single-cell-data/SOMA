@@ -1,7 +1,11 @@
 import abc
 from typing import Any, MutableMapping, Optional, Sequence, Type, TypeVar, overload
 
+# ruff: noqa
 import pyarrow as pa
+
+# ruff: noqa
+import pyarrow_hotfix
 from typing_extensions import Final, Self
 
 from . import base

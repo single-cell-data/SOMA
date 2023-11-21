@@ -18,6 +18,9 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
+
+# ruff: noqa
+import pyarrow_hotfix
 from scipy import sparse
 from typing_extensions import Literal, Protocol, Self, TypedDict, assert_never
 
