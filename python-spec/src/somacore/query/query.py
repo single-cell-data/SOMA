@@ -517,7 +517,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         self,
         axis: "_Axis",
         layer: str,
-    ) -> np.ndarray[np.float32]:
+    ) -> np.ndarray:
         key = axis.value + "p"
 
         if key not in self._ms:
@@ -543,7 +543,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         self,
         axis: "_Axis",
         layer: str,
-    ) -> np.ndarray[np.float32]:
+    ) -> np.ndarray:
         key = axis.value + "m"
 
         if key not in self._ms:
