@@ -606,13 +606,13 @@ class _AxisQueryResult:
     """Experiment.ms[...].X[...] query slice, as an SciPy sparse.csr_matrix """
     X_layers: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
     """Any additional X layers requested, as SciPy sparse.csr_matrix(s)"""
-    obsm: Dict[str, np.ndarray[np.float32]] = attrs.field(factory=dict)
+    obsm: Dict[str, np.ndarray] = attrs.field(factory=dict)
     """Experiment.obsm query slice, as a numpy ndarray"""
-    obsp: Dict[str, np.ndarray[np.float32]] = attrs.field(factory=dict)
+    obsp: Dict[str, np.ndarray] = attrs.field(factory=dict)
     """Experiment.obsp query slice, as a numpy ndarray"""
-    varm: Dict[str, np.ndarray[np.float32]] = attrs.field(factory=dict)
+    varm: Dict[str, np.ndarray] = attrs.field(factory=dict)
     """Experiment.varm query slice, as a numpy ndarray"""
-    varp: Dict[str, np.ndarray[np.float32]] = attrs.field(factory=dict)
+    varp: Dict[str, np.ndarray] = attrs.field(factory=dict)
     """Experiment.varp query slice, as a numpy ndarray"""
 
     def to_anndata(self) -> anndata.AnnData:
