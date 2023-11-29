@@ -273,6 +273,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
+            obsm_keys:
+                Additional obsm keys to read and return in the obsm slot.
+            obsp_keys:
+                Additional obsp keys to read and return in the obsp slot.
+            varm_keys:
+                Additional varm keys to read and return in the varm slot.
+            varp_keys:
+                Additional varp keys to read and return in the varp slot.
 
         Lifecycle: maturing
         """
