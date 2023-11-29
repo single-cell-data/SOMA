@@ -342,13 +342,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
-            obsm_keys: 
+            obsm_keys:
                 Additional obsm keys to read and return in the obsm slot.
-            obsp_keys: 
+            obsp_keys:
                 Additional obsp keys to read and return in the obsp slot.
-            varm_keys: 
+            varm_keys:
                 Additional varm keys to read and return in the varm slot.
-            varp_keys: 
+            varp_keys:
                 Additional varp keys to read and return in the varp slot.
         """
         x_collection = self._ms.X
@@ -389,18 +389,18 @@ class ExperimentAxisQuery(Generic[_Exp]):
         varp = dict()
         for key in varp_keys:
             varp[key] = self._axisp_inner_ndarray(_Axis.VAR, key)
-        
+
         x = x_matrices.pop(X_name)
 
         return _AxisQueryResult(
-            obs=obs_table, 
-            var=var_table, 
-            X=x, 
+            obs=obs_table,
+            var=var_table,
+            X=x,
             obsm=obsm,
             obsp=obsp,
             varm=varm,
             varp=varp,
-            X_layers=x_matrices
+            X_layers=x_matrices,
         )
 
     def _read_both_axes(
@@ -512,7 +512,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         joinids = getattr(self._joinids, axis.value)
         return axism[layer].read((joinids, col_joinids))
-    
+
     def _axisp_inner_ndarray(
         self,
         axis: "_Axis",
@@ -522,7 +522,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         if key not in self._ms:
             raise ValueError(f"Measurement does not contain {key} data")
-        
+
         is_obs = axis is _Axis.OBS
 
         axisp = self._ms.obsp if is_obs else self._ms.varp
@@ -548,7 +548,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         if key not in self._ms:
             raise ValueError(f"Measurement does not contain {key} data")
-        
+
         is_obs = axis is _Axis.OBS
 
         axism = self._ms.obsm if is_obs else self._ms.varm
