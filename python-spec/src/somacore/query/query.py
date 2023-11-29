@@ -531,11 +531,11 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         joinids = getattr(self._joinids, axis.value)
 
-        n_row = n_col = len(self._joinids.obs)
+        n_row = n_col = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
         T = axisp[layer].read((joinids, joinids)).tables().concat()
         idx = (self.indexer.by_obs if is_obs else self.indexer.by_var)(T["soma_dim_0"])
-        Z = np.empty(n_row * n_col)
+        Z = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(Z, idx * n_col + T["soma_dim_1"], T["soma_data"])
         return Z.reshape(n_row, n_col)
 
@@ -560,11 +560,11 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         joinids = getattr(self._joinids, axis.value)
 
-        n_row = len(self._joinids.obs)
+        n_row = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
         T = axism[layer].read((joinids, col_idx)).tables().concat()
         idx = (self.indexer.by_obs if is_obs else self.indexer.by_var)(T["soma_dim_0"])
-        Z = np.empty(n_row * n_col)
+        Z = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(Z, idx * n_col + T["soma_dim_1"], T["soma_data"])
         return Z.reshape(n_row, n_col)
 
