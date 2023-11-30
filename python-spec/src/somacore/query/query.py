@@ -524,7 +524,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         if key not in self._ms:
             raise ValueError(f"Measurement does not contain {key} data")
 
-        axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
+        axism = axis.getitem_from(self._ms, suf="m")
         if not (layer and layer in axism):
             raise ValueError(f"Must specify '{key}' layer")
 
@@ -537,9 +537,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def _convert_to_ndarray(
         self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int
     ) -> np.ndarray:
-        idx = (self.indexer.by_obs if (axis is _Axis.OBS) else self.indexer.by_var)(
-            table["soma_dim_0"]
-        )
+        indexer: pd.Index = axis.getattr_from(self.indexer, pre="by_")
+        idx = indexer(table["soma_dim_0"])
         Z = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(Z, idx * n_col + table["soma_dim_1"], table["soma_data"])
         return Z.reshape(n_row, n_col)
@@ -549,8 +548,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        is_obs = axis is _Axis.OBS
-        n_row = n_col = len(self._joinids.obs) if is_obs else len(self._joinids.var)
+        n_row = n_col = len(axis.getattr_from(self._joinids))
 
         table = self._axisp_inner(axis, layer).tables().concat()
         return self._convert_to_ndarray(axis, table, n_row, n_col)
@@ -560,12 +558,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        is_obs = axis is _Axis.OBS
-
-        axism = self._ms.obsm if is_obs else self._ms.varm
+        axism = axis.getitem_from(self._ms, suf="m")
 
         _, n_col = axism[layer].shape
-        n_row = len(self._joinids.obs) if is_obs else len(self._joinids.var)
+        n_row = len(axis.getattr_from(self._joinids))
 
         table = self._axism_inner(axis, layer).tables().concat()
         return self._convert_to_ndarray(axis, table, n_row, n_col)
