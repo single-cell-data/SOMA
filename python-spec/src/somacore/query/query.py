@@ -243,13 +243,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     def obsm(self, layer: str) -> data.SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
-        Lifecycle: maturing
+        Lifecycle: experimental
         """
         return self._axism_inner(_Axis.OBS, layer)
 
     def varm(self, layer: str) -> data.SparseRead:
         """Returns an ``varm`` layer as a sparse read.
-        Lifecycle: maturing
+        Lifecycle: experimental
         """
         return self._axism_inner(_Axis.VAR, layer)
 
@@ -514,67 +514,45 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
         if not (layer and layer in axism):
             raise ValueError(f"Must specify '{key}' layer")
-
-        n_row, n_col = axism[layer].shape
-        col_joinids = pa.array(range(n_col))
+        
+        if not isinstance(axism[layer], data.SparseNDArray):
+            raise TypeError(f"Unexpected SOMA type stored in '{key}' layer")
 
         joinids = getattr(self._joinids, axis.value)
-        return axism[layer].read((joinids, col_joinids))
+        return axism[layer].read((joinids, slice(None)))
+    
+    def _convert_to_ndarray(self, is_obs: bool, T: pa.Table, n_row: int, n_col: int) -> np.ndarray:
+        idx = (self.indexer.by_obs if is_obs else self.indexer.by_var)(T["soma_dim_0"])
+        Z = np.zeros(n_row * n_col, dtype=np.float32)
+        np.put(Z, idx * n_col + T["soma_dim_1"], T["soma_data"])
+        return Z.reshape(n_row, n_col)
 
     def _axisp_inner_ndarray(
         self,
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        key = axis.value + "p"
-
-        if key not in self._ms:
-            raise ValueError(f"Measurement does not contain {key} data")
-
         is_obs = axis is _Axis.OBS
-
-        axisp = self._ms.obsp if is_obs else self._ms.varp
-        if not (layer and layer in axisp):
-            raise ValueError(f"Must specify '{key}' layer")
-
-        joinids = getattr(self._joinids, axis.value)
-
         n_row = n_col = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
-        T = axisp[layer].read((joinids, joinids)).tables().concat()
-        idx = (self.indexer.by_obs if is_obs else self.indexer.by_var)(T["soma_dim_0"])
-        Z = np.zeros(n_row * n_col, dtype=np.float32)
-        np.put(Z, idx * n_col + T["soma_dim_1"], T["soma_data"])
-        return Z.reshape(n_row, n_col)
+        T = self._axisp_inner(axis, layer).tables().concat()
+        return self._convert_to_ndarray(is_obs, T, n_row, n_col)
 
     def _axism_inner_ndarray(
         self,
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        key = axis.value + "m"
-
-        if key not in self._ms:
-            raise ValueError(f"Measurement does not contain {key} data")
 
         is_obs = axis is _Axis.OBS
 
         axism = self._ms.obsm if is_obs else self._ms.varm
-        if not (layer and layer in axism):
-            raise ValueError(f"Must specify '{key}' layer")
 
         _, n_col = axism[layer].shape
-        col_idx = pa.array(range(n_col), type=pa.int64())
-
-        joinids = getattr(self._joinids, axis.value)
-
         n_row = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
-        T = axism[layer].read((joinids, col_idx)).tables().concat()
-        idx = (self.indexer.by_obs if is_obs else self.indexer.by_var)(T["soma_dim_0"])
-        Z = np.zeros(n_row * n_col, dtype=np.float32)
-        np.put(Z, idx * n_col + T["soma_dim_1"], T["soma_data"])
-        return Z.reshape(n_row, n_col)
+        T = self._axism_inner(axis, layer).tables().concat()
+        return self._convert_to_ndarray(is_obs, T, n_row, n_col)
 
     @property
     def _obs_df(self) -> data.DataFrame:
