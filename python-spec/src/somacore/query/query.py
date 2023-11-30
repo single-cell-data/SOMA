@@ -227,31 +227,31 @@ class ExperimentAxisQuery(Generic[_Exp]):
             platform_config=platform_config,
         )
 
-    def obsp(self, layer: str) -> data.SparseRead:
-        """Returns an ``obsp`` layer as a sparse read.
+    def obsp(self, key: str) -> data.SparseRead:
+        """Returns an ``obsp`` key as a sparse read.
 
         Lifecycle: maturing
         """
-        return self._axisp_inner(_Axis.OBS, layer)
+        return self._axisp_inner(_Axis.OBS, key)
 
-    def varp(self, layer: str) -> data.SparseRead:
-        """Returns an ``varp`` layer as a sparse read.
+    def varp(self, key: str) -> data.SparseRead:
+        """Returns a ``varp`` key as a sparse read.
 
         Lifecycle: maturing
         """
-        return self._axisp_inner(_Axis.VAR, layer)
+        return self._axisp_inner(_Axis.VAR, key)
 
-    def obsm(self, layer: str) -> data.SparseRead:
-        """Returns an ``obsm`` layer as a sparse read.
+    def obsm(self, key: str) -> data.SparseRead:
+        """Returns an ``obsm`` key as a sparse read.
         Lifecycle: experimental
         """
-        return self._axism_inner(_Axis.OBS, layer)
+        return self._axism_inner(_Axis.OBS, key)
 
-    def varm(self, layer: str) -> data.SparseRead:
-        """Returns an ``varm`` layer as a sparse read.
+    def varm(self, key: str) -> data.SparseRead:
+        """Returns a ``varm`` key as a sparse read.
         Lifecycle: experimental
         """
-        return self._axism_inner(_Axis.VAR, layer)
+        return self._axism_inner(_Axis.VAR, key)
 
     def to_anndata(
         self,
@@ -382,21 +382,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         }
 
         # TODO: do it in parallel?
-        obsm = dict()
-        for key in obsm_keys:
-            obsm[key] = self._axism_inner_ndarray(_Axis.OBS, key)
-
-        obsp = dict()
-        for key in obsp_keys:
-            obsp[key] = self._axisp_inner_ndarray(_Axis.OBS, key)
-
-        varm = dict()
-        for key in varm_keys:
-            varm[key] = self._axism_inner_ndarray(_Axis.VAR, key)
-
-        varp = dict()
-        for key in varp_keys:
-            varp[key] = self._axisp_inner_ndarray(_Axis.VAR, key)
+        obsm = { key: self._axism_inner_ndarray(_Axis.OBS, key) for key in obsm_keys }
+        obsp = { key: self._axisp_inner_ndarray(_Axis.OBS, key) for key in obsp_keys }
+        varm = { key: self._axism_inner_ndarray(_Axis.VAR, key) for key in varm_keys }
+        varp = { key: self._axisp_inner_ndarray(_Axis.VAR, key) for key in varp_keys }
 
         x = x_matrices.pop(X_name)
 
@@ -521,10 +510,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         joinids = getattr(self._joinids, axis.value)
         return axism[layer].read((joinids, slice(None)))
     
-    def _convert_to_ndarray(self, is_obs: bool, T: pa.Table, n_row: int, n_col: int) -> np.ndarray:
-        idx = (self.indexer.by_obs if is_obs else self.indexer.by_var)(T["soma_dim_0"])
+    def _convert_to_ndarray(self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int) -> np.ndarray:
+        idx = (self.indexer.by_obs if (axis is _Axis.OBS) else self.indexer.by_var)(table["soma_dim_0"])
         Z = np.zeros(n_row * n_col, dtype=np.float32)
-        np.put(Z, idx * n_col + T["soma_dim_1"], T["soma_data"])
+        np.put(Z, idx * n_col + table["soma_dim_1"], table["soma_data"])
         return Z.reshape(n_row, n_col)
 
     def _axisp_inner_ndarray(
@@ -536,7 +525,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         n_row = n_col = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
         T = self._axisp_inner(axis, layer).tables().concat()
-        return self._convert_to_ndarray(is_obs, T, n_row, n_col)
+        return self._convert_to_ndarray(axis, T, n_row, n_col)
 
     def _axism_inner_ndarray(
         self,
@@ -552,7 +541,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         n_row = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
         T = self._axism_inner(axis, layer).tables().concat()
-        return self._convert_to_ndarray(is_obs, T, n_row, n_col)
+        return self._convert_to_ndarray(axis, T, n_row, n_col)
 
     @property
     def _obs_df(self) -> data.DataFrame:
