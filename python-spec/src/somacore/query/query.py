@@ -381,11 +381,26 @@ class ExperimentAxisQuery(Generic[_Exp]):
             for _xname in all_x_arrays
         }
 
-        # TODO: do it in parallel?
-        obsm = {key: self._axism_inner_ndarray(_Axis.OBS, key) for key in obsm_keys}
-        obsp = {key: self._axisp_inner_ndarray(_Axis.OBS, key) for key in obsp_keys}
-        varm = {key: self._axism_inner_ndarray(_Axis.VAR, key) for key in varm_keys}
-        varp = {key: self._axisp_inner_ndarray(_Axis.VAR, key) for key in varp_keys}
+        def _read_axis_mappings(fn, axis, keys: Sequence[str]) -> Dict[str, np.ndarray]:
+            return {key: fn(axis, key) for key in keys}
+
+        obsm_ft = self._threadpool.submit(
+            _read_axis_mappings, self._axism_inner_ndarray, _Axis.OBS, obsm_keys
+        )
+        obsp_ft = self._threadpool.submit(
+            _read_axis_mappings, self._axisp_inner_ndarray, _Axis.OBS, obsp_keys
+        )
+        varm_ft = self._threadpool.submit(
+            _read_axis_mappings, self._axism_inner_ndarray, _Axis.VAR, varm_keys
+        )
+        varp_ft = self._threadpool.submit(
+            _read_axis_mappings, self._axisp_inner_ndarray, _Axis.VAR, varp_keys
+        )
+
+        obsm = obsm_ft.result()
+        obsp = obsp_ft.result()
+        varm = varm_ft.result()
+        varp = varp_ft.result()
 
         x = x_matrices.pop(X_name)
 
