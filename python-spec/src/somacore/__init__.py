@@ -9,6 +9,11 @@ unified namespace.
 
 from typing import Tuple, Union
 
+# TODO: once we no longer support Python 3.7, remove this and pin to pyarrow >= 14.0.1
+# https://github.com/single-cell-data/TileDB-SOMA/issues/1926
+# ruff: noqa
+import pyarrow_hotfix
+
 from .base import SOMAObject
 from .collection import Collection
 from .data import DataFrame

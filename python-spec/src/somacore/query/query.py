@@ -10,6 +10,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    overload,
 )
 
 import anndata
@@ -19,7 +20,7 @@ import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
 from scipy import sparse
-from typing_extensions import Literal, Protocol, Self, TypedDict, assert_never
+from typing_extensions import Literal, Protocol, Self, TypedDict
 
 from .. import data
 from .. import measurement
@@ -446,14 +447,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
     ) -> pa.Table:
         """Reads the specified axis. Will cache join IDs if not present."""
         column_names = axis_column_names.get(axis.value)
-        if axis is _Axis.OBS:
-            axis_df = self._obs_df
-            axis_query = self._matrix_axis_query.obs
-        elif axis is _Axis.VAR:
-            axis_df = self._var_df
-            axis_query = self._matrix_axis_query.var
-        else:
-            assert_never(axis)  # must be obs or var
+
+        axis_df = axis.getattr_from(self, pre="_", suf="_df")
+        assert isinstance(axis_df, data.DataFrame)
+        axis_query = axis.getattr_from(self._matrix_axis_query)
 
         # If we can cache join IDs, prepare to add them to the cache.
         joinids_cached = self._joinids._is_cached(axis)
@@ -498,19 +495,24 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> data.SparseRead:
-        key = axis.value + "p"
+        p_name = f"{axis.value}p"
+        try:
+            axisp = axis.getitem_from(self._ms, suf="p")
+        except KeyError as ke:
+            raise ValueError(f"Measurement does not contain {p_name} data") from ke
 
-        if key not in self._ms:
-            raise ValueError(f"Measurement does not contain {key} data")
-
-        axisp = self._ms.obsp if axis is _Axis.OBS else self._ms.varp
-        if not (layer and layer in axisp):
-            raise ValueError(f"Must specify '{key}' layer")
-        if not isinstance(axisp[layer], data.SparseNDArray):
-            raise TypeError(f"Unexpected SOMA type stored in '{key}' layer")
+        try:
+            ap_layer = axisp[layer]
+        except KeyError as ke:
+            raise ValueError(f"layer {layer!r} is not available in {p_name}") from ke
+        if not isinstance(ap_layer, data.SparseNDArray):
+            raise TypeError(
+                f"Unexpected SOMA type {type(ap_layer).__name__}"
+                f" stored in {p_name} layer {layer!r}"
+            )
 
         joinids = getattr(self._joinids, axis.value)
-        return axisp[layer].read((joinids, joinids))
+        return ap_layer.read((joinids, joinids))
 
     def _axism_inner(
         self,
@@ -636,6 +638,30 @@ class _Axis(enum.Enum):
     def value(self) -> Literal["obs", "var"]:
         return super().value
 
+    @overload
+    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T":
+        ...
+
+    @overload
+    def getattr_from(
+        self, __source: Any, *, pre: Literal[""], suf: Literal[""]
+    ) -> object:
+        ...
+
+    @overload
+    def getattr_from(self, __source: Any, *, pre: str = ..., suf: str = ...) -> object:
+        ...
+
+    def getattr_from(self, __source: Any, *, pre: str = "", suf: str = "") -> object:
+        """Equivalent to ``something.<pre><obs/var><suf>``."""
+        return getattr(__source, pre + self.value + suf)
+
+    def getitem_from(
+        self, __source: Mapping[str, "_T"], *, pre: str = "", suf: str = ""
+    ) -> "_T":
+        """Equivalent to ``something[pre + "obs"/"var" + suf]``."""
+        return __source[pre + self.value + suf]
+
 
 @attrs.define(frozen=True)
 class _MatrixAxisQuery:
@@ -748,6 +774,14 @@ def _to_numpy(it: _Numpyable) -> np.ndarray:
     return it.to_numpy()
 
 
+#
+# Type shenanigans
+#
+
+_T = TypeVar("_T")
+_T_co = TypeVar("_T_co", covariant=True)
+
+
 class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
@@ -757,4 +791,19 @@ class _Experimentish(Protocol):
 
     @property
     def obs(self) -> data.DataFrame:
+        ...
+
+
+class _HasObsVar(Protocol[_T_co]):
+    """Something which has an ``obs`` and ``var`` field.
+
+    Used to give nicer type inference in :meth:`_Axis.getattr_from`.
+    """
+
+    @property
+    def obs(self) -> _T_co:
+        ...
+
+    @property
+    def var(self) -> _T_co:
         ...
