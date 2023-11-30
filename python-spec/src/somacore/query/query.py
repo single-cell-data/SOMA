@@ -373,15 +373,6 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 raise NotImplementedError("Dense array unsupported")
             all_x_arrays[_xname] = x_array
 
-        obs_table, var_table = self._read_both_axes(column_names)
-
-        x_matrices = {
-            _xname: _fast_csr.read_scipy_csr(
-                all_x_arrays[_xname], self.obs_joinids(), self.var_joinids()
-            )
-            for _xname in all_x_arrays
-        }
-
         def _read_axis_mappings(fn, axis, keys: Sequence[str]) -> Dict[str, np.ndarray]:
             return {key: fn(axis, key) for key in keys}
 
@@ -397,6 +388,15 @@ class ExperimentAxisQuery(Generic[_Exp]):
         varp_ft = self._threadpool.submit(
             _read_axis_mappings, self._axisp_inner_ndarray, _Axis.VAR, varp_keys
         )
+
+        obs_table, var_table = self._read_both_axes(column_names)
+
+        x_matrices = {
+            _xname: _fast_csr.read_scipy_csr(
+                all_x_arrays[_xname], self.obs_joinids(), self.var_joinids()
+            )
+            for _xname in all_x_arrays
+        }
 
         obsm = obsm_ft.result()
         obsp = obsp_ft.result()
