@@ -382,10 +382,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         }
 
         # TODO: do it in parallel?
-        obsm = { key: self._axism_inner_ndarray(_Axis.OBS, key) for key in obsm_keys }
-        obsp = { key: self._axisp_inner_ndarray(_Axis.OBS, key) for key in obsp_keys }
-        varm = { key: self._axism_inner_ndarray(_Axis.VAR, key) for key in varm_keys }
-        varp = { key: self._axisp_inner_ndarray(_Axis.VAR, key) for key in varp_keys }
+        obsm = {key: self._axism_inner_ndarray(_Axis.OBS, key) for key in obsm_keys}
+        obsp = {key: self._axisp_inner_ndarray(_Axis.OBS, key) for key in obsp_keys}
+        varm = {key: self._axism_inner_ndarray(_Axis.VAR, key) for key in varm_keys}
+        varp = {key: self._axisp_inner_ndarray(_Axis.VAR, key) for key in varp_keys}
 
         x = x_matrices.pop(X_name)
 
@@ -503,15 +503,19 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axism = self._ms.obsm if axis is _Axis.OBS else self._ms.varm
         if not (layer and layer in axism):
             raise ValueError(f"Must specify '{key}' layer")
-        
+
         if not isinstance(axism[layer], data.SparseNDArray):
             raise TypeError(f"Unexpected SOMA type stored in '{key}' layer")
 
         joinids = getattr(self._joinids, axis.value)
         return axism[layer].read((joinids, slice(None)))
-    
-    def _convert_to_ndarray(self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int) -> np.ndarray:
-        idx = (self.indexer.by_obs if (axis is _Axis.OBS) else self.indexer.by_var)(table["soma_dim_0"])
+
+    def _convert_to_ndarray(
+        self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int
+    ) -> np.ndarray:
+        idx = (self.indexer.by_obs if (axis is _Axis.OBS) else self.indexer.by_var)(
+            table["soma_dim_0"]
+        )
         Z = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(Z, idx * n_col + table["soma_dim_1"], table["soma_data"])
         return Z.reshape(n_row, n_col)
@@ -532,7 +536,6 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-
         is_obs = axis is _Axis.OBS
 
         axism = self._ms.obsm if is_obs else self._ms.varm
