@@ -550,8 +550,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
         is_obs = axis is _Axis.OBS
         n_row = n_col = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
-        T = self._axisp_inner(axis, layer).tables().concat()
-        return self._convert_to_ndarray(axis, T, n_row, n_col)
+        table = self._axisp_inner(axis, layer).tables().concat()
+        return self._convert_to_ndarray(axis, table, n_row, n_col)
 
     def _axism_inner_ndarray(
         self,
@@ -565,8 +565,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
         _, n_col = axism[layer].shape
         n_row = len(self._joinids.obs) if is_obs else len(self._joinids.var)
 
-        T = self._axism_inner(axis, layer).tables().concat()
-        return self._convert_to_ndarray(axis, T, n_row, n_col)
+        table = self._axism_inner(axis, layer).tables().concat()
+        return self._convert_to_ndarray(axis, table, n_row, n_col)
 
     @property
     def _obs_df(self) -> data.DataFrame:
