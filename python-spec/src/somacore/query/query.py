@@ -340,9 +340,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
     ) -> "_AxisQueryResult":
         """Reads the entire query result in memory.
 
+
         This is a low-level routine intended to be used by loaders for other
         in-core formats, such as AnnData, which can be created from the
-        resulting Tables.
+        resulting objects.
 
         Args:
             X_name: The X layer to read and return in the ``X`` slot.
@@ -404,9 +405,15 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         x = x_matrices.pop(X_name)
 
+        obs = obs_table.to_pandas()
+        obs.index = obs.index.astype(str)
+
+        var = var_table.to_pandas()
+        var.index = var.index.astype(str)
+
         return _AxisQueryResult(
-            obs=obs_table,
-            var=var_table,
+            obs=obs,
+            var=var,
             X=x,
             obsm=obsm,
             obsp=obsp,
@@ -591,10 +598,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
 class _AxisQueryResult:
     """The result of running :meth:`ExperimentAxisQuery.read`. Private."""
 
-    obs: pa.Table
-    """Experiment.obs query slice, as an Arrow Table"""
-    var: pa.Table
-    """Experiment.ms[...].var query slice, as an Arrow Table"""
+    obs: pd.DataFrame
+    """Experiment.obs query slice, as a pandas DataFrame"""
+    var: pd.DataFrame
+    """Experiment.ms[...].var query slice, as a pandas DataFrame"""
     X: sparse.csr_matrix
     """Experiment.ms[...].X[...] query slice, as an SciPy sparse.csr_matrix """
     X_layers: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
@@ -609,16 +616,10 @@ class _AxisQueryResult:
     """Experiment.varp query slice, as a numpy ndarray"""
 
     def to_anndata(self) -> anndata.AnnData:
-        obs = self.obs.to_pandas()
-        obs.index = obs.index.astype(str)
-
-        var = self.var.to_pandas()
-        var.index = var.index.astype(str)
-
         return anndata.AnnData(
             X=self.X,
-            obs=obs,
-            var=var,
+            obs=self.obs,
+            var=self.var,
             obsm=(self.obsm or None),
             obsp=(self.obsp or None),
             varm=(self.varm or None),
