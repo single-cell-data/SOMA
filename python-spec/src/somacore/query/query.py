@@ -399,11 +399,6 @@ class ExperimentAxisQuery(Generic[_Exp]):
             for _xname in all_x_arrays
         }
 
-        obsm = obsm_ft.result()
-        obsp = obsp_ft.result()
-        varm = varm_ft.result()
-        varp = varp_ft.result()
-
         x = x_matrices.pop(X_name)
 
         obs = obs_table.to_pandas()
@@ -416,10 +411,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
             obs=obs,
             var=var,
             X=x,
-            obsm=obsm,
-            obsp=obsp,
-            varm=varm,
-            varp=varp,
+            obsm=obsm_ft.result(),
+            obsp=obsp_ft.result(),
+            varm=varm_ft.result(),
+            varp=varp_ft.result(),
             X_layers=x_matrices,
         )
 
@@ -511,7 +506,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 f" stored in {p_name} layer {layer!r}"
             )
 
-        joinids = getattr(self._joinids, axis.value)
+        joinids = axis.getattr_from(self._joinids)
         return ap_layer.read((joinids, joinids))
 
     def _axism_inner(
@@ -519,29 +514,32 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> data.SparseRead:
-        key = axis.value + "m"
+        m_name = f"{axis.value}m"
 
-        if key not in self._ms:
-            raise ValueError(f"Measurement does not contain {key} data")
+        try:
+            axism = axis.getitem_from(self._ms, suf="m")
+        except KeyError:
+            raise ValueError(f"Measurement does not contain {m_name} data") from None
 
-        axism = axis.getitem_from(self._ms, suf="m")
-        if not (layer and layer in axism):
-            raise ValueError(f"Must specify '{key}' layer")
+        try:
+            axism_layer = axism[layer]
+        except KeyError as ke:
+            raise ValueError(f"layer {layer!r} is not available in {m_name}") from ke
 
-        if not isinstance(axism[layer], data.SparseNDArray):
-            raise TypeError(f"Unexpected SOMA type stored in '{key}' layer")
+        if not isinstance(axism_layer, data.SparseNDArray):
+            raise TypeError(f"Unexpected SOMA type stored in '{m_name}' layer")
 
-        joinids = getattr(self._joinids, axis.value)
-        return axism[layer].read((joinids, slice(None)))
+        joinids = axis.getattr_from(self._joinids)
+        return axism_layer.read((joinids, slice(None)))
 
     def _convert_to_ndarray(
         self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int
     ) -> np.ndarray:
         indexer: pd.Index = axis.getattr_from(self.indexer, pre="by_")
         idx = indexer(table["soma_dim_0"])
-        Z = np.zeros(n_row * n_col, dtype=np.float32)
-        np.put(Z, idx * n_col + table["soma_dim_1"], table["soma_data"])
-        return Z.reshape(n_row, n_col)
+        z = np.zeros(n_row * n_col, dtype=np.float32)
+        np.put(z, idx * n_col + table["soma_dim_1"], table["soma_data"])
+        return z.reshape(n_row, n_col)
 
     def _axisp_inner_ndarray(
         self,
