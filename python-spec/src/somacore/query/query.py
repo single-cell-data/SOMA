@@ -228,31 +228,31 @@ class ExperimentAxisQuery(Generic[_Exp]):
             platform_config=platform_config,
         )
 
-    def obsp(self, key: str) -> data.SparseRead:
-        """Returns an ``obsp`` key as a sparse read.
+    def obsp(self, layer: str) -> data.SparseRead:
+        """Returns an ``obsp`` layer as a sparse read.
 
         Lifecycle: maturing
         """
-        return self._axisp_inner(_Axis.OBS, key)
+        return self._axisp_inner(_Axis.OBS, layer)
 
-    def varp(self, key: str) -> data.SparseRead:
-        """Returns a ``varp`` key as a sparse read.
+    def varp(self, layer: str) -> data.SparseRead:
+        """Returns a ``varp`` layer as a sparse read.
 
         Lifecycle: maturing
         """
-        return self._axisp_inner(_Axis.VAR, key)
+        return self._axisp_inner(_Axis.VAR, layer)
 
-    def obsm(self, key: str) -> data.SparseRead:
-        """Returns an ``obsm`` key as a sparse read.
+    def obsm(self, layer: str) -> data.SparseRead:
+        """Returns an ``obsm`` layer as a sparse read.
         Lifecycle: experimental
         """
-        return self._axism_inner(_Axis.OBS, key)
+        return self._axism_inner(_Axis.OBS, layer)
 
-    def varm(self, key: str) -> data.SparseRead:
-        """Returns a ``varm`` key as a sparse read.
+    def varm(self, layer: str) -> data.SparseRead:
+        """Returns a ``varm`` layer as a sparse read.
         Lifecycle: experimental
         """
-        return self._axism_inner(_Axis.VAR, key)
+        return self._axism_inner(_Axis.VAR, layer)
 
     def to_anndata(
         self,
@@ -260,10 +260,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         *,
         column_names: Optional[AxisColumnNames] = None,
         X_layers: Sequence[str] = (),
-        obsm_keys: Sequence[str] = (),
-        obsp_keys: Sequence[str] = (),
-        varm_keys: Sequence[str] = (),
-        varp_keys: Sequence[str] = (),
+        obsm_layers: Sequence[str] = (),
+        obsp_layers: Sequence[str] = (),
+        varm_layers: Sequence[str] = (),
+        varp_layers: Sequence[str] = (),
     ) -> anndata.AnnData:
         """
         Executes the query and return result as an ``AnnData`` in-memory object.
@@ -274,14 +274,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
-            obsm_keys:
-                Additional obsm keys to read and return in the obsm slot.
-            obsp_keys:
-                Additional obsp keys to read and return in the obsp slot.
-            varm_keys:
-                Additional varm keys to read and return in the varm slot.
-            varp_keys:
-                Additional varp keys to read and return in the varp slot.
+            obsm_layers:
+                Additional obsm layers to read and return in the obsm slot.
+            obsp_layers:
+                Additional obsp layers to read and return in the obsp slot.
+            varm_layers:
+                Additional varm layers to read and return in the varm slot.
+            varp_layers:
+                Additional varp layers to read and return in the varp slot.
 
         Lifecycle: maturing
         """
@@ -289,10 +289,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
-            obsm_keys=obsm_keys,
-            obsp_keys=obsp_keys,
-            varm_keys=varm_keys,
-            varp_keys=varp_keys,
+            obsm_layers=obsm_layers,
+            obsp_layers=obsp_layers,
+            varm_layers=varm_layers,
+            varp_layers=varp_layers,
         ).to_anndata()
 
     # Context management
@@ -334,10 +334,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         *,
         column_names: AxisColumnNames,
         X_layers: Sequence[str],
-        obsm_keys: Sequence[str] = (),
-        obsp_keys: Sequence[str] = (),
-        varm_keys: Sequence[str] = (),
-        varp_keys: Sequence[str] = (),
+        obsm_layers: Sequence[str] = (),
+        obsp_layers: Sequence[str] = (),
+        varm_layers: Sequence[str] = (),
+        varp_layers: Sequence[str] = (),
     ) -> "_AxisQueryResult":
         """Reads the entire query result in memory.
 
@@ -352,14 +352,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
-            obsm_keys:
-                Additional obsm keys to read and return in the obsm slot.
-            obsp_keys:
-                Additional obsp keys to read and return in the obsp slot.
-            varm_keys:
-                Additional varm keys to read and return in the varm slot.
-            varp_keys:
-                Additional varp keys to read and return in the varp slot.
+            obsm_layers:
+                Additional obsm layers to read and return in the obsm slot.
+            obsp_layers:
+                Additional obsp layers to read and return in the obsp slot.
+            varm_layers:
+                Additional varm layers to read and return in the varm slot.
+            varp_layers:
+                Additional varp layers to read and return in the varp slot.
         """
         x_collection = self._ms.X
         all_x_names = [X_name] + list(X_layers)
@@ -378,16 +378,16 @@ class ExperimentAxisQuery(Generic[_Exp]):
             return {key: fn(axis, key) for key in keys}
 
         obsm_ft = self._threadpool.submit(
-            _read_axis_mappings, self._axism_inner_ndarray, _Axis.OBS, obsm_keys
+            _read_axis_mappings, self._axism_inner_ndarray, _Axis.OBS, obsm_layers
         )
         obsp_ft = self._threadpool.submit(
-            _read_axis_mappings, self._axisp_inner_ndarray, _Axis.OBS, obsp_keys
+            _read_axis_mappings, self._axisp_inner_ndarray, _Axis.OBS, obsp_layers
         )
         varm_ft = self._threadpool.submit(
-            _read_axis_mappings, self._axism_inner_ndarray, _Axis.VAR, varm_keys
+            _read_axis_mappings, self._axism_inner_ndarray, _Axis.VAR, varm_layers
         )
         varp_ft = self._threadpool.submit(
-            _read_axis_mappings, self._axisp_inner_ndarray, _Axis.VAR, varp_keys
+            _read_axis_mappings, self._axisp_inner_ndarray, _Axis.VAR, varp_layers
         )
 
         obs_table, var_table = self._read_both_axes(column_names)
