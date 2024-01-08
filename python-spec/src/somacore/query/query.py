@@ -27,6 +27,7 @@ from .. import measurement
 from .. import options
 from . import _fast_csr
 from . import axis
+from . import types
 
 _RO_AUTO = options.ResultOrder.AUTO
 
@@ -88,6 +89,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         *,
         obs_query: axis.AxisQuery = axis.AxisQuery(),
         var_query: axis.AxisQuery = axis.AxisQuery(),
+        index_factory: types.IndexFactory = pd.Index,
     ):
         if measurement_name not in experiment.ms:
             raise ValueError("Measurement does not exist in the experiment")
@@ -97,7 +99,11 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         self._matrix_axis_query = _MatrixAxisQuery(obs=obs_query, var=var_query)
         self._joinids = _JoinIDCache(self)
-        self._indexer = AxisIndexer(self)
+        self._indexer = AxisIndexer(
+            self,
+            index_factory=index_factory,
+        )
+        self._index_factory = index_factory
         self._threadpool_: Optional[futures.ThreadPoolExecutor] = None
 
     def obs(
@@ -393,9 +399,12 @@ class ExperimentAxisQuery(Generic[_Exp]):
         obs_table, var_table = self._read_both_axes(column_names)
 
         x_matrices = {
-            _xname: _fast_csr.read_scipy_csr(
-                all_x_arrays[_xname], self.obs_joinids(), self.var_joinids()
-            )
+            _xname: _fast_csr.read_csr(
+                all_x_arrays[_xname],
+                self.obs_joinids(),
+                self.var_joinids(),
+                index_factory=self._index_factory,
+            ).to_scipy()
             for _xname in all_x_arrays
         }
 
@@ -736,6 +745,7 @@ class AxisIndexer:
     """
 
     query: ExperimentAxisQuery
+    _index_factory: types.IndexFactory
     _cached_obs: Optional[pd.Index] = None
     _cached_var: Optional[pd.Index] = None
 
