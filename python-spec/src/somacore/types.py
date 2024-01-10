@@ -6,6 +6,7 @@ their own internal type-checking purposes.
 """
 
 import sys
+from concurrent import futures
 from typing import TYPE_CHECKING, NoReturn, Optional, Sequence, Type, TypeVar
 
 from typing_extensions import Protocol, TypeGuard
@@ -75,3 +76,12 @@ def is_slice_of(__obj: object, __typ: Type[_T]) -> TypeGuard[Slice[_T]]:
         and (__obj.stop is None or isinstance(__obj.stop, __typ))
         and (__obj.step is None or isinstance(__obj.step, __typ))
     )
+
+
+class ContextBase(Protocol):
+    """A protocol for a context manager that can be used as a base class.
+
+    The only requirement for somacore is that it should contain a threadpool.
+    """
+
+    _threadpool: futures.ThreadPoolExecutor

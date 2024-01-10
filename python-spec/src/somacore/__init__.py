@@ -30,6 +30,7 @@ from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
+from .types import ContextBase
 
 try:
     # This trips up mypy since it's a generated file:
@@ -59,4 +60,5 @@ __all__ = (
     "AxisColumnNames",
     "AxisQuery",
     "ExperimentAxisQuery",
+    "ContextBase",
 )

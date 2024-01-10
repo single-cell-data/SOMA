@@ -25,6 +25,7 @@ from typing_extensions import Literal, Protocol, Self, TypedDict
 from .. import data
 from .. import measurement
 from .. import options
+from ..types import ContextBase
 from . import _fast_csr
 from . import axis
 from . import types
@@ -587,11 +588,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     @property
     def _threadpool(self) -> futures.ThreadPoolExecutor:
-        """Creates a thread pool just in time."""
+        """
+        Returns the threadpool provided by the experiment's context.
+        If not available, creates a thread pool just in time."""
+        if self.experiment.context._threadpool is not None:
+            return self.experiment.context._threadpool
+
         if self._threadpool_ is None:
-            # TODO: the user should be able to set their own threadpool, a la asyncio's
-            # loop.set_default_executor().  This is important for managing the level of
-            # concurrency, etc.
             self._threadpool_ = futures.ThreadPoolExecutor()
         return self._threadpool_
 
@@ -795,6 +798,10 @@ class _Experimentish(Protocol):
 
     @property
     def obs(self) -> data.DataFrame:
+        ...
+
+    @property
+    def context(self) -> ContextBase:
         ...
 
 
