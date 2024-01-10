@@ -14,16 +14,29 @@ class EagerIterator(Iterator[_T]):
         self.iterator = iterator
         self._pool = pool or futures.ThreadPoolExecutor()
         self._own_pool = pool is None
-        self._future = self._pool.submit(self.iterator.__next__)
+        self._preload_future = self._pool.submit(self.iterator.__next__)
 
     def __next__(self) -> _T:
+        stopped = False
         try:
-            res = self._future.result()
-            self._future = self._pool.submit(self.iterator.__next__)
-            return res
+            if self._preload_future.cancel():
+                # If `.cancel` returns True, cancellation was successful.
+                # The self.iterator.__next__ call has not yet been started,
+                # and will never be started, so we can compute next ourselves.
+                # This prevents deadlocks if the thread pool is too small
+                # and we can never create a preload thread.
+                return next(self.iterator)
+            # `.cancel` returned false, so the preload is already running.
+            # Just wait for it.
+            return self._preload_future.result()
         except StopIteration:
             self._cleanup()
+            stopped = True
             raise
+        finally:
+            if not stopped:
+                # If we have more to do, go for the next thing.
+                self._preload_future = self._pool.submit(self.iterator.__next__)
 
     def _cleanup(self) -> None:
         if self._own_pool:
