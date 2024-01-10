@@ -591,7 +591,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         """
         Returns the threadpool provided by the experiment's context.
         If not available, creates a thread pool just in time."""
-        if self.experiment.context._threadpool is not None:
+        if (
+            self.experiment.context is not None
+            and self.experiment.context._threadpool is not None
+        ):
             return self.experiment.context._threadpool
 
         if self._threadpool_ is None:
@@ -801,7 +804,7 @@ class _Experimentish(Protocol):
         ...
 
     @property
-    def context(self) -> ContextBase:
+    def context(self) -> Optional[ContextBase]:
         ...
 
 

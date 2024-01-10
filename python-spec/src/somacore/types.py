@@ -84,4 +84,4 @@ class ContextBase(Protocol):
     The only requirement for somacore is that it should contain a threadpool.
     """
 
-    _threadpool: futures.ThreadPoolExecutor
+    _threadpool: Optional[futures.ThreadPoolExecutor]
