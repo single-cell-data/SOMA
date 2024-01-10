@@ -10,6 +10,7 @@ from typing import Any, ClassVar, MutableMapping, Optional
 from typing_extensions import LiteralString, Self
 
 from . import options
+from .types import ContextBase
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
@@ -24,7 +25,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         uri: str,
         mode: options.OpenMode = "r",
         *,
-        context: Optional[Any] = None,
+        context: Optional[ContextBase] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Opens the SOMA object of this type at the given URI.
@@ -42,7 +43,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
     @classmethod
     @abc.abstractmethod
-    def exists(cls, uri: str, *, context: Optional[Any] = None) -> bool:
+    def exists(cls, uri: str, *, context: Optional[ContextBase] = None) -> bool:
         """Checks whether a SOMA object of this type is stored at the URI.
 
         Args:
@@ -65,7 +66,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
-    def context(self) -> Any:
+    def context(self) -> Optional[ContextBase]:
         """A value storing implementation-specific configuration information.
 
         This contains long-lived (i.e., not call-specific) information that is

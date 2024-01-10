@@ -23,6 +23,7 @@ from typing_extensions import Final, Literal, Self
 
 from . import base
 from . import options
+from .types import ContextBase
 
 _RO_AUTO = options.ResultOrder.AUTO
 
@@ -48,7 +49,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        context: Optional[ContextBase] = None,
     ) -> Self:
         """Creates a new ``DataFrame`` at the given URI.
 
@@ -231,7 +232,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         type: pa.DataType,
         shape: Sequence[Optional[int]],
         platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        context: Optional[ContextBase] = None,
     ) -> Self:
         """Creates a new ND array of the current type at the given URI.
 

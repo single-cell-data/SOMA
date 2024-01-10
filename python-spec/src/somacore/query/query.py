@@ -593,9 +593,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
         If not available, creates a thread pool just in time."""
         if (
             self.experiment.context is not None
-            and self.experiment.context._threadpool is not None
+            and self.experiment.context.threadpool is not None
         ):
-            return self.experiment.context._threadpool
+            return self.experiment.context.threadpool
 
         if self._threadpool_ is None:
             self._threadpool_ = futures.ThreadPoolExecutor()

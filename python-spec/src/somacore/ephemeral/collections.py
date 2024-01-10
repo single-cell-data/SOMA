@@ -8,6 +8,7 @@ from .. import data
 from .. import experiment
 from .. import measurement
 from .. import options
+from ..types import ContextBase
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 
@@ -51,7 +52,9 @@ class BaseCollection(collection.BaseCollection[_Elem]):
         )
 
     @classmethod
-    def exists(cls, uri: str, *, context: Any = None) -> Literal[False]:
+    def exists(
+        cls, uri: str, *, context: Optional[ContextBase] = None
+    ) -> Literal[False]:
         del uri, context  # All unused.
         # Ephemeral collections are in-memory only and do not otherwise exist.
         return False

@@ -84,4 +84,4 @@ class ContextBase(Protocol):
     implementer. Otherwise, the implementer will use its own threadpool.
     """
 
-    _threadpool: Optional[futures.ThreadPoolExecutor]
+    threadpool: Optional[futures.ThreadPoolExecutor]
