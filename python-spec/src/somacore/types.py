@@ -80,8 +80,8 @@ def is_slice_of(__obj: object, __typ: Type[_T]) -> TypeGuard[Slice[_T]]:
 
 class ContextBase(Protocol):
     """A protocol for a context manager that can be used as a base class.
-
-    The only requirement for somacore is that it should contain a threadpool.
+    If a threadpool is specified as part of the context, it will be used by the
+    implementer. Otherwise, the implementer will use its own threadpool.
     """
 
     _threadpool: Optional[futures.ThreadPoolExecutor]
