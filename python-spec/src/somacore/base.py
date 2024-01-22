@@ -25,7 +25,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         uri: str,
         mode: options.OpenMode = "r",
         *,
-        context: Optional[ContextBase] = None,
+        context: Optional[Any] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Opens the SOMA object of this type at the given URI.
@@ -43,7 +43,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
     @classmethod
     @abc.abstractmethod
-    def exists(cls, uri: str, *, context: Optional[ContextBase] = None) -> bool:
+    def exists(cls, uri: str, *, context: Optional[Any] = None) -> bool:
         """Checks whether a SOMA object of this type is stored at the URI.
 
         Args:

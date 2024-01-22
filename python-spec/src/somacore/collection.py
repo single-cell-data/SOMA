@@ -1,5 +1,5 @@
 import abc
-from typing import MutableMapping, Optional, Sequence, Type, TypeVar, overload
+from typing import Any, MutableMapping, Optional, Sequence, Type, TypeVar, overload
 
 import pyarrow as pa
 from typing_extensions import Final, Self
@@ -7,7 +7,6 @@ from typing_extensions import Final, Self
 from . import base
 from . import data
 from . import options
-from .types import ContextBase
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 """Element Type for a SOMA collection."""
@@ -36,7 +35,7 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         uri: str,
         *,
         platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[ContextBase] = None,
+        context: Optional[Any] = None,
     ) -> Self:
         """Creates a new collection of this type at the given URI.
 
