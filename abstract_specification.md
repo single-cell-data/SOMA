@@ -231,6 +231,15 @@ The default "fill" value for `SOMASparseNDArray` is the zero or null value of th
 
 > ℹ️ **Note**: on TileDB this is an sparse array with `N` `int64` dimensions of domain `[0, maxInt64)`, and a single attribute.
 
+### SOMAImageNDArray
+
+`SOMAImageNDArray` is a dense N-dimansional array of `primitive` type, with offset (zero-based) integer indexing on each dimension. The `SOMASparseNDArray` has a user-defined schema, which includes:
+
+- type: a `primitive` type, expressed as an Arrow type (e.g., `int64`, `float32`, etc), indicating the type of data contained within the array.
+- shape: the shape of the array, i.e., number and length of each dimension.
+
+All dimensions must have a positive, non-zero length. Every `SOMAImageNDArray` must contain 3 dimensions named `C`, `X` and `Y` representing channels, width and height respectively, and elements are named `intensity`. More dimension can exist where no naming conventions are enforced.
+
 ## Composed Types
 
 Composed types are defined as a composition of foundational types, adding name, type and indexing constraints. These types are intended to facilitate data interoperability, ease of use, and _potentially_ enable implementation optimizations by virtue of their typing and structural guarantees. The initial composed types are motivated by single-cell biology, but additional types may be added in the future for more diverse use cases.
@@ -293,6 +302,10 @@ The following naming and indexing constraints are defined for the `SOMAExperimen
 | `obsp` collection values       | All matrixes must have the shape `(O, O)`. The domain of both dimensions is the values of `obs.soma_joinid`.                                                             |
 | `varm` collection values       | All matrixes must have the shape `(V, M)`, where `M` is user-defined. The domain of the first dimension is the values of `var.soma_joinid`.                              |
 | `varp` collection values       | All matrixes must have the shape `(V, V)`. The domain of both dimensions is the values of `var.soma_joinid`.                                                             |
+
+### SOMAImage
+
+TODO
 
 # Functional Operations
 
