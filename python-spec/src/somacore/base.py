@@ -10,7 +10,7 @@ from typing import Any, ClassVar, MutableMapping, Optional
 from typing_extensions import LiteralString, Self
 
 from . import options
-from .types import ContextBase
+from . import types
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
@@ -25,7 +25,8 @@ class SOMAObject(metaclass=abc.ABCMeta):
         uri: str,
         mode: options.OpenMode = "r",
         *,
-        context: Optional[Any] = None,
+        context: Optional[Any] = None
+        ,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Opens the SOMA object of this type at the given URI.
@@ -66,7 +67,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
-    def context(self) -> Optional[ContextBase]:
+    def context(self) -> Optional[types.ContextBase]:
         """A value storing implementation-specific configuration information.
 
         This contains long-lived (i.e., not call-specific) information that is

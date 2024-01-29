@@ -53,7 +53,7 @@ class BaseCollection(collection.BaseCollection[_Elem]):
 
     @classmethod
     def exists(
-        cls, uri: str, *, context: Optional[ContextBase] = None
+        cls, uri: str, *, context: Any = None
     ) -> Literal[False]:
         del uri, context  # All unused.
         # Ephemeral collections are in-memory only and do not otherwise exist.

@@ -592,7 +592,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Returns the threadpool provided by the experiment's context.
         If not available, creates a thread pool just in time."""
         context = self.experiment.context
-        if context and context.threadpool:
+        if context and context.threadpool: 
             return context.threadpool
 
         if self._threadpool_ is None:
