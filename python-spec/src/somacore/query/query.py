@@ -25,7 +25,6 @@ from typing_extensions import Literal, Protocol, Self, TypedDict
 from .. import data
 from .. import measurement
 from .. import options
-from ..types import ContextBase
 from . import _fast_csr
 from . import axis
 from . import types
@@ -802,7 +801,7 @@ class _Experimentish(Protocol):
         ...
 
     @property
-    def context(self) -> Optional[ContextBase]:
+    def context(self) -> Optional[types.ContextBase]:
         ...
 
 
