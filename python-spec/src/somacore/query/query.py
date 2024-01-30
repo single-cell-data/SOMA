@@ -25,6 +25,7 @@ from typing_extensions import Literal, Protocol, Self, TypedDict
 from .. import data
 from .. import measurement
 from .. import options
+from .. import types as base_types
 from . import _fast_csr
 from . import axis
 from . import types
@@ -591,7 +592,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Returns the threadpool provided by the experiment's context.
         If not available, creates a thread pool just in time."""
         context = self.experiment.context
-        if context and context.threadpool: 
+        if context and context.threadpool:
             return context.threadpool
 
         if self._threadpool_ is None:
@@ -801,7 +802,7 @@ class _Experimentish(Protocol):
         ...
 
     @property
-    def context(self) -> Optional[types.ContextBase]:
+    def context(self) -> Optional[base_types.ContextBase]:
         ...
 
 

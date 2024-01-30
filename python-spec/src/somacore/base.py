@@ -25,8 +25,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         uri: str,
         mode: options.OpenMode = "r",
         *,
-        context: Optional[Any] = None
-        ,
+        context: Optional[Any] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> Self:
         """Opens the SOMA object of this type at the given URI.
