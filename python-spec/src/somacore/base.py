@@ -10,6 +10,7 @@ from typing import Any, ClassVar, MutableMapping, Optional
 from typing_extensions import LiteralString, Self
 
 from . import options
+from . import types
 
 
 class SOMAObject(metaclass=abc.ABCMeta):
@@ -65,7 +66,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
-    def context(self) -> Any:
+    def context(self) -> Optional[types.ContextBase]:
         """A value storing implementation-specific configuration information.
 
         This contains long-lived (i.e., not call-specific) information that is
