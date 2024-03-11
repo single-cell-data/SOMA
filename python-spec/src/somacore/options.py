@@ -174,6 +174,7 @@ SparseNDCoord = Union[
     ValSliceOrSequence[int],
     npt.NDArray[np.integer],
     pa.IntegerArray,
+    pa.ChunkedArray,
 ]
 """A single coordinate range for one dimension of a sparse nd-array."""
 SparseNDCoords = Sequence[SparseNDCoord]
