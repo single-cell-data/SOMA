@@ -646,18 +646,17 @@ class _Axis(enum.Enum):
         return super().value
 
     @overload
-    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T":
-        ...
+    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T": ...
 
     @overload
     def getattr_from(
         self, __source: Any, *, pre: Literal[""], suf: Literal[""]
-    ) -> object:
-        ...
+    ) -> object: ...
 
     @overload
-    def getattr_from(self, __source: Any, *, pre: str = ..., suf: str = ...) -> object:
-        ...
+    def getattr_from(
+        self, __source: Any, *, pre: str = ..., suf: str = ...
+    ) -> object: ...
 
     def getattr_from(self, __source: Any, *, pre: str = "", suf: str = "") -> object:
         """Equivalent to ``something.<pre><obs/var><suf>``."""
@@ -757,18 +756,14 @@ class AxisIndexer:
     def _obs_index(self) -> pd.Index:
         """Private. Return an index for the ``obs`` axis."""
         if self._cached_obs is None:
-            self._cached_obs = self._index_factory(
-                data=self.query.obs_joinids().to_numpy()
-            )
+            self._cached_obs = self._index_factory(self.query.obs_joinids().to_numpy())
         return self._cached_obs
 
     @property
     def _var_index(self) -> pd.Index:
         """Private. Return an index for the ``var`` axis."""
         if self._cached_var is None:
-            self._cached_var = self._index_factory(
-                data=self.query.var_joinids().to_numpy()
-            )
+            self._cached_var = self._index_factory(self.query.var_joinids().to_numpy())
         return self._cached_var
 
     def by_obs(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
@@ -798,16 +793,13 @@ class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
     @property
-    def ms(self) -> Mapping[str, measurement.Measurement]:
-        ...
+    def ms(self) -> Mapping[str, measurement.Measurement]: ...
 
     @property
-    def obs(self) -> data.DataFrame:
-        ...
+    def obs(self) -> data.DataFrame: ...
 
     @property
-    def context(self) -> Optional[base_types.ContextBase]:
-        ...
+    def context(self) -> Optional[base_types.ContextBase]: ...
 
 
 class _HasObsVar(Protocol[_T_co]):
@@ -817,9 +809,7 @@ class _HasObsVar(Protocol[_T_co]):
     """
 
     @property
-    def obs(self) -> _T_co:
-        ...
+    def obs(self) -> _T_co: ...
 
     @property
-    def var(self) -> _T_co:
-        ...
+    def var(self) -> _T_co: ...
