@@ -749,18 +749,18 @@ class AxisIndexer:
 
     query: ExperimentAxisQuery
     _index_factory: types.IndexFactory
-    _cached_obs: Optional[pd.Index] = None
-    _cached_var: Optional[pd.Index] = None
+    _cached_obs: Optional[types.IndexLike] = None
+    _cached_var: Optional[types.IndexLike] = None
 
     @property
-    def _obs_index(self) -> pd.Index:
+    def _obs_index(self) -> types.IndexLike:
         """Private. Return an index for the ``obs`` axis."""
         if self._cached_obs is None:
             self._cached_obs = self._index_factory(self.query.obs_joinids().to_numpy())
         return self._cached_obs
 
     @property
-    def _var_index(self) -> pd.Index:
+    def _var_index(self) -> types.IndexLike:
         """Private. Return an index for the ``var`` axis."""
         if self._cached_var is None:
             self._cached_var = self._index_factory(self.query.var_joinids().to_numpy())
