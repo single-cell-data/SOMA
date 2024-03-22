@@ -16,13 +16,7 @@ class IndexLike(Protocol):
     not as a full specification of the types and behavior of ``get_indexer``.
     """
 
-    def get_indexer(
-        self,
-        target: npt.NDArray[np.int64],
-        method: object = ...,
-        limit: object = ...,
-        tolerance: object = ...,
-    ) -> Any:
+    def get_indexer(self, target: npt.NDArray[np.int64]) -> Any:
         """Something compatible with Pandas' Index.get_indexer method."""
 
 
