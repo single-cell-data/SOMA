@@ -23,7 +23,7 @@ dependencies = [
   "scipy",
   "typing-extensions>=4.1", # For LiteralString
 ]
-requires-python = "~=3.7"
+requires-python = "~=3.8"
 urls = { repository = "https://github.com/single-cell-data/SOMA.git" }
 classifiers = ["License :: OSI Approved :: MIT License"]
 
