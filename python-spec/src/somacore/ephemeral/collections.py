@@ -1,12 +1,13 @@
 from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
 
-from typing_extensions import Literal, Self
+from typing_extensions import Literal, Self, Union
 
 from .. import base
 from .. import collection
 from .. import data
 from .. import experiment
 from .. import measurement
+from .. import scene
 from .. import options
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
@@ -120,6 +121,10 @@ _BasicAbstractMeasurement = measurement.Measurement[
 ]
 """The loosest possible constraint of the abstract Measurement type."""
 
+_BasicAbstractScene = scene.Scene[
+    collection.Collection[Union[data.DataFrame, data.NDArray]], base.SOMAObject
+]
+"""The loosest possible constraint of the abstract Scene type."""
 
 class Measurement(  # type: ignore[misc]  # __eq__ false positive
     BaseCollection[base.SOMAObject], _BasicAbstractMeasurement
@@ -129,11 +134,21 @@ class Measurement(  # type: ignore[misc]  # __eq__ false positive
     __slots__ = ()
 
 
+class Scene(  # type: ignore[misc]   # __eq__ false positive
+    BaseCollection[base.SOMAObject],  _BasicAbstractScene
+):
+    """An in-memory Collection with Scene semantics."""
+
+    __slots__ = ()
+
+
+
 class Experiment(  # type: ignore[misc]  # __eq__ false positive
     BaseCollection[base.SOMAObject],
     experiment.Experiment[
         data.DataFrame,
         collection.Collection[_BasicAbstractMeasurement],
+        collection.Collection[Union[data.DataFrame, _BasicAbstractScene]],
         base.SOMAObject,
     ],
 ):

@@ -1,4 +1,4 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar, Union
 
 from typing_extensions import Final, Self
 
@@ -8,16 +8,23 @@ from . import collection
 from . import data
 from . import measurement
 from . import query
+from . import scene
 
 _DF = TypeVar("_DF", bound=data.DataFrame)
 """An implementation of a DataFrame."""
 _MeasColl = TypeVar("_MeasColl", bound=collection.Collection[measurement.Measurement])
 """An implementation of a collection of Measurements."""
+_SceneColl = TypeVar(
+    "_SceneColl", bound=collection.Collection[Union[data.DataFrame, scene.Scene]]
+)
+"""An implemenation of a collection of spatial data."""
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SOMA object type of the implementation."""
 
 
-class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _RootSO]):
+class Experiment(
+    collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _SceneColl, _RootSO]
+):
     """A collection subtype representing an annotated 2D matrix of measurements.
 
     In single cell biology, this can represent multiple modes of measurement
@@ -38,6 +45,7 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
     #         somacore.Experiment[
     #             ImplDataFrame,    # _DF
     #             ImplMeasurement,  # _MeasColl
+    #             ImplScene,        # _SceneColl
     #             ImplSOMAObject,   # _RootSO
     #         ],
     #     ):
@@ -56,6 +64,9 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
 
     ms = _mixin.item[_MeasColl]()
     """A collection of named measurements."""
+
+    spatial = _mixin.item[_SceneColl]()
+    """TODO Add docs for spatial collecion."""
 
     def axis_query(
         self,
