@@ -95,6 +95,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         if measurement_name not in experiment.ms:
             raise ValueError("Measurement does not exist in the experiment")
 
+        # Users often like to pass `foo=None` and we should let them
+        obs_query = obs_query or axis.AxisQuery()
+        var_query = var_query or axis.AxisQuery()
+
         self.experiment = experiment
         self.measurement_name = measurement_name
 
