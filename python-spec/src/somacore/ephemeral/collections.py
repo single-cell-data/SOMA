@@ -1,6 +1,7 @@
 from typing import Any, Dict, Iterator, MutableMapping, NoReturn, Optional, TypeVar
 
-from typing_extensions import Literal, Self
+import pyarrow as pa
+from typing_extensions import Literal, Self, Union
 
 from .. import base
 from .. import collection
@@ -9,6 +10,7 @@ from .. import data
 from .. import experiment
 from .. import measurement
 from .. import options
+from .. import pyramid
 from .. import scene
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
@@ -151,6 +153,27 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     @property
     def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
         """Transformations saved for this scene."""
+        raise NotImplementedError()
+
+
+class Pyramid(  # type: ignore[misc]   # __eq__ false positive
+    BaseCollection[base.SOMAObject], pyramid.Pyramid[data.DenseNDArray, base.SOMAObject]
+):
+    """An in-memory Collection with Pyramid semantics."""
+
+    __slots__ = ()
+
+    def read_level(
+        self,
+        level: int,
+        coords: options.DenseNDCoords = (),
+        *,
+        transform: Optional[str] = None,
+        coordinate_system: Optional[str] = None,
+        result_order: options.ResultOrderStr = options.ResultOrder.AUTO,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> pa.Tensor:
+        """TODO: Add read_image_level documentation"""
         raise NotImplementedError()
 
 

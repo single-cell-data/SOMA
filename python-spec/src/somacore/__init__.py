@@ -30,6 +30,7 @@ from .measurement import Measurement
 from .options import BatchSize
 from .options import IOfN
 from .options import ResultOrder
+from .pyramid import Pyramid
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
@@ -59,6 +60,7 @@ __all__ = (
     "Experiment",
     "Measurement",
     "Scene",
+    "Pyramid",
     "BatchSize",
     "IOfN",
     "ResultOrder",
