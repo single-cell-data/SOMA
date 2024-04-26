@@ -59,7 +59,7 @@ class Scene(
     we would support the following:
 
     * Single backing image
-    * Image pyramid
+    * Multi-resolution images
     * Multiple image tiles that create a larger image (may be touching images or with
       gaps)
     * Image masks on top of any of the above

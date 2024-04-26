@@ -1,5 +1,14 @@
-from typing import Any, Dict, Iterator, MutableMapping, NoReturn, Optional, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    MutableMapping,
+    NoReturn,
+    Optional,
+    TypeVar,
+)
 
+import pyarrow as pa
 from typing_extensions import Literal, Self
 
 from .. import base
@@ -7,6 +16,7 @@ from .. import collection
 from .. import coordinates
 from .. import data
 from .. import experiment
+from .. import images
 from .. import measurement
 from .. import options
 from .. import scene
@@ -151,6 +161,32 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     @property
     def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
         """Transformations saved for this scene."""
+        raise NotImplementedError()
+
+
+class Image2D(  # type: ignore[misc]   # __eq__ false positive
+    BaseCollection[base.SOMAObject], images.Image2D[data.DenseNDArray, base.SOMAObject]
+):
+    """An in-memory Collection with Image2D semantics."""
+
+    __slots__ = ()
+
+    @property
+    def level_count(self) -> int:
+        raise NotImplementedError()
+
+    def level_properties(self, level: int) -> images.Image2D.LevelProperties:
+        raise NotImplementedError()
+
+    def read_level(
+        self,
+        level: int,
+        coords: options.DenseNDCoords = (),
+        *,
+        transform: Optional[coordinates.CoordinateTransform] = None,
+        result_order: options.ResultOrderStr = options.ResultOrder.AUTO,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> pa.Tensor:
         raise NotImplementedError()
 
 

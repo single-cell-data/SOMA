@@ -42,3 +42,5 @@ class EphemeralCollectionTest(unittest.TestCase):
         self.assertEqual("SOMAExperiment", exp.soma_type)
         scene = ephemeral.Scene()
         self.assertEqual("SOMAScene", scene.soma_type)
+        img = ephemeral.Image2D()
+        self.assertEqual("SOMAImage2D", img.soma_type)
