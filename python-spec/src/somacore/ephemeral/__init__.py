@@ -14,5 +14,5 @@ __all__ = (
     "Collection",
     "Experiment",
     "Measurement",
-    "Scene", 
+    "Scene",
 )

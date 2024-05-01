@@ -7,8 +7,8 @@ from .. import collection
 from .. import data
 from .. import experiment
 from .. import measurement
-from .. import scene
 from .. import options
+from .. import scene
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 
@@ -126,6 +126,7 @@ _BasicAbstractScene = scene.Scene[
 ]
 """The loosest possible constraint of the abstract Scene type."""
 
+
 class Measurement(  # type: ignore[misc]  # __eq__ false positive
     BaseCollection[base.SOMAObject], _BasicAbstractMeasurement
 ):
@@ -135,12 +136,11 @@ class Measurement(  # type: ignore[misc]  # __eq__ false positive
 
 
 class Scene(  # type: ignore[misc]   # __eq__ false positive
-    BaseCollection[base.SOMAObject],  _BasicAbstractScene
+    BaseCollection[base.SOMAObject], _BasicAbstractScene
 ):
     """An in-memory Collection with Scene semantics."""
 
     __slots__ = ()
-
 
 
 class Experiment(  # type: ignore[misc]  # __eq__ false positive
