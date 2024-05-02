@@ -16,6 +16,9 @@ import pyarrow_hotfix
 
 from .base import SOMAObject
 from .collection import Collection
+from .coordinates import Axis
+from .coordinates import CoordinateSystem
+from .coordinates import CoordinateTransform
 from .data import DataFrame
 from .data import DenseNDArray
 from .data import NDArray
@@ -63,4 +66,7 @@ __all__ = (
     "AxisQuery",
     "ExperimentAxisQuery",
     "ContextBase",
+    "Axis",
+    "CoordinateSystem",
+    "CoordinateTransform",
 )

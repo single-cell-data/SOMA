@@ -1,9 +1,10 @@
-from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
+from typing import Any, Dict, Iterator, MutableMapping, NoReturn, Optional, TypeVar
 
 from typing_extensions import Literal, Self
 
 from .. import base
 from .. import collection
+from .. import coordinates
 from .. import data
 from .. import experiment
 from .. import measurement
@@ -141,6 +142,16 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     """An in-memory Collection with Scene semantics."""
 
     __slots__ = ()
+
+    @property
+    def local_coordinate_system(self) -> coordinates.CoordinateSystem:
+        """Coordinate system for this scene."""
+        raise NotImplementedError()
+
+    @property
+    def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
+        """Transformations saved for this scene."""
+        raise NotImplementedError()
 
 
 class Experiment(  # type: ignore[misc]  # __eq__ false positive

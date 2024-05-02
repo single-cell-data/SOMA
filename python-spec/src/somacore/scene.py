@@ -1,12 +1,14 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
-from typing import Generic, TypeVar
+import abc
+from typing import Generic, MutableMapping, TypeVar
 
 from typing_extensions import Final
 
 from . import _mixin
 from . import base
 from . import collection
+from . import coordinates
 from . import data
 
 _SpatialDF = TypeVar(
@@ -102,3 +104,15 @@ class Scene(
     This collection exists to store any spatial data in the scene that joins on the var
     ``soma_joinid``.
     """
+
+    @property
+    @abc.abstractmethod
+    def local_coordinate_system(self) -> coordinates.CoordinateSystem:
+        """Coordinate system for this scene."""
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
+        """Transformations saved for this scene."""
+        raise NotImplementedError()
