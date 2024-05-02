@@ -1,12 +1,14 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
-from typing import Generic, TypeVar, Union
+import abc
+from typing import Generic, MutableMapping, TypeVar, Union
 
 from typing_extensions import Final
 
 from . import _mixin
 from . import base
 from . import collection
+from . import coordinates
 from . import data
 
 _DF = TypeVar("_DF", bound=data.DataFrame)
@@ -50,3 +52,15 @@ class Scene(
 
     varl = _mixin.item[collection.Collection[_SpatialColl]]()
     """A collection of collections of spatial data defined on a measurement variable"""
+
+    @property
+    @abc.abstractmethod
+    def local_coordinate_system(self) -> coordinates.CoordinateSystem:
+        """Coordinate system for this scene."""
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
+        """Transformations saved for this scene."""
+        raise NotImplementedError()
