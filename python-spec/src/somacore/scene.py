@@ -45,8 +45,8 @@ class Scene(
     __slots__ = ()
     soma_type: Final = "SOMAScene"  # type: ignore[misc]
 
-    obss = _mixin.item[_SpatialColl]()
+    obsl = _mixin.item[_SpatialColl]()
     """A collection of spatial data defined on the obs data"""
 
-    vars = _mixin.item[collection.Collection[_SpatialColl]]()
+    varl = _mixin.item[collection.Collection[_SpatialColl]]()
     """A collection of collections of spatial data defined on a measurement variable"""
