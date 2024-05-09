@@ -3,6 +3,7 @@
 
 import abc
 from typing import Optional, Tuple
+from typing_extensions import Self
 
 import numpy as np
 import numpy.typing as npt
@@ -44,6 +45,24 @@ class CoordinateSystem(metaclass=abc.ABCMeta):
 
 
 class CoordinateTransform(metaclass=abc.ABCMeta):
+    @abc.abstractmethod
+    def apply(self, x: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+        """A function that transforms an (N, 2) or (N, 3) ndarray of float64
+        values according to this coordinate transformation.
+
+        Parameters:
+            x: (N, 2) or (N, 3) array of floats to transform.
+
+        Returns:
+            The transformed array.
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def invert(self) -> Self:
+        """Returns the inverse coordinate transformation."""
+        raise NotImplementedError()
+
     @abc.abstractmethod
     def to_numpy(self) -> npt.NDArray[np.float64]:
         """TODO: Add docstring for Transformation.to_numpy"""

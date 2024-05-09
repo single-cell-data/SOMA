@@ -23,9 +23,11 @@ import pyarrow.compute as pacomp
 from scipy import sparse
 from typing_extensions import Literal, Protocol, Self, TypedDict
 
+from .. import coordinates
 from .. import data
 from .. import measurement
 from .. import options
+from .. import scene
 from .. import types as base_types
 from . import _fast_csr
 from . import axis
@@ -647,6 +649,85 @@ class ExperimentAxisQuery(Generic[_Exp]):
         return self._threadpool_
 
 
+class SceneQuery:
+    """TODO: Add docstring"""
+
+    def __init__(
+        self,
+        experiment_or_query: Union[_Exp, ExperimentAxisQuery],
+        scene_name: str,
+        region_of_interest: options.SpatialRegion,
+        *,
+        coord_system: Optional[str] = None,
+    ):
+        """Spatial query on the data in a scene.
+
+        TODO: Add more details and examples.
+
+        Parameters:
+
+            experiment_or_query: Either the experiment the scene is stored in or an
+                ``ExperimentAxisQuery`` to filter results on.
+
+            scene_name: The name of the scene to query.
+
+            coord_system: The name of the coordinate system to use when getting and
+                returning data. If not specified, the default coordinate system is
+                used.
+
+        """
+
+        if isinstance(experiment_or_query, ExperimentAxisQuery):
+            self.experiment = experiment_or_query.experiment
+            self._axis_query: Optional[ExperimentAxisQuery] = experiment_or_query
+        else:
+            self.experiment = experiment_or_query
+            self._axis_query = None
+
+        self.scene = self.experiment.spatial[scene_name]
+        if not isinstance(self.scene, scene.Scene):
+            raise TypeError(
+                f"Unexpected SOMA type {type(self.scene).__name__} stored in spatial."
+            )
+        if (
+            coord_system is not None
+            and coord_system not in self.scene.coordinate_systems
+        ):
+            raise KeyError(f"No coordinate system '{coord_system}'.")
+
+    def img(self, layer):
+        """Returns a full image."""
+        raise NotImplementedError()
+
+    def obsl(
+        self, *, override_transform: Optional[coordinates.CoordinateTransform] = None
+    ):
+        """TODO: Add docstring"""
+        try:
+            _obsl = self.scene.obsl
+        except KeyError as ke:
+            raise ValueError("Scene does not conatin contain obsl data.") from ke
+        if not isinstance(
+            _obsl, data.DataFrame
+        ):  # TODO: Update type when GeometryDataFrame is implemented.
+            raise TypeError("Unexpected SOMA type stored 'obsl'.")
+
+        if self._axis_query is None:
+            # TODO: Add directly query for all obs.
+            raise NotImplementedError()
+
+        # Query the obsl by obs soma_joinid.
+        return _obsl.read((self._axis_query.obs_joinids(),))
+
+    def varl(self, layer, *, measurement_name: Optional[str] = None):
+        """TODO: Add docstring"""
+        if measurement_name is None and self._axis_query is None:
+            raise ValueError(
+                "No ExperimentAxisQuery is set. A measurement name must be provided."
+            )
+        raise NotImplementedError()
+
+
 # Private internal data structures
 
 
@@ -846,6 +927,10 @@ class _Experimentish(Protocol):
 
     @property
     def obs(self) -> data.DataFrame:
+        ...
+
+    @property
+    def spatial(self) -> Mapping[str, scene.Scene]:
         ...
 
     @property

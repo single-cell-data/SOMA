@@ -11,6 +11,7 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 import pyarrow as pa
+import shapely
 from typing_extensions import Final, Literal
 
 from . import types
@@ -179,3 +180,21 @@ SparseNDCoord = Union[
 """A single coordinate range for one dimension of a sparse nd-array."""
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
+
+# TODO: Workshop what types of spatial coordinates are valid.
+SpatialCoord = Union[
+    None,
+    ValSliceOrSequence[bytes],
+    ValSliceOrSequence[float],
+    ValSliceOrSequence[int],
+    ValSliceOrSequence[slice],
+    pa.Array,
+    pa.ChunkedArray,
+    npt.NDArray[np.integer],
+]
+"""A single coordinate range for one dimension of a spatial region."""
+
+# TODO: Workshop what types of regions of interest we want to support.
+SpatialRegion = Union[shapely.GeometryType, Sequence[SpatialCoord]]
+"""A spatial region that is either defined by a geometry type of sequence of spatial 
+coordinates."""
