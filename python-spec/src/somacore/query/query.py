@@ -19,6 +19,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
+import pyarrow.compute as pacomp
 from scipy import sparse
 from typing_extensions import Literal, Protocol, Self, TypedDict
 
@@ -264,6 +265,48 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: experimental
         """
         return self._axism_inner(_Axis.VAR, layer)
+
+    def obs_scene_ids(self) -> pa.Array:
+        """Returns a pyarrow array with scene ids that contain obs from this
+        query.
+
+        Lifecycle: experimental
+        """
+        try:
+            obs_scene = self.experiment.obs_scene
+        except KeyError as ke:
+            raise KeyError("Missing obs_scene") from ke
+        if not isinstance(obs_scene, data.DataFrame):
+            raise TypeError("obs_scene must be a dataframe.")
+
+        full_table = obs_scene.read(
+            coords=((_Axis.OBS.getattr_from(self._joinids), slice(None))),
+            result_order=options.ResultOrder.COLUMN_MAJOR,
+            value_filter="data != 0",
+        ).concat()
+
+        return pacomp.unique(full_table["scene_id"])
+
+    def var_scene_ids(self) -> pa.Array:
+        """Return a pyarrow array with scene ids that contain var from this
+        query.
+
+        Lifecycle: experimental
+        """
+        try:
+            var_scene = self._ms.var_scene
+        except KeyError as ke:
+            raise KeyError("Missing var_scene") from ke
+        if not isinstance(var_scene, data.DataFrame):
+            raise TypeError("var_scene must be a dataframe.")
+
+        full_table = var_scene.read(
+            coords=((_Axis.OBS.getattr_from(self._joinids), slice(None))),
+            result_order=options.ResultOrder.COLUMN_MAJOR,
+            value_filter="data != 0",
+        ).concat()
+
+        return pacomp.unique(full_table["scene_id"])
 
     def to_anndata(
         self,
@@ -807,6 +850,10 @@ class _Experimentish(Protocol):
 
     @property
     def context(self) -> Optional[base_types.ContextBase]:
+        ...
+
+    @property
+    def obs_scene(self) -> data.DataFrame:
         ...
 
 
