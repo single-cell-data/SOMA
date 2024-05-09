@@ -25,6 +25,7 @@ from typing_extensions import Literal, Protocol, Self, TypedDict
 from .. import data
 from .. import measurement
 from .. import options
+from .. import scene
 from .. import types as base_types
 from . import _fast_csr
 from . import axis
@@ -264,6 +265,21 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: experimental
         """
         return self._axism_inner(_Axis.VAR, layer)
+
+    def scenes(self) -> pa.Array:
+        """Returns ``scene_names`` of scenes matching this query as an Arrow array.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    def scene_query(self, scene_name) -> "SceneQuery":
+        """Returns a ``SceneQuery`` for the requested Scene with the filters
+        provided by the experiment.
+
+        Lifecycle: experimental
+        """
+        return SceneQuery(self, scene_name)
 
     def to_anndata(
         self,
@@ -604,6 +620,76 @@ class ExperimentAxisQuery(Generic[_Exp]):
         return self._threadpool_
 
 
+class SceneQuery:
+    """TODO: Add docstring"""
+
+    def __init__(
+        self,
+        experiment_or_query: Union[_Exp, ExperimentAxisQuery],
+        scene_name: str,
+    ):
+        if isinstance(experiment_or_query, ExperimentAxisQuery):
+            self.experiment = experiment_or_query.experiment
+            self._axis_query: Optional[ExperimentAxisQuery] = experiment_or_query
+        else:
+            self.experiment = experiment_or_query
+            self._axis_query = None
+
+        if scene_name not in self.experiment.spatial:
+            raise ValueError("Scene does not exist in the experiment")
+
+        # TODO: Add this if we open the scene on query
+        # if not isinstance(self.scene, scene.Scene):
+        #    raise TypeError(
+        #        f"Unexpected SOMA type {type(m_scene).__name__} stored in spatial"
+        #    )
+
+        self.scene_name = scene_name
+
+    def img(self, layer, *, coord_system=None):
+        """Returns a full image."""
+        raise NotImplementedError()
+
+    def img_by_var(self, layer, *, apply_mask=False, crop=False, coord_system=None):
+        """Returns an image with a mask for the var locations."""
+        raise NotImplementedError()
+
+    def img_by_obs(self, layer, *, apply_mask=False, crop=False, coord_system=None):
+        """Returns an image with a mask for the obs locations."""
+        raise NotImplementedError()
+
+    def obsl(self, layer):
+        """TODO: Add docstring"""
+        # Get the requested layer inside obsl. Check it is a geometry dataframe.
+        try:
+            _obsl = self.experiment.spatial[self.scene_name].obsl
+        except KeyError as ke:
+            raise ValueError(
+                f"Scene '{self.scene_name}' does not conatin contain obsl data"
+            ) from ke
+        if not isinstance(
+            _obsl, data.DataFrame
+        ):  # TODO: Update type when GeometryDataFrame is implemented.
+            raise TypeError(
+                f"Unexpected SOMA type stored 'obsl' in Scene '{self.scene_name}'"
+            )
+
+        if self._axis_query is None:
+            # TODO: Add directly query for all obs.
+            raise NotImplementedError()
+
+        # Query the obsl by obs soma_joinid.
+        return _obsl.read((self._axis_query.obs_joinids(),))
+
+    def varl(self, layer, *, measurement_name: Optional[str] = None):
+        """TODO: Add docstring"""
+        if measurement_name is None and self._axis_query is None:
+            raise ValueError(
+                "No ExperimentAxisQuery is set. A measurement name must be provided."
+            )
+        raise NotImplementedError()
+
+
 # Private internal data structures
 
 
@@ -803,6 +889,10 @@ class _Experimentish(Protocol):
 
     @property
     def obs(self) -> data.DataFrame:
+        ...
+
+    @property
+    def spatial(self) -> Mapping[str, scene.Scene]:
         ...
 
     @property
