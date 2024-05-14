@@ -1,4 +1,4 @@
-from typing import Generic, Optional, TypeVar, Union
+from typing import Generic, Optional, TypeVar
 
 from typing_extensions import Final, Self
 
@@ -14,9 +14,7 @@ _DF = TypeVar("_DF", bound=data.DataFrame)
 """An implementation of a DataFrame."""
 _MeasColl = TypeVar("_MeasColl", bound=collection.Collection[measurement.Measurement])
 """An implementation of a collection of Measurements."""
-_SceneColl = TypeVar(
-    "_SceneColl", bound=collection.Collection[Union[data.DataFrame, scene.Scene]]
-)
+_SceneColl = TypeVar("_SceneColl", bound=collection.Collection[scene.Scene])
 """An implemenation of a collection of spatial data."""
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SOMA object type of the implementation."""
@@ -65,8 +63,14 @@ class Experiment(
     ms = _mixin.item[_MeasColl]()
     """A collection of named measurements."""
 
-    spatial = _mixin.item[_SceneColl]()
-    """TODO Add docs for spatial collecion."""
+    spatial = _mixin.item[_SceneColl]()  # TODO: Discuss the name of this element.
+    """A collection of named spatial scenes."""
+
+    obs_scene = _mixin.item[_DF]()  # TODO: Rename this element.
+    """A dataframe mapping obs_id to scene names.
+
+    This provides a join table for the obs and scene ids.
+    """
 
     def axis_query(
         self,
