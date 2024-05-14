@@ -1,6 +1,6 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar
 
 from typing_extensions import Final
 
@@ -9,11 +9,13 @@ from . import base
 from . import collection
 from . import data
 
-_DF = TypeVar("_DF", bound=data.DataFrame)
-"""A particular implementation of DataFrame."""
-_SpatialColl = TypeVar(
-    "_SpatialColl", bound=collection.Collection[Union[data.DataFrame, data.NDArray]]
-)
+_SpatialDF = TypeVar(
+    "_SpatialDF", bound=data.DataFrame
+)  # TODO: Update to GeometryDataFrame or PointCloud
+"""A particular implementation of GeometryDataFrame and PointCloud."""
+_ImageColl = TypeVar(
+    "_ImageColl", bound=collection.Collection[data.NDArray]
+)  # TODO: Update to be SpatialArray or ImageArray or ImageCollection (tdb)
 """A particular implementation of a collection of spatial arrays."""
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
@@ -21,7 +23,7 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 
 class Scene(
     collection.BaseCollection[_RootSO],
-    Generic[_SpatialColl, _RootSO],
+    Generic[_SpatialDF, _ImageColl, _RootSO],
 ):
     """TODO: Add documentation for scene
 
@@ -36,8 +38,9 @@ class Scene(
     #     class Scene(  # type: ignore[type-var]
     #         ImplBaseCollection[ImplSOMAObject],
     #         somacore.Scene[
-    #             ImplCollection[Union[ImplDF, ImplNDArray]],  # _SpatialColl
-    #             ImplSOMAObject,                              # _RootSO
+    #             Union[ImplGeometryDataFrame, ImplPointCloud], # _SpatialDF
+    #             ImplImageCollection,                          # _ImageColl
+    #             ImplSOMAObject,                               # _RootSO
     #         ],
     #     ):
     #         ...
@@ -45,8 +48,17 @@ class Scene(
     __slots__ = ()
     soma_type: Final = "SOMAScene"  # type: ignore[misc]
 
-    obsl = _mixin.item[_SpatialColl]()
-    """A collection of spatial data defined on the obs data"""
+    img = _mixin.item[_ImageColl]()
+    """A collection of imagery backing the spatial data"""
 
-    varl = _mixin.item[collection.Collection[_SpatialColl]]()
-    """A collection of collections of spatial data defined on a measurement variable"""
+    obsl = _mixin.item[_SpatialDF]()
+    """A dataframe of the obs locations"""
+
+    varl = _mixin.item[collection.Collection[_SpatialDF]]()
+    """A collection of dataframes of the var locations"""
+
+    obssm = _mixin.item[_SpatialDF]()  # TODO: Discuss name
+    """Spatial metadata annotations of obs"""
+
+    varsm = _mixin.item[_SpatialDF]()  # TODO: Discuss name
+    """Spatial metadata annotations of var"""
