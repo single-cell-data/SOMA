@@ -1,6 +1,6 @@
 from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
 
-from typing_extensions import Literal, Self, Union
+from typing_extensions import Literal, Self
 
 from .. import base
 from .. import collection
@@ -148,7 +148,7 @@ class Experiment(  # type: ignore[misc]  # __eq__ false positive
     experiment.Experiment[
         data.DataFrame,
         collection.Collection[_BasicAbstractMeasurement],
-        collection.Collection[Union[data.DataFrame, _BasicAbstractScene]],
+        collection.Collection[_BasicAbstractScene],
         base.SOMAObject,
     ],
 ):
