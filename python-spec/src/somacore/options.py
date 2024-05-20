@@ -114,7 +114,7 @@ configuration object:
 - If an implementation-specific object, that implementation will use that object
   for configuration data; it will be ignored by others.
 
-See the "Per-call configuration" section of the main SOMA specifiction.
+See the "Per-call configuration" section of the main SOMA specification.
 """
 
 
@@ -176,6 +176,6 @@ SparseNDCoord = Union[
     pa.IntegerArray,
     pa.ChunkedArray,
 ]
-"""A single coordinate range for one dimension of a sparse nd-array."""
+"""A single coordinate range for one dimension of a sparse ndarray."""
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
