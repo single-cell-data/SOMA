@@ -66,10 +66,15 @@ class Experiment(
     spatial = _mixin.item[_SceneColl]()  # TODO: Discuss the name of this element.
     """A collection of named spatial scenes."""
 
-    obs_scene = _mixin.item[_DF]()  # TODO: Rename this element.
+    # TODO: Discuss the name of this element.
+    # TODO: Discuss the best location for this element. Should it be moved
+    # inside the spatial collection?
+    # TODO: Use DF or new array type for int/string indexing?
+    obs_spatial = _mixin.item[_DF]()
     """A dataframe mapping obs_id to scene names.
 
-    This provides a join table for the obs and scene ids.
+    This provides a join table for the obs ``soma_joinid`` and the ``scene_ids``
+    used in the ``spatial`` collection.
     """
 
     def axis_query(
