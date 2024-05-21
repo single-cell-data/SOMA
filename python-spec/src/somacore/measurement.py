@@ -99,3 +99,9 @@ class Measurement(
 
     This is indexed by ``[varid_1, varid_2]``.
     """
+
+    # TODO: Discuss the name of this element.
+    # TODO: Discuss the best location for this element. Should it be moved
+    # inside the spatial collection?
+    # TODO: Use DF or new array type for int/string indexing?
+    var_spatial = _mixin.item[_DF]()

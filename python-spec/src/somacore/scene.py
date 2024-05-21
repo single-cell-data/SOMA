@@ -49,16 +49,56 @@ class Scene(
     soma_type: Final = "SOMAScene"  # type: ignore[misc]
 
     img = _mixin.item[_ImageColl]()
-    """A collection of imagery backing the spatial data"""
+    """A collection of imagery backing the spatial data
+
+    This collection can contain a combination of sparse and dense arrays that
+    contain images or image masks. The specifics of how to best store and manage
+    this data internal to the group needs to be explored in more detail. Ideally,
+    we would support the following:
+
+    * Single backing image
+    * Image pyramid
+    * Multiple image tiles that create a larger image (may be touching images or with
+      gaps)
+    * Image masks on top of any of the above
+    """
 
     obsl = _mixin.item[_SpatialDF]()
-    """A dataframe of the obs locations"""
+    """A dataframe of the obs locations
+
+    The ``obsl`` object can be either a GeometryDataFrame or a PointCloud. It must
+    contain an obs ``soma_joinid`` and at least 2 spatial dimensions (naming convention
+    for spatial dimensions TBD). If it is a ``GeometryDataFrame`` it must contain a
+    ``soma_geometry`` column that is either (1) a number type for a collection of only
+    circles or (2) a WKB blob for arbitrary 2D geometries. Other additional columns
+    may be stored in this dataframe, for example the spot column and row index in a
+    Visium dataset.
+    """
 
     varl = _mixin.item[collection.Collection[_SpatialDF]]()
-    """A collection of dataframes of the var locations"""
+    """A collection of dataframes of the var locations where the collection is a
+    mapping from measurement name to var location dataframe
 
-    obssm = _mixin.item[_SpatialDF]()  # TODO: Discuss name
-    """Spatial metadata annotations of obs"""
+    Each dataframe in ``varl`` can be either a GeometryDataFrame of a PointCloud. It
+    must contain a var ``soma_joinid`` and at least 2 spatial dimensions (naming
+    convention for spatial dimensions TBD). If it is a ``GeometryDataFrame`` it must
+    contain a ``soma_geometry`` column that is either (1) a number type for a
+    collection of only circles or (2) a WKB blob for arbitrary 2D geometries. Other
+    additional columns may be stored in this dataframe as well.
+    """
 
-    varsm = _mixin.item[_SpatialDF]()  # TODO: Discuss name
-    """Spatial metadata annotations of var"""
+    # TODO: Discuss the name of this element.
+    obssm = _mixin.item[_SpatialDF]()
+    """Spatial metadata annotations of obs
+
+    This collection exists to store any spatial data in the scene that joins on the obs
+    ``soma_joinid``.
+    """
+
+    # TODO: Discuss the name of this element.
+    varsm = _mixin.item[_SpatialDF]()
+    """Spatial metadata annotations of var
+
+    This collection exists to store any spatial data in the scene that joins on the var
+    ``soma_joinid``.
+    """
