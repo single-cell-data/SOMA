@@ -11,12 +11,16 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 import pyarrow as pa
+import shapely
 from typing_extensions import Final, Literal
 
 from . import types
 
 SOMA_JOINID: Final = "soma_joinid"
 """Global constant for the SOMA join ID."""
+
+SOMA_GEOMETRY: Final = "soma_geometry"
+"""Global constant for SOMA spatial geometry type."""
 
 OpenMode = Literal["r", "w"]
 """How to open a SOMA object: read or write."""
@@ -179,3 +183,8 @@ SparseNDCoord = Union[
 """A single coordinate range for one dimension of a sparse nd-array."""
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
+
+"""A single coordinate range for one dimension of a sparse dataframe."""
+
+GeometryDFCoords = Sequence[Union[SparseNDCoord, shapely.GeometryType]]
+"""A sequence of coordinate ranges for reading dense dataframes."""
