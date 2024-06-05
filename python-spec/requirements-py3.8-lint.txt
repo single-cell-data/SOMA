@@ -29,6 +29,7 @@ pytz==2024.1
 PyYAML==6.0.1
 ruff==0.4.9
 scipy==1.10.1
+shapely==2.0.4
 six==1.16.0
 tomli==2.0.1
 types-pytz==2024.1.0.20240417
