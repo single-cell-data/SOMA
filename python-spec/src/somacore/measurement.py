@@ -100,8 +100,13 @@ class Measurement(
     This is indexed by ``[varid_1, varid_2]``.
     """
 
-    # TODO: Discuss the name of this element.
-    # TODO: Discuss the best location for this element. Should it be moved
-    # inside the spatial collection?
-    # TODO: Use DF or new array type for int/string indexing?
-    var_spatial = _mixin.item[_DF]()
+    var_scene = _mixin.item[_DF]()
+    """A dataframe that stores the presence of var in the spatial scenes.
+
+    This provides a join tabel for the var ``soma_joinid`` and the scene names used in
+    the ``spatial`` collection. This dataframe must contain dimensions ``soma_joinid``
+    and ``scene_id``. The ``scene_id`` dimension must be a ``string`` dimension. The
+    dataframe must contain a ``boolean`` column ``data``. The values of ``data`` are
+    ``True`` if the var with varid ``soma_joinid`` is contained in scene with name
+    ``scene_id`` and ``False`` otherwise.
+    """
