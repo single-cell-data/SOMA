@@ -65,44 +65,33 @@ class Scene(
     * Image masks on top of any of the above
     """
 
-    obsl = _mixin.item[_SpatialDF]()
+    obsl = _mixin.item[collection.Collection[_SpatialDF]]()
     """A dataframe of the obs locations
 
-    The ``obsl`` object can be either a GeometryDataFrame or a PointCloud. It must
-    contain an obs ``soma_joinid`` and at least 2 spatial dimensions (naming convention
-    for spatial dimensions TBD). If it is a ``GeometryDataFrame`` it must contain a
-    ``soma_geometry`` column that is either (1) a number type for a collection of only
-    circles or (2) a WKB blob for arbitrary 2D geometries. Other additional columns
-    may be stored in this dataframe, for example the spot column and row index in a
-    Visium dataset.
-    """
+    This collection exists to store any spatial data in the scene that joins on the obs
+    ``soma_joinid``.
 
-    varl = _mixin.item[collection.Collection[_SpatialDF]]()
-    """A collection of dataframes of the var locations where the collection is a
-    mapping from measurement name to var location dataframe
-
-    Each dataframe in ``varl`` can be either a GeometryDataFrame of a PointCloud. It
-    must contain a var ``soma_joinid`` and at least 2 spatial dimensions (naming
+    Each dataframe in ``obsl`` can be either a GeometryDataFrame or a PointCloud. It
+    must contain a ``soma_joinid`` and at least 2 spatial dimensions (naming
     convention for spatial dimensions TBD). If it is a ``GeometryDataFrame`` it must
     contain a ``soma_geometry`` column that is either (1) a number type for a
     collection of only circles or (2) a WKB blob for arbitrary 2D geometries. Other
     additional columns may be stored in this dataframe as well.
-    """
+     """
 
-    # TODO: Discuss the name of this element.
-    obssm = _mixin.item[_SpatialDF]()
-    """Spatial metadata annotations of obs
+    varl = _mixin.item[collection.Collection[collection.Collection[_SpatialDF]]]()
+    """A collection of collections of dataframes of the var locations.
 
-    This collection exists to store any spatial data in the scene that joins on the obs
-    ``soma_joinid``.
-    """
+    This collection exists to store any spatial data in the scene that joins on the
+    var ``soma_joinid``. The top-level collection maps from measurement name to a
+    collection of dataframes.
 
-    # TODO: Discuss the name of this element.
-    varsm = _mixin.item[_SpatialDF]()
-    """Spatial metadata annotations of var
-
-    This collection exists to store any spatial data in the scene that joins on the var
-    ``soma_joinid``.
+    Each dataframe in ``varl`` can be either a GeometryDataFrame or a PointCloud. It
+    must contain a ``soma_joinid`` and at least 2 spatial dimensions (naming
+    convention for spatial dimensions TBD). If it is a ``GeometryDataFrame`` it must
+    contain a ``soma_geometry`` column that is either (1) a number type for a
+    collection of only circles or (2) a WKB blob for arbitrary 2D geometries. Other
+    additional columns may be stored in this dataframe as well.
     """
 
     @property
