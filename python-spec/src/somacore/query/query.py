@@ -2,6 +2,7 @@ import enum
 from concurrent import futures
 from typing import (
     Any,
+    Callable,
     Dict,
     Generic,
     Mapping,
@@ -10,6 +11,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    cast,
     overload,
 )
 
@@ -549,7 +551,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def _convert_to_ndarray(
         self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int
     ) -> np.ndarray:
-        indexer: pd.Index = axis.getattr_from(self.indexer, pre="by_")
+        indexer = cast(
+            Callable[[_Numpyable], npt.NDArray[np.intp]],
+            axis.getattr_from(self.indexer, pre="by_"),
+        )
         idx = indexer(table["soma_dim_0"])
         z = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(z, idx * n_col + table["soma_dim_1"], table["soma_data"])
