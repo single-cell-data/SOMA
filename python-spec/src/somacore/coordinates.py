@@ -2,10 +2,10 @@
 
 import abc
 from typing import Optional, Tuple
-from typing_extensions import Self
 
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import Self
 
 
 class Axis(metaclass=abc.ABCMeta):
