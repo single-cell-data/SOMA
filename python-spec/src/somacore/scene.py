@@ -95,12 +95,15 @@ class Scene(
 
     @property
     @abc.abstractmethod
-    def local_coordinate_system(self) -> coordinates.CoordinateSystem:
+    def default_coordinate_system(self) -> coordinates.CoordinateSystem:
         """Coordinate system for this scene."""
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
-    def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
-        """Transformations saved for this scene."""
+    def coordinate_systems(
+        self,
+    ) -> MutableMapping[str, coordinates.CoordinateTransform]:
+        """A list of coordinate transforms and the transform from the coordinate
+        system to the global coordinate system."""
         raise NotImplementedError()
