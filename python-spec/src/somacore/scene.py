@@ -1,9 +1,9 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
 import abc
-from typing import Generic, MutableMapping, TypeVar
+from typing import Generic, MutableMapping, Optional, TypeVar
 
-from typing_extensions import Final
+from typing_extensions import Final, Self
 
 from . import _mixin
 from . import base
@@ -11,6 +11,8 @@ from . import collection
 from . import coordinates
 from . import data
 from . import images
+from . import options
+from . import query
 
 _SpatialDF = TypeVar(
     "_SpatialDF", bound=data.DataFrame
@@ -95,7 +97,7 @@ class Scene(
 
     @property
     @abc.abstractmethod
-    def default_coordinate_system(self) -> coordinates.CoordinateSystem:
+    def reference_coordinate_system(self) -> coordinates.CoordinateSystem:
         """Coordinate system for this scene."""
         raise NotImplementedError()
 
@@ -107,3 +109,14 @@ class Scene(
         """A list of coordinate transforms and the transform from the coordinate
         system to the global coordinate system."""
         raise NotImplementedError()
+
+    def spatial_query(
+        self,
+        region_of_interest: options.SpatialRegion,
+        *,
+        coord_system: Optional[str] = None,
+    ) -> "query.SceneSpatialQuery[Self]":
+        # mypy doesn't quite understand descriptors so it issues a spurious error here.
+        return query.SceneSpatialQuery(  # type: ignore[type-var]
+            self, region_of_interest, coord_system=coord_system
+        )
