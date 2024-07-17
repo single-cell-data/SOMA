@@ -2,7 +2,6 @@ from typing import (
     Any,
     Dict,
     Iterator,
-    MutableMapping,
     NoReturn,
     Optional,
     Sequence,
@@ -157,13 +156,8 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     __slots__ = ()
 
     @property
-    def local_coordinate_system(self) -> coordinates.CoordinateSystem:
+    def coordinate_space(self) -> coordinates.CoordinateSpace:
         """Coordinate system for this scene."""
-        raise NotImplementedError()
-
-    @property
-    def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
-        """Transformations saved for this scene."""
         raise NotImplementedError()
 
 
