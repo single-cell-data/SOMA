@@ -30,6 +30,7 @@ from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
+from .scene import Scene
 from .types import ContextBase
 
 try:
@@ -54,6 +55,7 @@ __all__ = (
     "SparseRead",
     "Experiment",
     "Measurement",
+    "Scene",
     "BatchSize",
     "IOfN",
     "ResultOrder",
