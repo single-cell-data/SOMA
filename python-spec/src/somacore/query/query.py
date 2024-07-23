@@ -257,13 +257,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     def obsm(self, layer: str) -> data.SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._axism_inner(_Axis.OBS, layer)
 
     def varm(self, layer: str) -> data.SparseRead:
         """Returns a ``varm`` layer as a sparse read.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._axism_inner(_Axis.VAR, layer)
 
