@@ -298,8 +298,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 Additional varp layers to read and return in the varp slot.
             drop_levels:
                 Indicate whether unused categories on axis frames should be
-                dropped. By default, False, the categories which are present in the SOMA Experiment
-                and not present in the query output are not dropped.
+                dropped. By default, False, the categories which are present
+                in the SOMA Experimentand not present in the query output
+                are not dropped.
 
         Lifecycle: maturing
         """
