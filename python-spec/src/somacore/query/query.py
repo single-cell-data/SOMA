@@ -296,6 +296,9 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 Additional varm layers to read and return in the varm slot.
             varp_layers:
                 Additional varp layers to read and return in the varp slot.
+            drop_levels:
+                Indicate whether unused categories on axis frames should be
+                dropped. By default, False, the categories are not dropped.
 
         Lifecycle: maturing
         """
