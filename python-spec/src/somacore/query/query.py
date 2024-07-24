@@ -298,7 +298,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         Lifecycle: maturing
         """
-        return self._read(
+        ad = self._read(
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
@@ -307,6 +307,16 @@ class ExperimentAxisQuery(Generic[_Exp]):
             varm_layers=varm_layers,
             varp_layers=varp_layers,
         ).to_anndata()
+        
+        # Drop unused categories on axis dataframes
+        for name in ad.obs:
+            if pd.api.types.is_categorical_dtype(ad.obs[name]):
+                ad.obs[name] = ad.obs[name].cat.remove_unused_categories()
+        for name in ad.var:
+            if pd.api.types.is_categorical_dtype(ad.var[name]):
+                ad.var[name] = ad.var[name].cat.remove_unused_categories()
+        
+        return ad
 
     # Context management
 
