@@ -307,7 +307,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
             varm_layers=varm_layers,
             varp_layers=varp_layers,
         ).to_anndata()
-        
+
         # Drop unused categories on axis dataframes
         for name in ad.obs:
             if pd.api.types.is_categorical_dtype(ad.obs[name]):
@@ -315,7 +315,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         for name in ad.var:
             if pd.api.types.is_categorical_dtype(ad.var[name]):
                 ad.var[name] = ad.var[name].cat.remove_unused_categories()
-        
+
         return ad
 
     # Context management
