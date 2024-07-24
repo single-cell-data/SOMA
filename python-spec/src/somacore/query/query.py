@@ -277,6 +277,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         obsp_layers: Sequence[str] = (),
         varm_layers: Sequence[str] = (),
         varp_layers: Sequence[str] = (),
+        drop_levels: bool = False,
     ) -> anndata.AnnData:
         """
         Executes the query and return result as an ``AnnData`` in-memory object.
@@ -295,10 +296,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 Additional varm layers to read and return in the varm slot.
             varp_layers:
                 Additional varp layers to read and return in the varp slot.
+            drop_levels:
+                Indicate whether unused categories on axis frames should be
+                dropped. By default, False, the categories which are present in the SOMA Experiment
+                and not present in the query output are not dropped.
 
         Lifecycle: maturing
         """
-        return self._read(
+        ad = self._read(
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
@@ -307,6 +312,17 @@ class ExperimentAxisQuery(Generic[_Exp]):
             varm_layers=varm_layers,
             varp_layers=varp_layers,
         ).to_anndata()
+
+        # Drop unused categories on axis dataframes if requested
+        if drop_levels:
+            for name in ad.obs:
+                if pd.api.types.is_categorical_dtype(ad.obs[name]):
+                    ad.obs[name] = ad.obs[name].cat.remove_unused_categories()
+            for name in ad.var:
+                if pd.api.types.is_categorical_dtype(ad.var[name]):
+                    ad.var[name] = ad.var[name].cat.remove_unused_categories()
+
+        return ad
 
     # Context management
 
