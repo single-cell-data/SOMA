@@ -132,9 +132,7 @@ _BasicAbstractMeasurement = measurement.Measurement[
 ]
 """The loosest possible constraint of the abstract Measurement type."""
 
-_BasicAbstractScene = scene.Scene[
-    data.DataFrame, collection.Collection[data.NDArray], base.SOMAObject
-]
+_BasicAbstractScene = scene.Scene[data.DataFrame, images.Image2D, base.SOMAObject]
 """The loosest possible constraint of the abstract Scene type."""
 
 

@@ -1,7 +1,7 @@
 """Implementation of the SOMA image collection for spatial data"""
 
 import abc
-from typing import Generic, Optional, Sequence, Tuple, TypeVar
+from typing import Generic, Optional, Tuple, TypeVar
 
 import pyarrow as pa
 from typing_extensions import Final, Protocol
@@ -47,7 +47,7 @@ class Image2D(
         """Class requirements for Image2D level properties."""
 
         @property
-        def axes(self) -> Sequence[str]:
+        def axes(self) -> Tuple[str, ...]:
             """Axis order for the underlying data."""
 
         @property
@@ -55,7 +55,7 @@ class Image2D(
             """The key for the level inside the Image2D collection."""
 
         @property
-        def shape(self) -> Sequence[int]:
+        def shape(self) -> Tuple[int, ...]:
             """Number of pixels for each dimension of the image."""
 
     @property
@@ -64,7 +64,7 @@ class Image2D(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def level_properties(self) -> Tuple[LevelProperties, ...]:
+    def level_properties(self, level: int) -> LevelProperties:
         raise NotImplementedError()
 
     @abc.abstractmethod

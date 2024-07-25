@@ -10,14 +10,13 @@ from . import base
 from . import collection
 from . import coordinates
 from . import data
+from . import images
 
 _SpatialDF = TypeVar(
     "_SpatialDF", bound=data.DataFrame
 )  # TODO: Update to GeometryDataFrame or PointCloud
 """A particular implementation of GeometryDataFrame and PointCloud."""
-_ImageColl = TypeVar(
-    "_ImageColl", bound=collection.Collection[data.NDArray]
-)  # TODO: Update to be SpatialArray or ImageArray or ImageCollection (tdb)
+_ImageColl = TypeVar("_ImageColl", bound=images.Image2D)
 """A particular implementation of a collection of spatial arrays."""
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
