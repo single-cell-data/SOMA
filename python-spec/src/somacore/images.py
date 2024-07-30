@@ -1,7 +1,7 @@
 """Implementation of the SOMA image collection for spatial data"""
 
 import abc
-from typing import Generic, Optional, Tuple, TypeVar
+from typing import Generic, Optional, Sequence, Tuple, TypeVar, Union
 
 import pyarrow as pa
 from typing_extensions import Final, Protocol
@@ -57,6 +57,18 @@ class Image2D(
         @property
         def shape(self) -> Tuple[int, ...]:
             """Number of pixels for each dimension of the image."""
+
+    @abc.abstractmethod
+    def add_new_level(
+        self,
+        key: str,
+        *,
+        uri: Optional[str] = None,
+        type: pa.DataType,
+        shape: Sequence[int],
+        axes: Union[str, Sequence[str]],
+    ) -> data.DenseNDArray:
+        raise NotImplementedError()
 
     @property
     @abc.abstractmethod

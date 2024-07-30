@@ -5,7 +5,9 @@ from typing import (
     MutableMapping,
     NoReturn,
     Optional,
+    Sequence,
     TypeVar,
+    Union,
 )
 
 import pyarrow as pa
@@ -168,6 +170,17 @@ class Image2D(  # type: ignore[misc]   # __eq__ false positive
     """An in-memory Collection with Image2D semantics."""
 
     __slots__ = ()
+
+    def add_new_level(
+        self,
+        key: str,
+        *,
+        uri: Optional[str] = None,
+        type: pa.DataType,
+        shape: Sequence[int],
+        axes: Union[str, Sequence[str]],
+    ) -> data.DenseNDArray:
+        raise NotImplementedError()
 
     @property
     def level_count(self) -> int:
