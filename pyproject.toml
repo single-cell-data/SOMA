@@ -43,6 +43,7 @@ tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
 [tool.ruff]
 lint.extend-select = ["I"]
+target-version = "py38"
 
 [tool.ruff.lint.isort]
 force-single-line = true
@@ -53,6 +54,7 @@ single-line-exclusions = ["typing", "typing_extensions"]
 check_untyped_defs = true
 enable_error_code = ["ignore-without-code"]
 warn_redundant_casts = true
+python_version = 3.8
 # We want to enable this but it won't work when running locally due to the
 # presence of _version.py (which invalidates the ignore, which causes an error).
 #

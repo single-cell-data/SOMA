@@ -573,7 +573,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
             axis.getattr_from(self.indexer, pre="by_"),
         )
         idx = indexer(table["soma_dim_0"])
-        z = np.zeros(n_row * n_col, dtype=np.float32)
+        z: np.ndarray = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(z, idx * n_col + table["soma_dim_1"], table["soma_data"])
         return z.reshape(n_row, n_col)
 
