@@ -317,10 +317,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         # Drop unused categories on axis dataframes if requested
         if drop_levels:
             for name in ad.obs:
-                if pd.api.types.is_categorical_dtype(ad.obs[name]):
+                if isinstance(ad.obs[name], pd.CategoricalDtype):
                     ad.obs[name] = ad.obs[name].cat.remove_unused_categories()
             for name in ad.var:
-                if pd.api.types.is_categorical_dtype(ad.var[name]):
+                if isinstance(ad.obs[name], pd.CategoricalDtype):
                     ad.var[name] = ad.var[name].cat.remove_unused_categories()
 
         return ad
@@ -672,18 +672,17 @@ class _Axis(enum.Enum):
         return super().value
 
     @overload
-    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T":
-        ...
+    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T": ...
 
     @overload
     def getattr_from(
         self, __source: Any, *, pre: Literal[""], suf: Literal[""]
-    ) -> object:
-        ...
+    ) -> object: ...
 
     @overload
-    def getattr_from(self, __source: Any, *, pre: str = ..., suf: str = ...) -> object:
-        ...
+    def getattr_from(
+        self, __source: Any, *, pre: str = ..., suf: str = ...
+    ) -> object: ...
 
     def getattr_from(self, __source: Any, *, pre: str = "", suf: str = "") -> object:
         """Equivalent to ``something.<pre><obs/var><suf>``."""
@@ -820,16 +819,13 @@ class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
     @property
-    def ms(self) -> Mapping[str, measurement.Measurement]:
-        ...
+    def ms(self) -> Mapping[str, measurement.Measurement]: ...
 
     @property
-    def obs(self) -> data.DataFrame:
-        ...
+    def obs(self) -> data.DataFrame: ...
 
     @property
-    def context(self) -> Optional[base_types.ContextBase]:
-        ...
+    def context(self) -> Optional[base_types.ContextBase]: ...
 
 
 class _HasObsVar(Protocol[_T_co]):
@@ -839,9 +835,7 @@ class _HasObsVar(Protocol[_T_co]):
     """
 
     @property
-    def obs(self) -> _T_co:
-        ...
+    def obs(self) -> _T_co: ...
 
     @property
-    def var(self) -> _T_co:
-        ...
+    def var(self) -> _T_co: ...

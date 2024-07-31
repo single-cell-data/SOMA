@@ -49,16 +49,13 @@ class Slice(Protocol[_T_co]):
     # invariant rather than covariant.
 
     @property
-    def start(self) -> Optional[_T_co]:
-        ...
+    def start(self) -> Optional[_T_co]: ...
 
     @property
-    def stop(self) -> Optional[_T_co]:
-        ...
+    def stop(self) -> Optional[_T_co]: ...
 
     @property
-    def step(self) -> Optional[_T_co]:
-        ...
+    def step(self) -> Optional[_T_co]: ...
 
     if sys.version_info < (3, 10) and not TYPE_CHECKING:
         # Python 3.9 and below have a bug where any Protocol with an @property
