@@ -54,12 +54,10 @@ class item(Generic[_T]):
             self.item_name = name
 
     @overload
-    def __get__(self, inst: None, owner: Type[_Coll]) -> "item[_T]":
-        ...
+    def __get__(self, inst: None, owner: Type[_Coll]) -> "item[_T]": ...
 
     @overload
-    def __get__(self, inst: _Coll, owner: Type[_Coll]) -> _T:
-        ...
+    def __get__(self, inst: _Coll, owner: Type[_Coll]) -> _T: ...
 
     def __get__(self, inst: Optional[_Coll], owner: Type[_Coll]) -> Union["item", _T]:
         del owner  # unused

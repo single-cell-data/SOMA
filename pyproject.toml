@@ -29,7 +29,7 @@ urls = { repository = "https://github.com/single-cell-data/SOMA.git" }
 classifiers = ["License :: OSI Approved :: MIT License"]
 
 [project.optional-dependencies]
-dev = ["black", "isort", "mypy~=1.0", "ruff"]
+dev = ["black", "isort", "mypy~=1.0", "ruff", "pandas-stubs"]
 
 [tool.setuptools]
 packages.find.where = ["python-spec/src"]
@@ -42,9 +42,9 @@ write_to = "python-spec/src/somacore/_version.py"
 tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
 [tool.ruff]
-extend-select = ["I"]
+lint.extend-select = ["I"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-single-line = true
 known-first-party = ["somacore"]
 single-line-exclusions = ["typing", "typing_extensions"]

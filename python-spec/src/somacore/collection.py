@@ -62,8 +62,7 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         *,
         uri: Optional[str] = ...,
         platform_config: Optional[options.PlatformConfig] = ...,
-    ) -> "Collection":
-        ...
+    ) -> "Collection": ...
 
     @overload
     @abc.abstractmethod
@@ -74,8 +73,7 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         *,
         uri: Optional[str] = ...,
         platform_config: Optional[options.PlatformConfig] = ...,
-    ) -> _CT:
-        ...
+    ) -> _CT: ...
 
     @abc.abstractmethod
     def add_new_collection(
