@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
 import numpy as np
-import numpy.typing as npt
 import pyarrow as pa
 
 
@@ -38,21 +37,18 @@ class CoordinateSpace(metaclass=abc.ABCMeta):
 class CoordinateTransform(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def input_space(self) -> CoordinateSpace:
+    def input_axes(self) -> Tuple[str, ...]:
         """TODO: Add docstring for input_space"""
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
-    def output_space(self) -> CoordinateSpace:
+    def output_axes(self) -> Tuple[str, ...]:
         """TODO: Add docstring for output_space"""
         raise NotImplementedError()
 
+    # TODO: Switch to be overloaded instead of using Union
     @abc.abstractmethod
     def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
         """TODO: Add docstring for apply"""
-        raise NotImplementedError()
-
-    def to_numpy(self) -> npt.NDArray[np.float64]:
-        """TODO: Add docstring for to_numpy"""
         raise NotImplementedError()
