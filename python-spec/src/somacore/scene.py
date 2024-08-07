@@ -1,7 +1,7 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
 import abc
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from typing_extensions import Final
 
@@ -96,6 +96,6 @@ class Scene(
 
     @property
     @abc.abstractmethod
-    def coordinate_space(self) -> coordinates.CoordinateSpace:
+    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
         """Coordinate system for this scene."""
         raise NotImplementedError()
