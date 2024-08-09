@@ -320,7 +320,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 if isinstance(ad.obs[name], pd.CategoricalDtype):
                     ad.obs[name] = ad.obs[name].cat.remove_unused_categories()
             for name in ad.var:
-                if isinstance(ad.obs[name], pd.CategoricalDtype):
+                if isinstance(ad.var[name], pd.CategoricalDtype):
                     ad.var[name] = ad.var[name].cat.remove_unused_categories()
 
         return ad
