@@ -1,6 +1,5 @@
 """Definitions of types related to coordinate systems."""
 
-
 import abc
 from typing import Optional, Tuple
 

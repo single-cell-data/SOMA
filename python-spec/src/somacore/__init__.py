@@ -26,11 +26,11 @@ from .data import ReadIter
 from .data import SparseNDArray
 from .data import SparseRead
 from .experiment import Experiment
+from .images import Image2D
 from .measurement import Measurement
 from .options import BatchSize
 from .options import IOfN
 from .options import ResultOrder
-from .images import Image2D
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
