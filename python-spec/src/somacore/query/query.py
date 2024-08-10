@@ -317,10 +317,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
         # Drop unused categories on axis dataframes if requested
         if drop_levels:
             for name in ad.obs:
-                if isinstance(ad.obs[name], pd.CategoricalDtype):
+                if ad.obs[name].dtype.name == "category":
                     ad.obs[name] = ad.obs[name].cat.remove_unused_categories()
             for name in ad.var:
-                if isinstance(ad.var[name], pd.CategoricalDtype):
+                if ad.var[name].dtype.name == "category":
                     ad.var[name] = ad.var[name].cat.remove_unused_categories()
 
         return ad
