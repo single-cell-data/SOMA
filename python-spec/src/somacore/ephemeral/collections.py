@@ -134,7 +134,9 @@ _BasicAbstractMeasurement = measurement.Measurement[
 ]
 """The loosest possible constraint of the abstract Measurement type."""
 
-_BasicAbstractScene = scene.Scene[data.DataFrame, images.Image2D, base.SOMAObject]
+_BasicAbstractScene = scene.Scene[
+    data.DataFrame, images.Image2DCollection, base.SOMAObject
+]
 """The loosest possible constraint of the abstract Scene type."""
 
 
@@ -164,8 +166,9 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         raise NotImplementedError()
 
 
-class Image2D(  # type: ignore[misc]   # __eq__ false positive
-    BaseCollection[base.SOMAObject], images.Image2D[data.DenseNDArray, base.SOMAObject]
+class Image2DCollection(  # type: ignore[misc]   # __eq__ false positive
+    BaseCollection[base.SOMAObject],
+    images.Image2DCollection[data.DenseNDArray, base.SOMAObject],
 ):
     """An in-memory Collection with Image2D semantics."""
 
@@ -186,7 +189,7 @@ class Image2D(  # type: ignore[misc]   # __eq__ false positive
     def level_count(self) -> int:
         raise NotImplementedError()
 
-    def level_properties(self, level: int) -> images.Image2D.LevelProperties:
+    def level_properties(self, level: int) -> images.Image2DCollection.LevelProperties:
         raise NotImplementedError()
 
     def read_level(

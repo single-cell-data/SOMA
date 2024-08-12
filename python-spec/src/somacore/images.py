@@ -20,7 +20,7 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 _RO_AUTO = options.ResultOrder.AUTO
 
 
-class Image2D(
+class Image2DCollection(
     collection.BaseCollection[_RootSO],
     Generic[_DenseND, _RootSO],
 ):
@@ -34,25 +34,30 @@ class Image2D(
     #
     #     # This type-ignore comment will always be needed due to limitations
     #     # of type annotations; it is (currently) expected.
-    #     class Image2D(  # type: ignore[type-var]
+    #     class Image2DCollection(  # type: ignore[type-var]
     #         ImplBaseCollection[ImplSOMAObject],
-    #         somacore.Image2D[ImplDenseNDArray, ImpSOMAObject],
+    #         somacore.Image2DCollection[ImplDenseNDArray, ImpSOMAObject],
     #     ):
     #         ...
 
     __slots__ = ()
-    soma_type: Final = "SOMAImage2D"  # type: ignore[misc]
+    soma_type: Final = "SOMAImage2DCollection"  # type: ignore[misc]
 
     class LevelProperties(Protocol):
-        """Class requirements for Image2D level properties."""
+        """Class requirements for level properties of 2D images."""
 
         @property
         def axes(self) -> Tuple[str, ...]:
-            """Axis order for the underlying data."""
+            """Axis order for the underlying data.
+
+            Must contain 'X' and 'Y' for single-channel images and 'X', 'Y', and 'C'
+            for multi-channel images. Here `X' denotes the axis along the width of
+            the image and `Y' denotes the axis along the height of an image.
+            """
 
         @property
         def name(self) -> str:
-            """The key for the level inside the Image2D collection."""
+            """The key for the level inside the Image2DCollection."""
 
         @property
         def shape(self) -> Tuple[int, ...]:
