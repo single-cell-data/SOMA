@@ -47,7 +47,7 @@ class Image2DCollection(
         """Class requirements for level properties of 2D images."""
 
         @property
-        def axes(self) -> Tuple[str, ...]:
+        def axis_order(self) -> Tuple[str, ...]:
             """Axis order for the underlying data.
 
             Must contain 'X' and 'Y' for single-channel images and 'X', 'Y', and 'C'
@@ -71,7 +71,7 @@ class Image2DCollection(
         uri: Optional[str] = None,
         type: pa.DataType,
         shape: Sequence[int],
-        axes: Union[str, Sequence[str]],
+        axis_order: Union[str, Sequence[str]],
     ) -> data.DenseNDArray:
         raise NotImplementedError()
 
