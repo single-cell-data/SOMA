@@ -181,7 +181,7 @@ class Image2DCollection(  # type: ignore[misc]   # __eq__ false positive
         uri: Optional[str] = None,
         type: pa.DataType,
         shape: Sequence[int],
-        axes: Union[str, Sequence[str]],
+        axis_order: Union[str, Sequence[str]],
     ) -> data.DenseNDArray:
         raise NotImplementedError()
 
