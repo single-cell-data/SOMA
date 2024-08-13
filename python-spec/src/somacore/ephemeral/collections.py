@@ -7,7 +7,6 @@ from typing import (
     Optional,
     Sequence,
     TypeVar,
-    Union,
 )
 
 import pyarrow as pa
@@ -135,7 +134,7 @@ _BasicAbstractMeasurement = measurement.Measurement[
 """The loosest possible constraint of the abstract Measurement type."""
 
 _BasicAbstractScene = scene.Scene[
-    data.DataFrame, images.Image2DCollection, base.SOMAObject
+    data.DataFrame, images.ImageCollection, base.SOMAObject
 ]
 """The loosest possible constraint of the abstract Scene type."""
 
@@ -166,11 +165,11 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         raise NotImplementedError()
 
 
-class Image2DCollection(  # type: ignore[misc]   # __eq__ false positive
+class ImageCollection(  # type: ignore[misc]   # __eq__ false positive
     BaseCollection[base.SOMAObject],
-    images.Image2DCollection[data.DenseNDArray, base.SOMAObject],
+    images.ImageCollection[data.DenseNDArray, base.SOMAObject],
 ):
-    """An in-memory Collection with Image2D semantics."""
+    """An in-memory Collection with Image semantics."""
 
     __slots__ = ()
 
@@ -181,15 +180,18 @@ class Image2DCollection(  # type: ignore[misc]   # __eq__ false positive
         uri: Optional[str] = None,
         type: pa.DataType,
         shape: Sequence[int],
-        axis_order: Union[str, Sequence[str]],
     ) -> data.DenseNDArray:
+        raise NotImplementedError()
+
+    @property
+    def axis_order(self) -> str:
         raise NotImplementedError()
 
     @property
     def level_count(self) -> int:
         raise NotImplementedError()
 
-    def level_properties(self, level: int) -> images.Image2DCollection.LevelProperties:
+    def level_properties(self, level: int) -> images.ImageCollection.LevelProperties:
         raise NotImplementedError()
 
     def read_level(

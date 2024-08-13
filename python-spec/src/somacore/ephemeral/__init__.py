@@ -7,7 +7,7 @@ Collection.
 
 from .collections import Collection
 from .collections import Experiment
-from .collections import Image2DCollection
+from .collections import ImageCollection
 from .collections import Measurement
 from .collections import Scene
 
@@ -15,6 +15,6 @@ __all__ = (
     "Collection",
     "Experiment",
     "Measurement",
-    "Image2DCollection",
+    "ImageCollection",
     "Scene",
 )

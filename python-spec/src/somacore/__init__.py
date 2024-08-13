@@ -26,7 +26,7 @@ from .data import ReadIter
 from .data import SparseNDArray
 from .data import SparseRead
 from .experiment import Experiment
-from .images import Image2DCollection
+from .images import ImageCollection
 from .measurement import Measurement
 from .options import BatchSize
 from .options import IOfN
@@ -60,7 +60,7 @@ __all__ = (
     "Experiment",
     "Measurement",
     "Scene",
-    "Image2DCollection",
+    "ImageCollection",
     "BatchSize",
     "IOfN",
     "ResultOrder",
