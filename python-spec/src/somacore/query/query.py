@@ -871,8 +871,7 @@ class _Experimentish(Protocol):
     def context(self) -> Optional[base_types.ContextBase]: ...
 
     @property
-    def obs_scene(self) -> data.DataFrame:
-        ...
+    def obs_scene(self) -> data.DataFrame: ...
 
 
 class _HasObsVar(Protocol[_T_co]):

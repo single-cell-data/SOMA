@@ -1,5 +1,15 @@
-from typing import Any, Dict, Iterator, MutableMapping, NoReturn, Optional, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    MutableMapping,
+    NoReturn,
+    Optional,
+    Sequence,
+    TypeVar,
+)
 
+import pyarrow as pa
 from typing_extensions import Literal, Self
 
 from .. import base
@@ -7,6 +17,7 @@ from .. import collection
 from .. import coordinates
 from .. import data
 from .. import experiment
+from .. import images
 from .. import measurement
 from .. import options
 from .. import scene
@@ -123,7 +134,7 @@ _BasicAbstractMeasurement = measurement.Measurement[
 """The loosest possible constraint of the abstract Measurement type."""
 
 _BasicAbstractScene = scene.Scene[
-    data.DataFrame, collection.Collection[data.NDArray], base.SOMAObject
+    data.DataFrame, images.ImageCollection, base.SOMAObject
 ]
 """The loosest possible constraint of the abstract Scene type."""
 
@@ -151,6 +162,47 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     @property
     def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
         """Transformations saved for this scene."""
+        raise NotImplementedError()
+
+
+class ImageCollection(  # type: ignore[misc]   # __eq__ false positive
+    BaseCollection[base.SOMAObject],
+    images.ImageCollection[data.DenseNDArray, base.SOMAObject],
+):
+    """An in-memory Collection with Image semantics."""
+
+    __slots__ = ()
+
+    def add_new_level(
+        self,
+        key: str,
+        *,
+        uri: Optional[str] = None,
+        type: pa.DataType,
+        shape: Sequence[int],
+    ) -> data.DenseNDArray:
+        raise NotImplementedError()
+
+    @property
+    def axis_order(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    def level_count(self) -> int:
+        raise NotImplementedError()
+
+    def level_properties(self, level: int) -> images.ImageCollection.LevelProperties:
+        raise NotImplementedError()
+
+    def read_level(
+        self,
+        level: int,
+        coords: options.DenseNDCoords = (),
+        *,
+        transform: Optional[coordinates.CoordinateTransform] = None,
+        result_order: options.ResultOrderStr = options.ResultOrder.AUTO,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> pa.Tensor:
         raise NotImplementedError()
 
 
