@@ -1,10 +1,10 @@
 """Implementation of the SOMA image collection for spatial data"""
 
 import abc
-from typing import Generic, Optional, Sequence, Tuple, TypeVar
+from typing import Any, Generic, Optional, Sequence, Tuple, TypeVar
 
 import pyarrow as pa
-from typing_extensions import Final, Protocol
+from typing_extensions import Final, Protocol, Self
 
 from . import base
 from . import collection
@@ -23,6 +23,7 @@ _RO_AUTO = options.ResultOrder.AUTO
 class ImageCollection(
     collection.BaseCollection[_RootSO],
     Generic[_DenseND, _RootSO],
+    metaclass=abc.ABCMeta,
 ):
     """TODO: Add documentation for image collection
 
@@ -94,3 +95,9 @@ class ImageCollection(
     ) -> pa.Tensor:
         """TODO: Add read_image_level documentation"""
         raise NotImplementedError()
+
+
+class Image2DCollection(ImageCollection, metaclass=abc.ABCMeta):
+
+    __slots__ = ()
+    soma_type: Final = "SOMAImage2DCollection"  # type: ignore[misc]
