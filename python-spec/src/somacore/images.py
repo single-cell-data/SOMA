@@ -1,10 +1,10 @@
 """Implementation of the SOMA image collection for spatial data"""
 
 import abc
-from typing import Any, Generic, Optional, Sequence, Tuple, TypeVar
+from typing import Generic, Optional, Sequence, Tuple, TypeVar
 
 import pyarrow as pa
-from typing_extensions import Final, Protocol, Self
+from typing_extensions import Final, Protocol
 
 from . import base
 from . import collection
