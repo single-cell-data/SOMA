@@ -100,7 +100,7 @@ class Measurement(
     This is indexed by ``[varid_1, varid_2]``.
     """
 
-    var_scene = _mixin.item[_DF]()
+    var_spatial_presence = _mixin.item[_DF]()
     """A dataframe that stores the presence of var in the spatial scenes.
 
     This provides a join tabel for the var ``soma_joinid`` and the scene names used in
