@@ -66,7 +66,7 @@ class Experiment(
     spatial = _mixin.item[_SceneColl]()  # TODO: Discuss the name of this element.
     """A collection of named spatial scenes."""
 
-    obs_scene = _mixin.item[_DF]()
+    obs_spatial_presence = _mixin.item[_DF]()
     """A dataframe that stores the presence of obs in the spatial scenes.
 
     This provides a join table for the obs ``soma_joinid`` and the scene names used in

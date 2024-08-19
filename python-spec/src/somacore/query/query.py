@@ -275,7 +275,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: experimental
         """
         try:
-            obs_scene = self.experiment.obs_scene
+            obs_scene = self.experiment.obs_spatial_presence
         except KeyError as ke:
             raise KeyError("Missing obs_scene") from ke
         if not isinstance(obs_scene, data.DataFrame):
@@ -296,7 +296,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: experimental
         """
         try:
-            var_scene = self._ms.var_scene
+            var_scene = self._ms.var_spatial_presence
         except KeyError as ke:
             raise KeyError("Missing var_scene") from ke
         if not isinstance(var_scene, data.DataFrame):
@@ -871,7 +871,7 @@ class _Experimentish(Protocol):
     def context(self) -> Optional[base_types.ContextBase]: ...
 
     @property
-    def obs_scene(self) -> data.DataFrame: ...
+    def obs_spatial_presence(self) -> data.DataFrame: ...
 
 
 class _HasObsVar(Protocol[_T_co]):
