@@ -215,8 +215,82 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
 
-class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table with a user-defined schema.
+class PointCloud(DataFrame, metaclass=abc.ABCMeta):
+    """A multi-column table with point data and a user-defined schema.
+
+    Lifecycle: experimental
+    """
+
+    __slots__ = ()
+    soma_type: Final = "SOMAPointCloud"  # type: ignore[misc]
+
+    @classmethod
+    @abc.abstractmethod
+    def create(
+        cls,
+        uri: str,
+        *,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (options.SOMA_JOINID, "x", "y"),
+        spatial_column_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> Self:
+        """Creates a new ``PointCloud`` at the given URI.
+
+        The schema of the created point cloud  will include a column named
+        ``soma_joinid`` of type ``pyarrow.int64``, with negative values disallowed, and
+        at least one spatial column with numeric type.  If a ``soma_joinid`` column is
+        present in the provided schema, it must be of the correct type.  If the
+        ``soma_joinid`` column is not provided, one will be added. The ``soma_joinid``
+        may be an index column. The spatial columns must be index columns.
+
+        Args:
+            uri: The URI where the dataframe will be created.
+
+            schema: Arrow schema defining the per-column schema. This schema
+                must define all columns, including columns to be named as index
+                columns.  If the schema includes types unsupported by the SOMA
+                implementation, an error will be raised.
+
+            index_column_names: A list of column names to use as user-defined index
+                columns (e.g., ``['x', 'y']``). All named columns must exist in the
+                schema, and at least one index column name is required.
+
+            spatial_column_names: An ordered list of spatial column names that
+                coorespond to the names of axes of the the coordinate space the points
+                are defined on.
+
+            domain: An optional sequence of tuples specifying the domain of each
+                index column. Each tuple should be a pair consisting of the minimum
+                and maximum values storable in the index column. If omitted entirely,
+                or if ``None`` in a given dimension, the corresponding index-column
+                domain will use the minimum and maximum possible values for the
+                column's datatype.  This makes a point cloud dataframe growable.
+
+        Returns:
+            The newly created geometry dataframe, opened for writing.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    # Metadata operations
+
+    @property
+    @abc.abstractmethod
+    def spatial_column_names(self) -> Tuple[str, ...]:
+        """The names of the spatial columns.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+
+class GeometryDataFrame(DataFrame, metaclass=abc.ABCMeta):
+    """A multi-column table of geometries with spatial indexing and a user-defined
+    schema.
 
     Lifecycle: experimental
     """
@@ -226,11 +300,6 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     # Lifecycle
 
-    # TODO: Things to consider
-    # 1. Need to specify types for (x, y) envelope coordinate bounding box
-    # 2. Need way to specify max possibly domain for (x, y)
-    # 3. Need a way to enforce max possible domain or message the it's for
-    # the envelope?
     @classmethod
     @abc.abstractmethod
     def create(
@@ -242,6 +311,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             options.SOMA_JOINID,
             options.SOMA_GEOMETRY,
         ),
+        spatial_column_names: Sequence[str] = ("x", "y"),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
@@ -270,6 +340,10 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 All named columns must exist in the schema, and at least one
                 index column name is required.
 
+            spatial_column_names: An ordered list of spatial column names that
+                coorespond to the names of the axes of the coordinate space the
+                geometries are defined on.
+
             domain: An optional sequence of tuples specifying the domain of each
                 index column. Two tuples must be provided for the ``soma_geometry``
                 column which store the width followed by the height. Each tuple should
@@ -286,134 +360,12 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    # Data operations
-
-    @abc.abstractmethod
-    def read(
-        self,
-        coords: options.SparseDFCoords = (),
-        column_names: Optional[Sequence[str]] = None,
-        *,
-        batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
-        result_order: options.ResultOrderStr = _RO_AUTO,
-        value_filter: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "ReadIter[pa.Table]":
-        """Reads a user-defined slice of data into Arrow tables.
-
-        Args:
-            coords: for each index dimension, which rows to read.
-                Defaults to ``()``, meaning no constraint -- all IDs.
-            column_names: the named columns to read and return.
-                Defaults to ``None``, meaning no constraint -- all column names.
-            partitions: If present, specifies that this is part of
-                a partitioned read, and which part of the data to include.
-            result_order: the order to return results, specified as a
-                :class:`~options.ResultOrder` or its string value.
-            value_filter: an optional value filter to apply to the results.
-                The default of ``None`` represents no filter. Value filter
-                syntax is implementation-defined; see the documentation
-                for the particular SOMA implementation for details.
-        Returns:
-            A :class:`ReadIter` of :class:`pa.Table`s.
-
-
-        **Indexing:**
-
-        Indexing is performed on a per-column basis for each indexed column.
-        To specify dimensions:
-
-        - A sequence of coordinates is accepted, one per indexed dimension.
-        - The sequence length must be less than or equal to the number of
-          indexed dimensions.
-        - If the sequence is shorter than the number of indexed coordinates,
-          then no constraint (i.e. ``None``) is used for the remaining
-          indexed dimensions.
-        - If providing a constraint on the ``soma_geometry``, it must either be
-          ``None`` (to specify no constraint) or a ``shapely.GeometryType``
-          object.
-        - Specifying an empty sequence (e.g. ``()``, the default) represents
-          no constraints over any dimension, returning the entire dataset.
-
-        Each dimension other than the ``soma_geometry`` dimension may be indexed
-        as follows:
-
-        - ``None`` or ``slice(None)`` places no constraint on the dimension.
-        - Coordinates can be specified as a scalar value, a Python sequence
-          (``list``, ``tuple``, etc.), a NumPy ndarray, an Arrow array, or
-          similar objects (as defined by ``SparseDFCoords``).
-        - Slices specify a closed range: ``slice(2, 4)`` includes both 2 and 4.
-          Slice *steps* may not be used: ``slice(10, 20, 2)`` is invalid.
-          ``slice(None)`` places no constraint on the dimension. Half-specified
-          slices like ``slice(None, 99)`` and ``slice(5, None)`` specify
-          all indices up to and including the value, and all indices
-          starting from and including the value.
-        - Negative values in indices and slices are treated as raw domain values
-          and not as indices relative to the end, unlike traditional Python
-          sequence indexing. For instance, ``slice(-10, 3)`` indicates the range
-          from −10 to 3 on the given dimension.
-
-        The ``soma_geometry`` dimension may be indexed as follows:
-
-        - ``None`` places no constraint on the dimension.
-        - A query on all intersecting geomemtries can be specified with a
-          ``shapely.GeometryType`` object.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def write(
-        self,
-        values: Union[pa.RecordBatch, pa.Table],
-        *,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> Self:
-        """Writes the data from an Arrow table to the persistent object.
-
-        As duplicate index values are not allowed, index values already present
-        in the object are overwritten and new index values are added.
-
-        Args:
-            values: An Arrow table containing all columns, including
-                the index columns. The schema for the values must match
-                the schema for the ``DataFrame``.
-
-        Returns: ``self``, to enable method chaining.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
     # Metadata operations
 
     @property
     @abc.abstractmethod
-    def schema(self) -> pa.Schema:
-        """The schema of the data in this dataframe.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def index_column_names(self) -> Tuple[str, ...]:
-        """The names of the index (dimension) columns.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def domain(self) -> Tuple[Tuple[Any, Any], ...]:
-        """The allowable range of values in each index column.
-
-        Returns: a tuple of minimum and maximum values, inclusive,
-            storable on each index column of the dataframe.
+    def spatial_column_names(self) -> Tuple[str, ...]:
+        """The names of the spatial columns.
 
         Lifecycle: experimental
         """
