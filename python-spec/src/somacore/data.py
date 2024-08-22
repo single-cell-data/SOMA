@@ -586,8 +586,8 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def spatial_column_names(self) -> Tuple[str, ...]:
-        """The names of the spatial columns.
+    def axis_names(self) -> Tuple[str, ...]:
+        """The names of the axes of the coordinate space the data is defined on.
 
         Lifecycle: experimental
         """
@@ -623,7 +623,7 @@ class PointCloud(SpatialDataFrame, metaclass=abc.ABCMeta):
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID, "x", "y"),
-        spatial_column_names: Sequence[str] = ("x", "y"),
+        axis_names: Sequence[str] = ("x", "y"),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
@@ -632,10 +632,10 @@ class PointCloud(SpatialDataFrame, metaclass=abc.ABCMeta):
 
         The schema of the created point cloud  will include a column named
         ``soma_joinid`` of type ``pyarrow.int64``, with negative values disallowed, and
-        at least one spatial column with numeric type.  If a ``soma_joinid`` column is
+        at least one axis with numeric type.  If a ``soma_joinid`` column is
         present in the provided schema, it must be of the correct type.  If the
         ``soma_joinid`` column is not provided, one will be added. The ``soma_joinid``
-        may be an index column. The spatial columns must be index columns.
+        may be an index column. The axis columns must be index columns.
 
         Args:
             uri: The URI where the dataframe will be created.
@@ -649,7 +649,7 @@ class PointCloud(SpatialDataFrame, metaclass=abc.ABCMeta):
                 columns (e.g., ``['x', 'y']``). All named columns must exist in the
                 schema, and at least one index column name is required.
 
-            spatial_column_names: An ordered list of spatial column names that
+            axis_names: An ordered list of axis column names that
                 coorespond to the names of axes of the the coordinate space the points
                 are defined on.
 
@@ -691,7 +691,7 @@ class GeometryDataFrame(SpatialDataFrame, metaclass=abc.ABCMeta):
             options.SOMA_JOINID,
             options.SOMA_GEOMETRY,
         ),
-        spatial_column_names: Sequence[str] = ("x", "y"),
+        axis_names: Sequence[str] = ("x", "y"),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
@@ -720,7 +720,7 @@ class GeometryDataFrame(SpatialDataFrame, metaclass=abc.ABCMeta):
                 All named columns must exist in the schema, and at least one
                 index column name is required.
 
-            spatial_column_names: An ordered list of spatial column names that
+            axis_names: An ordered list of axis column names that
                 coorespond to the names of the axes of the coordinate space the
                 geometries are defined on.
 
