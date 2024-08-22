@@ -12,19 +12,18 @@ from . import coordinates
 from . import data
 from . import images
 
-_SpatialDF = TypeVar(
-    "_SpatialDF", bound=data.DataFrame
-)  # TODO: Update to GeometryDataFrame or PointCloud
-"""A particular implementation of GeometryDataFrame and PointCloud."""
 _ImageColl = TypeVar("_ImageColl", bound=images.ImageCollection)
 """A particular implementation of a collection of spatial arrays."""
+_SpatialDFColl = TypeVar(
+    "_SpatialDFColl", bound=collection.Collection[data.SpatialDataFrame]
+)
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
 
 
 class Scene(
     collection.BaseCollection[_RootSO],
-    Generic[_SpatialDF, _ImageColl, _RootSO],
+    Generic[_SpatialDFColl, _ImageColl, _RootSO],
 ):
     """TODO: Add documentation for scene
 
@@ -39,7 +38,9 @@ class Scene(
     #     class Scene(  # type: ignore[type-var]
     #         ImplBaseCollection[ImplSOMAObject],
     #         somacore.Scene[
-    #             Union[ImplGeometryDataFrame, ImplPointCloud], # _SpatialDF
+    #             ImplCollection[
+    #                 Union[ImplGeometryDataFrame, ImplPointCloud]]
+    #             ], # _SpatialDFColl
     #             ImplImageCollection,                          # _ImageColl
     #             ImplSOMAObject,                               # _RootSO
     #         ],
@@ -64,7 +65,7 @@ class Scene(
     * Image masks on top of any of the above
     """
 
-    obsl = _mixin.item[collection.Collection[_SpatialDF]]()
+    obsl = _mixin.item[_SpatialDFColl]()
     """A dataframe of the obs locations
 
     This collection exists to store any spatial data in the scene that joins on the obs
@@ -78,7 +79,7 @@ class Scene(
     additional columns may be stored in this dataframe as well.
      """
 
-    varl = _mixin.item[collection.Collection[collection.Collection[_SpatialDF]]]()
+    varl = _mixin.item[collection.Collection[_SpatialDFColl]]()
     """A collection of collections of dataframes of the var locations.
 
     This collection exists to store any spatial data in the scene that joins on the
