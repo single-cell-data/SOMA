@@ -21,10 +21,13 @@ from .coordinates import CoordinateSystem
 from .coordinates import CoordinateTransform
 from .data import DataFrame
 from .data import DenseNDArray
+from .data import GeometryDataFrame
 from .data import NDArray
+from .data import PointCloud
 from .data import ReadIter
 from .data import SparseNDArray
 from .data import SparseRead
+from .data import SpatialDataFrame
 from .experiment import Experiment
 from .images import Image2DCollection
 from .images import ImageCollection
@@ -63,6 +66,9 @@ __all__ = (
     "Scene",
     "ImageCollection",
     "Image2DCollection",
+    "SpatialDataFrame",
+    "PointCloud",
+    "GeometryDataFrame",
     "BatchSize",
     "IOfN",
     "ResultOrder",
