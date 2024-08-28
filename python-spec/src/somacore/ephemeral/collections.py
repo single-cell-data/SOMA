@@ -4,11 +4,9 @@ from typing import (
     Iterator,
     NoReturn,
     Optional,
-    Sequence,
     TypeVar,
 )
 
-import pyarrow as pa
 from typing_extensions import Literal, Self
 
 from .. import base
@@ -134,7 +132,7 @@ _BasicAbstractMeasurement = measurement.Measurement[
 
 _BasicAbstractScene = scene.Scene[
     collection.Collection[data.SpatialDataFrame],
-    images.ImageCollection,
+    images.MultiscaleImage,
     base.SOMAObject,
 ]
 """The loosest possible constraint of the abstract Scene type."""
@@ -158,47 +156,6 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     @property
     def coordinate_space(self) -> coordinates.CoordinateSpace:
         """Coordinate system for this scene."""
-        raise NotImplementedError()
-
-
-class ImageCollection(  # type: ignore[misc]   # __eq__ false positive
-    BaseCollection[base.SOMAObject],
-    images.ImageCollection[data.DenseNDArray, base.SOMAObject],
-):
-    """An in-memory Collection with Image semantics."""
-
-    __slots__ = ()
-
-    def add_new_level(
-        self,
-        key: str,
-        *,
-        uri: Optional[str] = None,
-        type: pa.DataType,
-        shape: Sequence[int],
-    ) -> data.DenseNDArray:
-        raise NotImplementedError()
-
-    @property
-    def axis_order(self) -> str:
-        raise NotImplementedError()
-
-    @property
-    def level_count(self) -> int:
-        raise NotImplementedError()
-
-    def level_properties(self, level: int) -> images.ImageCollection.LevelProperties:
-        raise NotImplementedError()
-
-    def read_level(
-        self,
-        level: int,
-        coords: options.DenseNDCoords = (),
-        *,
-        transform: Optional[coordinates.CoordinateTransform] = None,
-        result_order: options.ResultOrderStr = options.ResultOrder.AUTO,
-        platform_config: Optional[options.PlatformConfig] = None,
-    ) -> pa.Tensor:
         raise NotImplementedError()
 
 

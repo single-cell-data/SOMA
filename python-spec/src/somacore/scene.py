@@ -12,7 +12,7 @@ from . import coordinates
 from . import data
 from . import images
 
-_ImageColl = TypeVar("_ImageColl", bound=images.ImageCollection)
+_MSImage = TypeVar("_MSImage", bound=images.MultiscaleImage)
 """A particular implementation of a collection of spatial arrays."""
 _SpatialDFColl = TypeVar(
     "_SpatialDFColl", bound=collection.Collection[data.SpatialDataFrame]
@@ -23,7 +23,7 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 
 class Scene(
     collection.BaseCollection[_RootSO],
-    Generic[_SpatialDFColl, _ImageColl, _RootSO],
+    Generic[_SpatialDFColl, _MSImage, _RootSO],
 ):
     """TODO: Add documentation for scene
 
@@ -41,7 +41,7 @@ class Scene(
     #             ImplCollection[
     #                 Union[ImplGeometryDataFrame, ImplPointCloud]]
     #             ], # _SpatialDFColl
-    #             ImplImageCollection,                          # _ImageColl
+    #             ImplMultiscaleImage,                          # _MSImage
     #             ImplSOMAObject,                               # _RootSO
     #         ],
     #     ):
@@ -50,20 +50,8 @@ class Scene(
     __slots__ = ()
     soma_type: Final = "SOMAScene"  # type: ignore[misc]
 
-    img = _mixin.item[_ImageColl]()
-    """A collection of imagery backing the spatial data
-
-    This collection can contain a combination of sparse and dense arrays that
-    contain images or image masks. The specifics of how to best store and manage
-    this data internal to the group needs to be explored in more detail. Ideally,
-    we would support the following:
-
-    * Single backing image
-    * Multi-resolution images
-    * Multiple image tiles that create a larger image (may be touching images or with
-      gaps)
-    * Image masks on top of any of the above
-    """
+    img = _mixin.item[collection.Collection[_MSImage]]()
+    """A collection of multi-scale imagery backing the spatial data."""
 
     obsl = _mixin.item[_SpatialDFColl]()
     """A dataframe of the obs locations
