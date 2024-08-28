@@ -1,7 +1,7 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
 import abc
-from typing import Generic, MutableMapping, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from typing_extensions import Final
 
@@ -96,12 +96,6 @@ class Scene(
 
     @property
     @abc.abstractmethod
-    def local_coordinate_system(self) -> coordinates.CoordinateSystem:
+    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
         """Coordinate system for this scene."""
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def transformations(self) -> MutableMapping[str, coordinates.CoordinateTransform]:
-        """Transformations saved for this scene."""
         raise NotImplementedError()

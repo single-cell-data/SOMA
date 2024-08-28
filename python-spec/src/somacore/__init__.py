@@ -17,7 +17,7 @@ import pyarrow_hotfix  # noqa: F401
 from .base import SOMAObject
 from .collection import Collection
 from .coordinates import Axis
-from .coordinates import CoordinateSystem
+from .coordinates import CoordinateSpace
 from .coordinates import CoordinateTransform
 from .data import DataFrame
 from .data import DenseNDArray
@@ -77,6 +77,6 @@ __all__ = (
     "ExperimentAxisQuery",
     "ContextBase",
     "Axis",
-    "CoordinateSystem",
+    "CoordinateSpace",
     "CoordinateTransform",
 )
