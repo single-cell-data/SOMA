@@ -239,7 +239,7 @@ class ScaleTransform(AffineTransform):
             return ScaleTransform(
                 self.input_axes,
                 self.output_axes,
-                other.scale_factors * self.scale_factors,  # type: ignore[operator]
+                other.scale_factors * self.scale_factors,  # type: ignore[operator, union-attr]
             )
         if isinstance(other, CoordinateTransform):
             if self.output_axes != other.input_axes:
