@@ -1,6 +1,7 @@
 """Definitions of types related to coordinate systems."""
 
 import abc
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Optional, Tuple, Union
 
@@ -24,14 +25,39 @@ class Axis(metaclass=abc.ABCMeta):
     scale: Optional[np.float64] = None
 
 
-class CoordinateSpace(metaclass=abc.ABCMeta):
+class CoordinateSpace(Sequence[Axis]):
     """A coordinate system for spatial data."""
 
+    def __init__(self, axes: Sequence[Axis]):
+        """TODO: Add docstring"""
+        # TODO: Needs good, comprehensive error handling.
+        if len(tuple(axes)) == 0:
+            raise ValueError("Coordinate space must have at least one axis.")
+        self._axes = tuple(axes)
+
+    def __len__(self) -> int:
+        return len(self._axes)
+
+    def __getitem__(self, index: int) -> Axis:  # type: ignore[override]
+        return self._axes[index]
+
+    def __repr__(self) -> str:
+        output = f"<{type(self).__name__}\n"
+        for axis in self._axes:
+            output += f"  {axis},\n"
+        return output + ">"
+
     @property
-    @abc.abstractmethod
     def axes(self) -> Tuple[Axis, ...]:
-        """TODO: Add docstring for axes"""
-        raise NotImplementedError()
+        """TODO: Add docstring"""
+        return self._axes
+
+    @property
+    def axis_names(self) -> Tuple[str, ...]:
+        return tuple(axis.name for axis in self._axes)
+
+    def rank(self) -> int:
+        return len(self)
 
 
 class CoordinateTransform(metaclass=abc.ABCMeta):
