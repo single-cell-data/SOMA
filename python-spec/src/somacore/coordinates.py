@@ -1,9 +1,9 @@
 """Definitions of types related to coordinate systems."""
 
 import abc
-from collections.abc import Sequence
+import collections.abc
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -26,7 +26,7 @@ class Axis(metaclass=abc.ABCMeta):
     scale: Optional[np.float64] = None
 
 
-class CoordinateSpace(Sequence[Axis]):
+class CoordinateSpace(collections.abc.Sequence):
     """A coordinate system for spatial data."""
 
     def __init__(self, axes: Sequence[Axis]):
