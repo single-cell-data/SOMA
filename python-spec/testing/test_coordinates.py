@@ -4,6 +4,7 @@ import pytest
 from somacore import AffineTransform
 from somacore import CoordinateTransform
 from somacore import IdentityTransform
+from somacore import ScaleTransform
 
 
 def check_transform_is_equal(
@@ -13,6 +14,13 @@ def check_transform_is_equal(
     assert actual.output_axes == desired.output_axes
     if isinstance(desired, IdentityTransform):
         assert isinstance(actual, IdentityTransform)
+    elif isinstance(desired, ScaleTransform):
+        assert isinstance(actual, ScaleTransform)
+        assert desired.isotropic == actual.isotropic
+        if desired.isotropic:
+            assert actual.scale_factors == desired.scale_factors
+        else:
+            np.testing.assert_array_equal(actual.scale_factors, desired.scale_factors)
     elif isinstance(desired, AffineTransform):
         assert isinstance(actual, AffineTransform)
         np.testing.assert_array_equal(actual.augmented_matrix, desired.augmented_matrix)
@@ -48,6 +56,15 @@ def test_affine_augmented_matrix(input, expected):
         ),
         (
             IdentityTransform(["x1", "y1"], ["x2", "y2"]),
+            ScaleTransform(
+                ["x2", "y2"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
+            ),
+            ScaleTransform(
+                ["x1", "y1"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
+            ),
+        ),
+        (
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             AffineTransform(
                 ["x2", "y2"],
                 ["x3", "y3"],
@@ -57,6 +74,15 @@ def test_affine_augmented_matrix(input, expected):
                 ["x1", "y1"],
                 ["x3", "y3"],
                 np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+        ),
+        (
+            ScaleTransform(
+                ["x1", "y1"], ["x2", "y2"], np.array([1.5, 3.0], dtype=np.float64)
+            ),
+            IdentityTransform(["x2", "y2"], ["x3", "y3"]),
+            ScaleTransform(
+                ["x1", "y1"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
             ),
         ),
         (
@@ -71,6 +97,11 @@ def test_affine_augmented_matrix(input, expected):
                 ["x3", "y3"],
                 np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
             ),
+        ),
+        (
+            ScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
+            ScaleTransform(["x2", "y2"], ["x3", "y3"], [1.0, -1.0]),
+            ScaleTransform(["x1", "y1"], ["x3", "y3"], [1.5, -1.5]),
         ),
         (
             AffineTransform(

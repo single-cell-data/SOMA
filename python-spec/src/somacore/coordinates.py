@@ -160,7 +160,9 @@ class AffineTransform(CoordinateTransform):
                 return AffineTransform(self.input_axes, other.output_axes, self._matrix)
             if isinstance(other, AffineTransform):
                 return AffineTransform(
-                    self.input_axes, other.output_axes, self._matrix @ other._matrix
+                    self.input_axes,
+                    other.output_axes,
+                    self.augmented_matrix @ other.augmented_matrix,
                 )
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
@@ -177,10 +179,14 @@ class AffineTransform(CoordinateTransform):
             if other.output_axes != self.input_axes:
                 raise ValueError("Axis mismatch between transformations.")
             if isinstance(other, IdentityTransform):
-                return AffineTransform(other.input_axes, self.output_axes, self._matrix)
+                return AffineTransform(
+                    other.input_axes, self.output_axes, self.augmented_matrix
+                )
             if isinstance(other, AffineTransform):
                 return AffineTransform(
-                    other.input_axes, self.output_axes, other._matrix @ self._matrix
+                    other.input_axes,
+                    self.output_axes,
+                    other.augmented_matrix @ self.augmented_matrix,
                 )
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
@@ -200,7 +206,115 @@ class AffineTransform(CoordinateTransform):
         return self._matrix
 
 
-class IdentityTransform(CoordinateTransform):
+class ScaleTransform(AffineTransform):
+    """TODO: Add docstring"""
+
+    def __init__(
+        self,
+        input_axes: Union[str, Sequence[str]],
+        output_axes: Union[str, Sequence[str]],
+        scale_factors: npt.ArrayLike,
+    ):
+        super(AffineTransform, self).__init__(input_axes, output_axes)
+        if self.input_rank != self.output_rank:
+            raise ValueError("Incompatible rank of input and output axes")
+
+        self._scale_factors: Union[np.float64, npt.NDArray[np.float64]] = np.array(
+            scale_factors, dtype=np.float64
+        )
+        if self._scale_factors.size == 1:
+            self._scale_factors = self._scale_factors.reshape((1,))[0]
+            self._isotropic = True
+        elif self._scale_factors.size == self.input_rank:
+            self._scale_factors = self._scale_factors.reshape((self.input_rank,))
+            self._isotropic = False
+        else:
+            raise ValueError(
+                f"Scale factors have unexpected shape={self._scale_factors.shape} "
+                f"for a transform with rank={self.input_rank}."
+            )
+
+    def __mul__(self, other: Any) -> CoordinateTransform:
+        if np.isscalar(other):
+            return ScaleTransform(
+                self.input_axes,
+                self.output_axes,
+                other.scale_factors * self.scale_factors,  # type: ignore[operator]
+            )
+        if isinstance(other, CoordinateTransform):
+            if self.output_axes != other.input_axes:
+                raise ValueError("Axis mismatch between transformations.")
+            if isinstance(other, ScaleTransform):  # Includes IdentityTransform
+                return ScaleTransform(
+                    self.input_axes,
+                    other.output_axes,
+                    self.scale_factors * other.scale_factors,
+                )
+            if isinstance(other, AffineTransform):
+                return AffineTransform(
+                    self.input_axes,
+                    other.output_axes,
+                    self.augmented_matrix @ other.augmented_matrix,
+                )
+        if isinstance(other, np.ndarray):
+            raise NotImplementedError(
+                "Support for multiplying by numpy arrays is not yet implemented."
+            )
+        raise TypeError(
+            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
+        )
+
+    def __rmul__(self, other: Any) -> CoordinateTransform:
+        if np.isscalar(other):
+            return self.__mul__(other)
+        if isinstance(other, CoordinateTransform):
+            if other.output_axes != self.input_axes:
+                raise ValueError("Axis mismatch between transformations.")
+            if isinstance(other, ScaleTransform):  # Includes IdentityTransform
+                return ScaleTransform(
+                    other.input_axes,
+                    self.output_axes,
+                    self.scale_factors * other.scale_factors,
+                )
+            if isinstance(other, AffineTransform):
+                return AffineTransform(
+                    other.input_axes,
+                    self.output_axes,
+                    other.augmented_matrix @ self.augmented_matrix,
+                )
+        if isinstance(other, np.ndarray):
+            raise NotImplementedError(
+                "Support for multiplying by numpy arrays is not yet implemented."
+            )
+        raise TypeError(
+            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
+        )
+
+    def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
+        """TODO: Add docstring"""
+        raise NotImplementedError()
+
+    @property
+    def augmented_matrix(self) -> npt.NDArray[np.float64]:
+        if self._isotropic:
+            scales: npt.NDArray[np.float64] = np.array(
+                self.input_rank * [self._scale_factors], dtype=np.float64
+            )
+        else:
+            scales = self._scale_factors  # type: ignore[assignment]
+        scales = np.append(scales, [1.0])
+        return np.diag(scales)
+
+    @property
+    def isotropic(self) -> bool:
+        return self._isotropic
+
+    @property
+    def scale_factors(self) -> Union[np.float64, npt.NDArray[np.float64]]:
+        return self._scale_factors
+
+
+class IdentityTransform(ScaleTransform):
     """TODO: Add docstring"""
 
     def __init__(
@@ -208,15 +322,13 @@ class IdentityTransform(CoordinateTransform):
         input_axes: Union[str, Sequence[str]],
         output_axes: Union[str, Sequence[str]],
     ):
-        super().__init__(input_axes, output_axes)
+        super(AffineTransform, self).__init__(input_axes, output_axes)
         if self.input_rank != self.output_rank:
             raise ValueError("Incompatible rank of input and output axes")
 
     def __mul__(self, other: Any) -> CoordinateTransform:
         if np.isscalar(other):
-            raise NotImplementedError(
-                "Support for multiplying by scalars is not yet implemented."
-            )
+            return ScaleTransform(self.input_axes, self.output_axes, other)
         if isinstance(other, CoordinateTransform):
             if isinstance(other, IdentityTransform):
                 if self.output_axes != other.input_axes:
@@ -250,4 +362,17 @@ class IdentityTransform(CoordinateTransform):
 
     def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
         # TODO: Check valid rank
-        return data
+        raise NotImplementedError()
+
+    @property
+    def augmented_matrix(self) -> npt.NDArray[np.float64]:
+        """Returns the augmented affine matrix for the transformation."""
+        return np.identity(self.input_rank + 1)
+
+    @property
+    def isotropic(self) -> bool:
+        return True
+
+    @property
+    def scale_factors(self) -> Union[np.float64, npt.NDArray[np.float64]]:
+        return np.double(1.0)  # type: ignore[return]

@@ -21,6 +21,7 @@ from .coordinates import Axis
 from .coordinates import CoordinateSpace
 from .coordinates import CoordinateTransform
 from .coordinates import IdentityTransform
+from .coordinates import ScaleTransform
 from .data import DataFrame
 from .data import DenseNDArray
 from .data import GeometryDataFrame
@@ -83,4 +84,5 @@ __all__ = (
     "CoordinateTransform",
     "AffineTransform",
     "IdentityTransform",
+    "ScaleTransform",
 )
