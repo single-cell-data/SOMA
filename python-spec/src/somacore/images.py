@@ -79,9 +79,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         cls,
         uri: str,
         *,
-        axis_order: str,
-        full_resolution_shape: Optional[Tuple[int, ...]] = None,
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        type: pa.DataType,
+        image_type: str = "CYX",
+        reference_level_shape: Sequence[int],
+        axis_names: Sequence[str] = ("c", "x", "y"),
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -89,12 +90,21 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
         Args:
             uri: The URI where the collection will be created.
-            axis_order
+            axis_names: The names of the axes of the image.
+            reference_level_shape: # TODO
+            image_type: The order of the image axes # TODO
+
         Returns:
             The newly created collection, opened for writing.
 
         Lifecycle: experimental
         """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def axis_names(self) -> Tuple[str, ...]:
+        # TODO: Add docstring
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -103,7 +113,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         key: str,
         *,
         uri: Optional[str] = None,
-        type: pa.DataType,
+        type: pa.DataType,  # TODO: Remove this option
         shape: Sequence[int],
     ) -> data.DenseNDArray:
         """Add a new level in the multi-scale image.
@@ -111,14 +121,6 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         Parameters are as in :meth:`data.DenseNDArray.create`. The provided shape will
         be used to compute the scale between images and must correspond to the image
         size for the entire image.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @property
-    def axis_order(self) -> str:
-        """The order of the axes in the stored images.
 
         Lifecycle: experimental
         """
@@ -142,20 +144,19 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         """
         raise NotImplementedError()
 
-    @property
     @abc.abstractmethod
-    def reference_shape(self) -> Optional[Tuple[int, ...]]:
-        """The reference shape for this multiscale image pyramid.
+    def get_transformation_from_level(
+        self, level: Union[int, str]
+    ) -> coordinates.ScaleTransform:
+        """Returns the transformation from the MultiscaleImage base coordinate
+        system to the requested level.
 
-        In most cases this should correspond to the shape of the image at level 0.
+        If ``reference_shape`` is set, this will be the scale transformation from the
+        ``reference_shape`` to the requested level. If ``reference_shape`` is not set,
+        the transformation will be to from the level 0 image to the reequence level.
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
-
-    @reference_shape.setter
-    @abc.abstractmethod
-    def reference_shape(self, value: Tuple[int, ...]) -> None:
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -168,6 +169,15 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         If ``reference_shape`` is set, this will be the scale transformation from the
         ``reference_shape`` to the requested level. If ``reference_shape`` is not set,
         the transformation will be to from the level 0 image to the reequence level.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def image_type(self) -> str:
+        """The order of the axes as stored in the data model.
 
         Lifecycle: experimental
         """
@@ -195,4 +205,22 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> pa.Tensor:
         """TODO: Add read_image_level documentation"""
+        raise NotImplementedError()
+
+    @property
+    def reference_level(self) -> Optional[int]:
+        """TODO: Add docstring"""
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def reference_level_shape(self) -> Optional[Tuple[int, ...]]:
+        """The reference shape for this multiscale image pyramid.
+
+        In most cases this should correspond to the shape of the image at level 0. If
+        ``data_axis_order`` is not ``None``, the shape will be in the same order as the
+        data as stored on disk.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
