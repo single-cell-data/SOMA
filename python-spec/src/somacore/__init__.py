@@ -32,8 +32,7 @@ from .data import SparseNDArray
 from .data import SparseRead
 from .data import SpatialDataFrame
 from .experiment import Experiment
-from .images import Image2DCollection
-from .images import ImageCollection
+from .images import MultiscaleImage
 from .measurement import Measurement
 from .options import BatchSize
 from .options import IOfN
@@ -66,9 +65,8 @@ __all__ = (
     "SparseRead",
     "Experiment",
     "Measurement",
+    "MultiscaleImage",
     "Scene",
-    "ImageCollection",
-    "Image2DCollection",
     "SpatialDataFrame",
     "PointCloud",
     "GeometryDataFrame",
