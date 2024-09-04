@@ -214,7 +214,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     @abc.abstractmethod
-    def reference_level_shape(self) -> Optional[Tuple[int, ...]]:
+    def reference_level_properties(self) -> LevelProperties:
         """The reference shape for this multiscale image pyramid.
 
         In most cases this should correspond to the shape of the image at level 0. If
