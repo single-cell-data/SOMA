@@ -28,6 +28,42 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 _RO_AUTO = options.ResultOrder.AUTO
 
 
+class ImageProperties(Protocol):
+    """Class requirements for level properties of images.
+
+    Lifecycle: experimental
+    """
+
+    @property
+    def name(self) -> str:
+        """The key for the image.
+
+        Lifecycle: experimental
+        """
+
+    @property
+    def image_type(self) -> str:
+        """A string describing the axis order of the image data.
+
+        A valid image type is a permuation of 'YX', 'YXC', 'YXZ', or 'YXZC'. The
+        letters have the following meanings:
+
+        * 'X' - image width
+        * 'Y' - image height
+        * 'Z' - image depth (for three dimensional images)
+        * 'C' - channels/bands
+
+        Lifecycle: experimental
+        """
+
+    @property
+    def shape(self) -> Tuple[int, ...]:
+        """Size of each axis of the image.
+
+        Lifecycle: experimental
+        """
+
+
 class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     base.SOMAObject,
     Generic[_DenseND, _RootSO],
@@ -52,26 +88,6 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     soma_type: Final = "SOMAMultiscaleImage"  # type: ignore[misc]
     __slots__ = ()
-
-    class LevelProperties(Protocol):
-        """Class requirements for level properties of images.
-
-        Lifecycle: experimental
-        """
-
-        @property
-        def name(self) -> str:
-            """The key for the image.
-
-            Lifecycle: experimental
-            """
-
-        @property
-        def shape(self) -> Tuple[int, ...]:
-            """Number of pixels for each dimension of the image.
-
-            Lifecycle: experimental
-            """
 
     @classmethod
     @abc.abstractmethod
@@ -104,7 +120,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @property
     @abc.abstractmethod
     def axis_names(self) -> Tuple[str, ...]:
-        # TODO: Add docstring
+        """The name of the image axes.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -113,7 +132,6 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         key: str,
         *,
         uri: Optional[str] = None,
-        type: pa.DataType,  # TODO: Remove this option
         shape: Sequence[int],
     ) -> data.DenseNDArray:
         """Add a new level in the multi-scale image.
@@ -186,12 +204,18 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @property
     @abc.abstractmethod
     def level_count(self) -> int:
-        """The number of image levels stored in the MultiscaleImage."""
+        """The number of image levels stored in the MultiscaleImage.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def level_properties(self, level: Union[int, str]) -> LevelProperties:
-        """The properties of an image at the specified level."""
+    def level_properties(self, level: Union[int, str]) -> ImageProperties:
+        """The properties of an image at the specified level.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -214,7 +238,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     @abc.abstractmethod
-    def reference_level_properties(self) -> LevelProperties:
+    def reference_level_properties(self) -> ImageProperties:
         """The reference shape for this multiscale image pyramid.
 
         In most cases this should correspond to the shape of the image at level 0. If
