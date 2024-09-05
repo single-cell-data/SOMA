@@ -24,15 +24,11 @@ from .coordinates import IdentityTransform
 from .coordinates import ScaleTransform
 from .data import DataFrame
 from .data import DenseNDArray
-from .data import GeometryDataFrame
 from .data import NDArray
-from .data import PointCloud
 from .data import ReadIter
 from .data import SparseNDArray
 from .data import SparseRead
-from .data import SpatialDataFrame
 from .experiment import Experiment
-from .images import MultiscaleImage
 from .measurement import Measurement
 from .options import BatchSize
 from .options import IOfN
@@ -41,6 +37,10 @@ from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
 from .scene import Scene
+from .spatialdata import GeometryDataFrame
+from .spatialdata import MultiscaleImage
+from .spatialdata import PointCloud
+from .spatialdata import SpatialDataFrame
 from .types import ContextBase
 
 try:

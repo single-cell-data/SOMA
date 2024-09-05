@@ -1,7 +1,7 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
 import abc
-from typing import Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar, Union
 
 from typing_extensions import Final
 
@@ -9,13 +9,23 @@ from . import _mixin
 from . import base
 from . import collection
 from . import coordinates
-from . import data
-from . import images
+from . import spatialdata
 
-_MSImage = TypeVar("_MSImage", bound=images.MultiscaleImage)
+_ImageColl = TypeVar("_ImageColl", bound=spatialdata.MultiscaleImage)
 """A particular implementation of a collection of spatial arrays."""
 _SpatialDFColl = TypeVar(
-    "_SpatialDFColl", bound=collection.Collection[data.SpatialDataFrame]
+    "_SpatialDFColl",
+    bound=collection.Collection[
+        Union[spatialdata.PointCloud, spatialdata.GeometryDataFrame]
+    ],
+)
+_NestedSpatialDFColl = TypeVar(
+    "_NestedSpatialDFColl",
+    bound=collection.Collection[
+        collection.Collection[
+            Union[spatialdata.PointCloud, spatialdata.GeometryDataFrame]
+        ]
+    ],
 )
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
@@ -23,7 +33,7 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 
 class Scene(
     collection.BaseCollection[_RootSO],
-    Generic[_SpatialDFColl, _MSImage, _RootSO],
+    Generic[_ImageColl, _SpatialDFColl, _NestedSpatialDFColl, _RootSO],
 ):
     """TODO: Add documentation for scene
 
@@ -38,11 +48,16 @@ class Scene(
     #     class Scene(  # type: ignore[type-var]
     #         ImplBaseCollection[ImplSOMAObject],
     #         somacore.Scene[
+    #             ImplMultiscaleImage,
     #             ImplCollection[
     #                 Union[ImplGeometryDataFrame, ImplPointCloud]]
     #             ], # _SpatialDFColl
-    #             ImplMultiscaleImage,                          # _MSImage
-    #             ImplSOMAObject,                               # _RootSO
+    #             ImplCollection[
+    #                 ImplCollection[
+    #                     Union[ImplGeometryDataFrame, ImplPointCloud]]
+    #                 ]
+    #             ], # _SpatialDFColl
+    #             ImplSOMAObject,
     #         ],
     #     ):
     #         ...
@@ -50,7 +65,7 @@ class Scene(
     __slots__ = ()
     soma_type: Final = "SOMAScene"  # type: ignore[misc]
 
-    img = _mixin.item[collection.Collection[_MSImage]]()
+    img = _mixin.item[_ImageColl]()
     """A collection of multi-scale imagery backing the spatial data."""
 
     obsl = _mixin.item[_SpatialDFColl]()
@@ -67,7 +82,7 @@ class Scene(
     additional columns may be stored in this dataframe as well.
      """
 
-    varl = _mixin.item[collection.Collection[_SpatialDFColl]]()
+    varl = _mixin.item[_NestedSpatialDFColl]()
     """A collection of collections of dataframes of the var locations.
 
     This collection exists to store any spatial data in the scene that joins on the
