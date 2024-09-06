@@ -73,6 +73,48 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
+    def spatial_read(
+        self,
+        region: options.SpatialDFCoords = (),
+        column_names: Optional[Sequence[str]] = None,
+        *,
+        transform: Optional[coordinates.CoordinateTransform] = None,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrderStr = _RO_AUTO,
+        value_filter: Optional[str] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> "SpatialReadIter[pa.Table]":
+        """Reads a user-defined slice of data into Arrow tables.
+
+        TODO: Add details about the requested input region.
+        TODO: Add details about the output SpatialReadIter.
+
+        Args:
+            region: for each index dimension, which rows to read or a single shape.
+                Defaults to ``()``, meaning no constraint -- all IDs.
+            column_names: the named columns to read and return.
+                Defaults to ``None``, meaning no constraint -- all column names.
+            transform: coordinate transform to apply to results.
+                Defaults to ``None``, meaning an identity transform.
+            batch_size: The size of batched reads.
+                Defaults to `unbatched`.
+            partitions: If present, specifies that this is part of
+                a partitioned read, and which part of the data to include.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
+            value_filter: an optional value filter to apply to the results.
+                The default of ``None`` represents no filter. Value filter
+                syntax is implementation-defined; see the documentation
+                for the particular SOMA implementation for details.
+        Returns:
+            A :class:`ReadIter` of :class:`pa.Table`s.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
     def write(
         self,
         values: Union[pa.RecordBatch, pa.Table],
@@ -350,14 +392,33 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @abc.abstractmethod
     def read_level(
         self,
-        level: int,
-        coords: options.DenseNDCoords = (),
+        level: Union[int, str],
+        region: options.ImageCoords = (),
         *,
         transform: Optional[coordinates.CoordinateTransform] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> pa.Tensor:
-        """TODO: Add read_image_level documentation"""
+    ) -> "SpatialReadIter[pa.Tensor]":
+        """Reads a user-defined slice or region into a Tensor.
+
+        Input query region may be a geometric shape or coordinates.
+        Coordinates must specify a contiguous subarray, and the number of
+        coordinates must be less than or equal to the number of dimensions.
+        For example, if the array is 10×20, acceptable values of ``coords``
+        include ``()``, ``(3, 4)``, ``[slice(5, 10)]``, and
+        ``[slice(5, 10), slice(6, 12)]``. The requested region is specified in the
+        transformed space.
+
+        The returned data will take the bounding box of the requested region with the
+        box parallel to the image coordinates.
+
+        TODO: Add details about the output SpatialReadIter.
+
+        TODO: Add arguments.
+
+        Returns:
+            A :class:`SpatialReadIter` or :class:`pa.Tensor`s.
+        """
         raise NotImplementedError()
 
     # Metadata opeations
@@ -498,3 +559,40 @@ class ImageProperties(Protocol):
 
         Lifecycle: experimental
         """
+
+
+#
+# Read types
+#
+
+_T = TypeVar("_T")
+
+
+# Sparse reads are returned as an iterable structure:
+
+
+class SpatialReadIter(data.ReadIter[_T], metaclass=abc.ABCMeta):
+
+    __slots__ = ()
+
+    # __iter__ is already implemented as `return self` in Iterator.
+    # SOMA implementations must implement __next__.
+
+    @property
+    @abc.abstractmethod
+    def data_coordinate_space(self) -> coordinates.CoordinateSpace:
+        """The coordinate space of the returned data."""
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def output_coordinate_space(self) -> coordinates.CoordinateSpace:
+        """The coordinate space the data is being read into."""
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def coordinate_transform(self) -> coordinates.CoordinateTransform:
+        """A coordinate transform from the coordinate system of the data
+        as returned to the requested coordinate system."""
+        raise NotImplementedError()

@@ -184,7 +184,8 @@ SparseNDCoord = Union[
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
 
-"""A single coordinate range for one dimension of a sparse dataframe."""
+SpatialDFCoords = Union[SparseNDCoords, shapely.GeometryType]
+"""A sequence of coordinate ranges or a shape for reading spatial dataframes."""
 
-GeometryDFCoords = Sequence[Union[SparseNDCoord, shapely.GeometryType]]
-"""A sequence of coordinate ranges for reading dense dataframes."""
+ImageCoords = Union[DenseNDCoords, shapely.GeometryType]
+"""A sequemce of coordinate ranges or a shape for reading multiscale images."""
