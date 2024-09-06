@@ -5,6 +5,7 @@ from typing import (
     NoReturn,
     Optional,
     TypeVar,
+    Union,
 )
 
 from typing_extensions import Literal, Self
@@ -14,10 +15,10 @@ from .. import collection
 from .. import coordinates
 from .. import data
 from .. import experiment
-from .. import images
 from .. import measurement
 from .. import options
 from .. import scene
+from .. import spatialdata
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 
@@ -131,8 +132,13 @@ _BasicAbstractMeasurement = measurement.Measurement[
 """The loosest possible constraint of the abstract Measurement type."""
 
 _BasicAbstractScene = scene.Scene[
-    collection.Collection[data.SpatialDataFrame],
-    images.MultiscaleImage,
+    spatialdata.MultiscaleImage,
+    collection.Collection[Union[spatialdata.PointCloud, spatialdata.GeometryDataFrame]],
+    collection.Collection[
+        collection.Collection[
+            Union[spatialdata.PointCloud, spatialdata.GeometryDataFrame]
+        ]
+    ],
     base.SOMAObject,
 ]
 """The loosest possible constraint of the abstract Scene type."""
