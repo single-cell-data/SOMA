@@ -1,6 +1,7 @@
 """Implementation of the SOMA image collection for spatial data"""
 
 import abc
+from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
@@ -26,6 +27,14 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
 
 _RO_AUTO = options.ResultOrder.AUTO
+#
+# Read types
+#
+
+_ReadData = TypeVar("_ReadData")
+
+
+# Sparse reads are returned as an iterable structure:
 
 
 class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -84,7 +93,7 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         result_order: options.ResultOrderStr = _RO_AUTO,
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "SpatialReadIter[pa.Table]":
+    ) -> "SpatialRead[data.ReadIter[pa.Table]]":
         """Reads a user-defined slice of data into Arrow tables.
 
         TODO: Add details about the requested input region.
@@ -398,7 +407,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         transform: Optional[coordinates.CoordinateTransform] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "SpatialReadIter[pa.Tensor]":
+    ) -> "SpatialRead[pa.Tensor]":
         """Reads a user-defined slice or region into a Tensor.
 
         Input query region may be a geometric shape or coordinates.
@@ -561,43 +570,31 @@ class ImageProperties(Protocol):
         """
 
 
-#
-# Read types
-#
+@dataclass
+class SpatialRead(Generic[_ReadData]):
+    """Reader for spatial data.
 
-_T = TypeVar("_T")
+    Args:
+        data: The data accessor.
+        data_coordinate_space: The coordinate space the read data is defined on.
+        output_coordinate_space: The requested output coordinate space.
+        coordinate_transform: A coordinate transform from the data coordiante space to
+            thedesired output coordiante space.
+    """
 
+    data: _ReadData
+    data_coordinate_space: coordinates.CoordinateSpace
+    output_coordinate_space: coordinates.CoordinateSpace
+    coordinate_transform: coordinates.CoordinateTransform
 
-# Sparse reads are returned as an iterable structure:
-
-
-class SpatialReadIter(Generic[_T], metaclass=abc.ABCMeta):
-
-    __slots__ = ()
-
-    # __iter__ is already implemented as `return self` in Iterator.
-    # SOMA implementations must implement __next__.
-
-    @property
-    @abc.abstractmethod
-    def data(self) -> data.ReadIter[_T]:
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def data_coordinate_space(self) -> coordinates.CoordinateSpace:
-        """The coordinate space of the returned data."""
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def output_coordinate_space(self) -> coordinates.CoordinateSpace:
-        """The coordinate space the data is being read into."""
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def coordinate_transform(self) -> coordinates.CoordinateTransform:
-        """A coordinate transform from the coordinate system of the data
-        as returned to the requested coordinate system."""
-        raise NotImplementedError()
+    def __post_init__(self):
+        if (
+            self.data_coordinate_space.axis_names
+            != self.coordinate_transform.input_axes
+        ):
+            raise ValueError()  # TODO: Add error message
+        if (
+            self.output_coordinate_space.axis_names
+            != self.coordinate_transform.output_axes
+        ):
+            raise ValueError()  # TODO: Add error message

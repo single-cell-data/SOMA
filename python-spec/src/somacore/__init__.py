@@ -42,7 +42,7 @@ from .spatialdata import ImageProperties
 from .spatialdata import MultiscaleImage
 from .spatialdata import PointCloud
 from .spatialdata import SpatialDataFrame
-from .spatialdata import SpatialReadIter
+from .spatialdata import SpatialRead
 from .types import ContextBase
 
 try:
@@ -73,7 +73,7 @@ __all__ = (
     "SpatialDataFrame",
     "PointCloud",
     "GeometryDataFrame",
-    "SpatialReadIter",
+    "SpatialRead",
     "BatchSize",
     "IOfN",
     "ResultOrder",
