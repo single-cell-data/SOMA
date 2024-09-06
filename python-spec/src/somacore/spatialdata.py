@@ -571,12 +571,17 @@ _T = TypeVar("_T")
 # Sparse reads are returned as an iterable structure:
 
 
-class SpatialReadIter(data.ReadIter[_T], metaclass=abc.ABCMeta):
+class SpatialReadIter(Generic[_T], metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
     # __iter__ is already implemented as `return self` in Iterator.
     # SOMA implementations must implement __next__.
+
+    @property
+    @abc.abstractmethod
+    def data(self) -> data.ReadIter[_T]:
+        raise NotImplementedError()
 
     @property
     @abc.abstractmethod
