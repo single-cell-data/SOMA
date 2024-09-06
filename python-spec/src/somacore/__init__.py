@@ -38,9 +38,11 @@ from .query import AxisQuery
 from .query import ExperimentAxisQuery
 from .scene import Scene
 from .spatialdata import GeometryDataFrame
+from .spatialdata import ImageProperties
 from .spatialdata import MultiscaleImage
 from .spatialdata import PointCloud
 from .spatialdata import SpatialDataFrame
+from .spatialdata import SpatialReadIter
 from .types import ContextBase
 
 try:
@@ -66,10 +68,12 @@ __all__ = (
     "Experiment",
     "Measurement",
     "MultiscaleImage",
+    "ImageProperties",
     "Scene",
     "SpatialDataFrame",
     "PointCloud",
     "GeometryDataFrame",
+    "SpatialReadIter",
     "BatchSize",
     "IOfN",
     "ResultOrder",
