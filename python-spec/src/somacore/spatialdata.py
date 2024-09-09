@@ -88,6 +88,7 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         column_names: Optional[Sequence[str]] = None,
         *,
         transform: Optional[coordinates.CoordinateTransform] = None,
+        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
@@ -106,6 +107,8 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 Defaults to ``None``, meaning no constraint -- all column names.
             transform: coordinate transform to apply to results.
                 Defaults to ``None``, meaning an identity transform.
+            region_coord_space: the coordinate space of the region being read.
+                Defaults to ``None``, coordinate space will be infer from transform.
             batch_size: The size of batched reads.
                 Defaults to `unbatched`.
             partitions: If present, specifies that this is part of
@@ -405,6 +408,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         region: options.ImageCoords = (),
         *,
         transform: Optional[coordinates.CoordinateTransform] = None,
+        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
+        apply_mask: bool = False,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[pa.Tensor]":
