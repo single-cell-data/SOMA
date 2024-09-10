@@ -47,6 +47,28 @@ def test_affine_augmented_matrix(input, expected):
 
 
 @pytest.mark.parametrize(
+    ("input", "expected"),
+    [
+        (
+            AffineTransform(
+                ["x1", "y1"],
+                ["x2", "y2"],
+                [[1, 0, 0], [0, 1, 0]],
+            ),
+            AffineTransform(
+                ["x2", "y2"],
+                ["x1", "y1"],
+                [[1, 0, 0], [0, 1, 0]],
+            ),
+        )
+    ],
+)
+def test_inverse_transform(input, expected):
+    result = input.inverse_transform()
+    check_transform_is_equal(result, expected)
+
+
+@pytest.mark.parametrize(
     ("transform_a", "transform_b", "expected"),
     [
         (

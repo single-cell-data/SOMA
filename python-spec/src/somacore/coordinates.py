@@ -201,10 +201,11 @@ class AffineTransform(CoordinateTransform):
 
     def inverse_transform(self) -> CoordinateTransform:
         inv_a = np.linalg.inv(self._matrix[:-1, :-1])
+        b2 = inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
         inv_augmented: npt.NDArray[np.float64] = np.vstack(
             (
-                np.hstack((inv_a, inv_a @ self._matrix[-1, :-1])),
-                np.hstack((np.zeros(self.input_rank), np.array([1]))),
+                np.hstack((inv_a, b2)),
+                np.hstack((np.zeros(self.output_rank), np.array([1]))),
             )
         )
         return AffineTransform(self.output_axes, self.input_axes, inv_augmented)
