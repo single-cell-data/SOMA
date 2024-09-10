@@ -592,13 +592,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        axism = axis.getitem_from(self._ms, suf="m")
-
-        _, n_col = axism[layer].shape
-        n_row = len(axis.getattr_from(self._joinids))
-
         table = self._axism_inner(axis, layer).tables().concat()
-        return self._convert_to_ndarray(axis, table, n_row, n_col)
+        shape = tuple(
+            pa.compute.count_distinct(f).as_py()
+            for f in table.select(["soma_dim_0", "soma_dim_1"]).itercolumns()
+        )
+
+        return self._convert_to_ndarray(axis, table, shape[0], shape[1])
 
     @property
     def _obs_df(self) -> data.DataFrame:
