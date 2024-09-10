@@ -7,7 +7,6 @@ from typing import Any, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
-import pyarrow as pa
 
 
 @dataclass
@@ -81,10 +80,6 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __rmul__(self, other: Any) -> "CoordinateTransform":
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
         raise NotImplementedError()
 
     @property
@@ -199,10 +194,6 @@ class AffineTransform(CoordinateTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
-        """TODO: Add docstring"""
-        raise NotImplementedError()
-
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
         """Returns the augmented affine matrix for the transformation."""
@@ -283,11 +274,15 @@ class ScaleTransform(AffineTransform):
         if isinstance(other, CoordinateTransform):
             if other.output_axes != self.input_axes:
                 raise ValueError("Axis mismatch between transformations.")
-            if isinstance(other, ScaleTransform):  # Includes IdentityTransform
+            if isinstance(other, IdentityTransform):
+                return ScaleTransform(
+                    other.input_axes, self.output_axes, self._scale_factors
+                )
+            if isinstance(other, ScaleTransform):
                 return ScaleTransform(
                     other.input_axes,
                     self.output_axes,
-                    self.scale_factors * other.scale_factors,
+                    self._scale_factors * other._scale_factors,
                 )
             if isinstance(other, AffineTransform):
                 return AffineTransform(
@@ -303,19 +298,9 @@ class ScaleTransform(AffineTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
-        """TODO: Add docstring"""
-        raise NotImplementedError()
-
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        if self._isotropic:
-            scales: npt.NDArray[np.float64] = np.array(
-                self.input_rank * [self._scale_factors], dtype=np.float64
-            )
-        else:
-            scales = self._scale_factors  # type: ignore[assignment]
-        scales = np.append(scales, [1.0])
+        scales = np.append(self.scale_factors, [1.0])
         return np.diag(scales)
 
     def inverse_transform(self) -> CoordinateTransform:
@@ -328,7 +313,20 @@ class ScaleTransform(AffineTransform):
         return self._isotropic
 
     @property
-    def scale_factors(self) -> Union[np.float64, npt.NDArray[np.float64]]:
+    def scale(self) -> np.float64:
+        if not self._isotropic:
+            raise RuntimeError(
+                "Scale transform is not isotropic. Cannot get a single scale."
+            )
+        assert isinstance(self._scale_factors, np.float64)
+        return self._scale_factors
+
+    @property
+    def scale_factors(self) -> npt.NDArray[np.float64]:
+        if self._isotropic:
+            assert isinstance(self._scale_factors, np.float64)
+            return np.array(self.input_rank * [self._scale_factors], dtype=np.float64)
+        assert isinstance(self._scale_factors, np.ndarray)
         return self._scale_factors
 
 
@@ -378,10 +376,6 @@ class IdentityTransform(ScaleTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def apply(self, data: Union[pa.Tensor, pa.Table]) -> Union[pa.Tensor, pa.Table]:
-        # TODO: Check valid rank
-        raise NotImplementedError()
-
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
         """Returns the augmented affine matrix for the transformation."""
@@ -395,5 +389,5 @@ class IdentityTransform(ScaleTransform):
         return True
 
     @property
-    def scale_factors(self) -> Union[np.float64, npt.NDArray[np.float64]]:
-        return np.double(1.0)  # type: ignore[return]
+    def scale_factors(self) -> npt.NDArray[np.float64]:
+        return np.array(self.input_rank * [1.0], dtype=np.float64)
