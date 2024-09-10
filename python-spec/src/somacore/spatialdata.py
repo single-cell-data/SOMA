@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
+    Mapping,
     MutableMapping,
     Optional,
     Sequence,
@@ -84,9 +85,10 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def spatial_read(
         self,
-        region: options.SpatialDFCoords = (),
+        region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
+        extra_coords: Optional[Mapping[str, options.SparseDFCoord]] = None,
         transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
@@ -105,6 +107,8 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 Defaults to ``()``, meaning no constraint -- all IDs.
             column_names: the named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
+            extra_coords: a name to coordinate mapping non-spatial index columns.
+                Defaults to selecting entire region for non-spatial coordinates.
             transform: coordinate transform to apply to results.
                 Defaults to ``None``, meaning an identity transform.
             region_coord_space: the coordinate space of the region being read.
@@ -405,8 +409,9 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     def read_level(
         self,
         level: Union[int, str],
-        region: options.ImageCoords = (),
+        region: options.SpatialRegion = (),
         *,
+        channel_coords: options.DenseCoord = None,
         transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         apply_mask: bool = False,
