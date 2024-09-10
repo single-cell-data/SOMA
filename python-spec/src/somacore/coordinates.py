@@ -95,6 +95,9 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
     def input_rank(self) -> int:
         return len(self._input_axes)
 
+    def inverse_transform(self) -> "CoordinateTransform":
+        raise NotImplementedError()
+
     @property
     def output_axes(self) -> Tuple[str, ...]:
         return self._output_axes
@@ -205,6 +208,16 @@ class AffineTransform(CoordinateTransform):
         """Returns the augmented affine matrix for the transformation."""
         return self._matrix
 
+    def inverse_transform(self) -> CoordinateTransform:
+        inv_a = np.linalg.inv(self._matrix[:-1, :-1])
+        inv_augmented: npt.NDArray[np.float64] = np.vstack(
+            (
+                np.hstack((inv_a, inv_a @ self._matrix[-1, :-1])),
+                np.hstack((np.zeros(self.input_rank), np.array([1]))),
+            )
+        )
+        return AffineTransform(self.output_axes, self.input_axes, inv_augmented)
+
 
 class ScaleTransform(AffineTransform):
     """TODO: Add docstring"""
@@ -305,6 +318,11 @@ class ScaleTransform(AffineTransform):
         scales = np.append(scales, [1.0])
         return np.diag(scales)
 
+    def inverse_transform(self) -> CoordinateTransform:
+        return ScaleTransform(
+            self.output_axes, self.input_axes, 1.0 / self._scale_factors
+        )
+
     @property
     def isotropic(self) -> bool:
         return self._isotropic
@@ -368,6 +386,9 @@ class IdentityTransform(ScaleTransform):
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
         """Returns the augmented affine matrix for the transformation."""
         return np.identity(self.input_rank + 1)
+
+    def inverse_transform(self) -> CoordinateTransform:
+        return IdentityTransform(self.output_axes, self.input_axes)
 
     @property
     def isotropic(self) -> bool:
