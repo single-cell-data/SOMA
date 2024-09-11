@@ -83,7 +83,7 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def spatial_read(
+    def read_region(
         self,
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
