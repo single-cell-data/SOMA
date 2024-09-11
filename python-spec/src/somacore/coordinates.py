@@ -201,7 +201,7 @@ class AffineTransform(CoordinateTransform):
 
     def inverse_transform(self) -> CoordinateTransform:
         inv_a = np.linalg.inv(self._matrix[:-1, :-1])
-        b2 = inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
+        b2 = -inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
         inv_augmented: npt.NDArray[np.float64] = np.vstack(
             (
                 np.hstack((inv_a, b2)),
