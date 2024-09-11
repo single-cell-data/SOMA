@@ -152,14 +152,14 @@ class AffineTransform(CoordinateTransform):
                 other * self.augmented_matrix,  # type: ignore[operator]
             )
         if isinstance(other, CoordinateTransform):
-            if self.output_axes != other.input_axes:
+            if self.input_axes != other.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
             if isinstance(other, IdentityTransform):
-                return AffineTransform(self.input_axes, other.output_axes, self._matrix)
+                return AffineTransform(other.input_axes, self.output_axes, self._matrix)
             if isinstance(other, AffineTransform):
                 return AffineTransform(
-                    self.input_axes,
-                    other.output_axes,
+                    other.input_axes,
+                    self.output_axes,
                     self.augmented_matrix @ other.augmented_matrix,
                 )
         if isinstance(other, np.ndarray):
@@ -174,16 +174,16 @@ class AffineTransform(CoordinateTransform):
         if np.isscalar(other):
             return self.__mul__(other)
         if isinstance(other, CoordinateTransform):
-            if other.output_axes != self.input_axes:
+            if other.input_axes != self.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
             if isinstance(other, IdentityTransform):
                 return AffineTransform(
-                    other.input_axes, self.output_axes, self.augmented_matrix
+                    self.input_axes, other.output_axes, self.augmented_matrix
                 )
             if isinstance(other, AffineTransform):
                 return AffineTransform(
-                    other.input_axes,
-                    self.output_axes,
+                    self.input_axes,
+                    other.output_axes,
                     other.augmented_matrix @ self.augmented_matrix,
                 )
         if isinstance(other, np.ndarray):
@@ -247,18 +247,18 @@ class ScaleTransform(AffineTransform):
                 other.scale_factors * self.scale_factors,  # type: ignore[operator, union-attr]
             )
         if isinstance(other, CoordinateTransform):
-            if self.output_axes != other.input_axes:
+            if self.input_axes != other.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
             if isinstance(other, ScaleTransform):  # Includes IdentityTransform
                 return ScaleTransform(
-                    self.input_axes,
-                    other.output_axes,
+                    other.input_axes,
+                    self.output_axes,
                     self.scale_factors * other.scale_factors,
                 )
             if isinstance(other, AffineTransform):
                 return AffineTransform(
-                    self.input_axes,
-                    other.output_axes,
+                    other.input_axes,
+                    self.output_axes,
                     self.augmented_matrix @ other.augmented_matrix,
                 )
         if isinstance(other, np.ndarray):
@@ -273,22 +273,22 @@ class ScaleTransform(AffineTransform):
         if np.isscalar(other):
             return self.__mul__(other)
         if isinstance(other, CoordinateTransform):
-            if other.output_axes != self.input_axes:
+            if other.input_axes != self.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
             if isinstance(other, IdentityTransform):
                 return ScaleTransform(
-                    other.input_axes, self.output_axes, self._scale_factors
+                    self.input_axes, other.output_axes, self._scale_factors
                 )
             if isinstance(other, ScaleTransform):
                 return ScaleTransform(
-                    other.input_axes,
-                    self.output_axes,
+                    self.input_axes,
+                    other.output_axes,
                     self._scale_factors * other._scale_factors,
                 )
             if isinstance(other, AffineTransform):
                 return AffineTransform(
-                    other.input_axes,
-                    self.output_axes,
+                    self.input_axes,
+                    other.output_axes,
                     other.augmented_matrix @ self.augmented_matrix,
                 )
         if isinstance(other, np.ndarray):
@@ -348,9 +348,9 @@ class IdentityTransform(ScaleTransform):
             return ScaleTransform(self.input_axes, self.output_axes, other)
         if isinstance(other, CoordinateTransform):
             if isinstance(other, IdentityTransform):
-                if self.output_axes != other.input_axes:
+                if other.output_axes != self.input_axes:
                     raise ValueError("Axis mismatch between transformations.")
-                return IdentityTransform(self.input_axes, other.output_axes)
+                return IdentityTransform(other.input_axes, self.output_axes)
             return other.__rmul__(self)
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
@@ -367,7 +367,7 @@ class IdentityTransform(ScaleTransform):
             if isinstance(other, IdentityTransform):
                 if other.output_axes != self.input_axes:
                     raise ValueError("Axis mismatch between transformations.")
-                return IdentityTransform(other.input_axes, self.output_axes)
+                return IdentityTransform(self.input_axes, other.output_axes)
             return other.__mul__(self)
         if isinstance(other, np.ndarray):
             raise NotImplementedError(

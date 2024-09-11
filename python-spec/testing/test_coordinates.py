@@ -99,26 +99,26 @@ def test_inverse_transform(input, expected):
     ("transform_a", "transform_b", "expected"),
     [
         (
-            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             IdentityTransform(["x2", "y2"], ["x3", "y3"]),
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             IdentityTransform(["x1", "y1"], ["x3", "y3"]),
         ),
         (
-            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             ScaleTransform(
                 ["x2", "y2"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
             ),
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             ScaleTransform(
                 ["x1", "y1"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
             ),
         ),
         (
-            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             AffineTransform(
                 ["x2", "y2"],
                 ["x3", "y3"],
                 np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
             ),
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
             AffineTransform(
                 ["x1", "y1"],
                 ["x3", "y3"],
@@ -126,21 +126,21 @@ def test_inverse_transform(input, expected):
             ),
         ),
         (
+            IdentityTransform(["x2", "y2"], ["x3", "y3"]),
             ScaleTransform(
                 ["x1", "y1"], ["x2", "y2"], np.array([1.5, 3.0], dtype=np.float64)
             ),
-            IdentityTransform(["x2", "y2"], ["x3", "y3"]),
             ScaleTransform(
                 ["x1", "y1"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
             ),
         ),
         (
+            IdentityTransform(["x2", "y2"], ["x3", "y3"]),
             AffineTransform(
                 ["x1", "y1"],
                 ["x2", "y2"],
                 np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
             ),
-            IdentityTransform(["x2", "y2"], ["x3", "y3"]),
             AffineTransform(
                 ["x1", "y1"],
                 ["x3", "y3"],
@@ -148,19 +148,19 @@ def test_inverse_transform(input, expected):
             ),
         ),
         (
-            ScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
             ScaleTransform(["x2", "y2"], ["x3", "y3"], [1.0, -1.0]),
+            ScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
             ScaleTransform(["x1", "y1"], ["x3", "y3"], [1.5, -1.5]),
         ),
         (
             AffineTransform(
-                ["x1", "y1"],
                 ["x2", "y2"],
+                ["x3", "y3"],
                 np.array([[2.0, 0.0, 1.0], [0.0, 4.0, 1.0]], dtype=np.float64),
             ),
             AffineTransform(
+                ["x1", "y1"],
                 ["x2", "y2"],
-                ["x3", "y3"],
                 np.array([[1.0, 1.0, -1.0], [0.0, 1.0, 2.0]], dtype=np.float64),
             ),
             AffineTransform(
