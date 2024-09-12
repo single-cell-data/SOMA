@@ -593,11 +593,11 @@ class ExperimentAxisQuery(Generic[_Exp]):
         layer: str,
     ) -> np.ndarray:
         axism = axis.getitem_from(self._ms, suf="m")
+        table = axism[layer].read().tables().concat()
 
-        _, n_col = axism[layer].shape
         n_row = len(axis.getattr_from(self._joinids))
+        n_col = len(table["soma_dim_1"].unique())
 
-        table = self._axism_inner(axis, layer).tables().concat()
         return self._convert_to_ndarray(axis, table, n_row, n_col)
 
     @property
