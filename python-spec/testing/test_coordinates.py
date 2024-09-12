@@ -91,7 +91,7 @@ def test_inverse_transform(input, expected):
     result = input.inverse_transform()
     check_transform_is_equal(result, expected)
     result_matrix = input.augmented_matrix @ result.augmented_matrix
-    expected_matrix = np.identity(result.input_rank + 1, dtype=np.float64)
+    expected_matrix: np.ndarray = np.identity(result.input_rank + 1, dtype=np.float64)
     np.testing.assert_allclose(result_matrix, expected_matrix)
 
 
@@ -176,5 +176,5 @@ def test_multiply_tranform(
     transform_b,
     expected: CoordinateTransform,
 ):
-    result = transform_a * transform_b
+    result = transform_a @ transform_b
     check_transform_is_equal(result, expected)

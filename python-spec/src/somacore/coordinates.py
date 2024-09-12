@@ -15,7 +15,8 @@ class Axis(metaclass=abc.ABCMeta):
 
     Args:
         name: Name of the axis.
-        unit:
+        unit: Optional string units. Defaults to ``None``.
+        scale: Optional scale for units. Defaults to ``None``.
 
     Lifecycle: experimental
     """
@@ -29,11 +30,11 @@ class CoordinateSpace(collections.abc.Sequence):
     """A coordinate system for spatial data."""
 
     def __init__(self, axes: Sequence[Axis]):
-        """TODO: Add docstring"""
-        # TODO: Needs good, comprehensive error handling.
-        if len(tuple(axes)) == 0:
-            raise ValueError("Coordinate space must have at least one axis.")
         self._axes = tuple(axes)
+        if len(self._axes) == 0:
+            raise ValueError("Coordinate space must have at least one axis.")
+        if len(set(axis.name for axis in self._axes)) != len(axes):
+            raise ValueError("The names for the axes must be unique.")
 
     def __len__(self) -> int:
         return len(self._axes)
@@ -54,13 +55,16 @@ class CoordinateSpace(collections.abc.Sequence):
 
     @property
     def axis_names(self) -> Tuple[str, ...]:
+        """TODO: Add docstring"""
         return tuple(axis.name for axis in self._axes)
 
     def rank(self) -> int:
+        """TODO: Add docstring"""
         return len(self)
 
 
 class CoordinateTransform(metaclass=abc.ABCMeta):
+    """TODO: Add docstring"""
 
     def __init__(
         self,
@@ -75,30 +79,35 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def __mul__(self, other: Any) -> "CoordinateTransform":
+    def __matmul__(self, other: Any) -> "CoordinateTransform":
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def __rmul__(self, other: Any) -> "CoordinateTransform":
+    def __rmatmul__(self, other: Any) -> "CoordinateTransform":
         raise NotImplementedError()
 
-    @property
-    def input_axes(self) -> Tuple[str, ...]:
-        return self._input_axes
-
-    @property
-    def input_rank(self) -> int:
-        return len(self._input_axes)
-
+    @abc.abstractmethod
     def inverse_transform(self) -> "CoordinateTransform":
         raise NotImplementedError()
 
     @property
+    def input_axes(self) -> Tuple[str, ...]:
+        """TODO: Add docstring"""
+        return self._input_axes
+
+    @property
+    def input_rank(self) -> int:
+        """TODO: Add docstring"""
+        return len(self._input_axes)
+
+    @property
     def output_axes(self) -> Tuple[str, ...]:
+        """TODO: Add docstring"""
         return self._output_axes
 
     @property
     def output_rank(self) -> int:
+        """TODO: Add docstring"""
         return len(self._output_axes)
 
 
@@ -144,13 +153,7 @@ class AffineTransform(CoordinateTransform):
                 f"Unexpected shape {self._matrix.shape} for the input affine matrix."
             )
 
-    def __mul__(self, other: Any) -> CoordinateTransform:
-        if np.isscalar(other):
-            return AffineTransform(
-                self.input_axes,
-                self.output_axes,
-                other * self.augmented_matrix,  # type: ignore[operator]
-            )
+    def __matmul__(self, other: Any) -> CoordinateTransform:
         if isinstance(other, CoordinateTransform):
             if self.input_axes != other.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
@@ -170,9 +173,7 @@ class AffineTransform(CoordinateTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def __rmul__(self, other: Any) -> CoordinateTransform:
-        if np.isscalar(other):
-            return self.__mul__(other)
+    def __rmatmul__(self, other: Any) -> CoordinateTransform:
         if isinstance(other, CoordinateTransform):
             if other.input_axes != self.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
@@ -239,13 +240,7 @@ class ScaleTransform(AffineTransform):
                 f"for a transform with rank={self.input_rank}."
             )
 
-    def __mul__(self, other: Any) -> CoordinateTransform:
-        if np.isscalar(other):
-            return ScaleTransform(
-                self.input_axes,
-                self.output_axes,
-                other.scale_factors * self.scale_factors,  # type: ignore[operator, union-attr]
-            )
+    def __matmul__(self, other: Any) -> CoordinateTransform:
         if isinstance(other, CoordinateTransform):
             if self.input_axes != other.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
@@ -269,9 +264,7 @@ class ScaleTransform(AffineTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def __rmul__(self, other: Any) -> CoordinateTransform:
-        if np.isscalar(other):
-            return self.__mul__(other)
+    def __rmatmul__(self, other: Any) -> CoordinateTransform:
         if isinstance(other, CoordinateTransform):
             if other.input_axes != self.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
@@ -343,15 +336,13 @@ class IdentityTransform(ScaleTransform):
         if self.input_rank != self.output_rank:
             raise ValueError("Incompatible rank of input and output axes")
 
-    def __mul__(self, other: Any) -> CoordinateTransform:
-        if np.isscalar(other):
-            return ScaleTransform(self.input_axes, self.output_axes, other)
+    def __matmul__(self, other: Any) -> CoordinateTransform:
         if isinstance(other, CoordinateTransform):
             if isinstance(other, IdentityTransform):
                 if other.output_axes != self.input_axes:
                     raise ValueError("Axis mismatch between transformations.")
                 return IdentityTransform(other.input_axes, self.output_axes)
-            return other.__rmul__(self)
+            return other.__rmatmul__(self)
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
                 "Support for multiplying by numpy arrays is not yet implemented."
@@ -360,15 +351,13 @@ class IdentityTransform(ScaleTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def __rmul__(self, other: Any) -> CoordinateTransform:
-        if np.isscalar(other):
-            return self.__mul__(other)
+    def __rmatmul__(self, other: Any) -> CoordinateTransform:
         if isinstance(other, CoordinateTransform):
             if isinstance(other, IdentityTransform):
                 if other.output_axes != self.input_axes:
                     raise ValueError("Axis mismatch between transformations.")
                 return IdentityTransform(self.input_axes, other.output_axes)
-            return other.__mul__(self)
+            return other.__matmul__(self)
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
                 "Support for multiplying by numpy arrays is not yet implemented."
