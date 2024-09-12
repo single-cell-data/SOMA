@@ -596,7 +596,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         table = axism[layer].read().tables().concat()
 
         n_row = len(axis.getattr_from(self._joinids))
-        n_col = pa.compute.count_distinct(table["soma_dim_1"]).as_py()
+        n_col = len(table["soma_dim_1"].unique())
 
         return self._convert_to_ndarray(axis, table, n_row, n_col)
 
