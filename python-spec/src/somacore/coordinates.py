@@ -201,6 +201,7 @@ class AffineTransform(CoordinateTransform):
         return self._matrix
 
     def inverse_transform(self) -> CoordinateTransform:
+        """TODO: Add docstring"""
         inv_a = np.linalg.inv(self._matrix[:-1, :-1])
         b2 = -inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
         inv_augmented: npt.NDArray[np.float64] = np.vstack(
@@ -294,20 +295,24 @@ class ScaleTransform(AffineTransform):
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
+        """TODO: Add docstring"""
         scales = np.append(self.scale_factors, [1.0])
         return np.diag(scales)
 
     def inverse_transform(self) -> CoordinateTransform:
+        """TODO: Add docstring"""
         return ScaleTransform(
             self.output_axes, self.input_axes, 1.0 / self._scale_factors
         )
 
     @property
     def isotropic(self) -> bool:
+        """TODO: Add docstring"""
         return self._isotropic
 
     @property
     def scale(self) -> np.float64:
+        """TODO: Add docstring"""
         if not self._isotropic:
             raise RuntimeError(
                 "Scale transform is not isotropic. Cannot get a single scale."
@@ -317,6 +322,7 @@ class ScaleTransform(AffineTransform):
 
     @property
     def scale_factors(self) -> npt.NDArray[np.float64]:
+        """TODO: Add docstring"""
         if self._isotropic:
             assert isinstance(self._scale_factors, np.float64)
             return np.array(self.input_rank * [self._scale_factors], dtype=np.float64)
@@ -372,12 +378,15 @@ class IdentityTransform(ScaleTransform):
         return np.identity(self.input_rank + 1)
 
     def inverse_transform(self) -> CoordinateTransform:
+        """TODO: Add docstring"""
         return IdentityTransform(self.output_axes, self.input_axes)
 
     @property
     def isotropic(self) -> bool:
+        """TODO: Add docstring"""
         return True
 
     @property
     def scale_factors(self) -> npt.NDArray[np.float64]:
+        """TODO: Add docstring"""
         return np.array(self.input_rank * [1.0], dtype=np.float64)
