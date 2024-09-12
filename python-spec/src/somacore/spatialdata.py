@@ -1,9 +1,11 @@
 """Implementation of the SOMA image collection for spatial data"""
 
 import abc
+from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
+    Mapping,
     MutableMapping,
     Optional,
     Sequence,
@@ -26,6 +28,14 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
 
 _RO_AUTO = options.ResultOrder.AUTO
+#
+# Read types
+#
+
+_ReadData = TypeVar("_ReadData")
+
+
+# Sparse reads are returned as an iterable structure:
 
 
 class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -57,6 +67,54 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 Defaults to ``()``, meaning no constraint -- all IDs.
             column_names: the named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
+            partitions: If present, specifies that this is part of
+                a partitioned read, and which part of the data to include.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
+            value_filter: an optional value filter to apply to the results.
+                The default of ``None`` represents no filter. Value filter
+                syntax is implementation-defined; see the documentation
+                for the particular SOMA implementation for details.
+        Returns:
+            A :class:`ReadIter` of :class:`pa.Table`s.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def read_region(
+        self,
+        region: Optional[options.SpatialRegion] = None,
+        column_names: Optional[Sequence[str]] = None,
+        *,
+        extra_coords: Optional[Mapping[str, options.SparseDFCoord]] = None,
+        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
+        batch_size: options.BatchSize = options.BatchSize(),
+        partitions: Optional[options.ReadPartitions] = None,
+        result_order: options.ResultOrderStr = _RO_AUTO,
+        value_filter: Optional[str] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> "SpatialRead[data.ReadIter[pa.Table]]":
+        """Reads a user-defined slice of data into Arrow tables.
+
+        TODO: Add details about the requested input region.
+        TODO: Add details about the output SpatialReadIter.
+
+        Args:
+            region: for each index dimension, which rows to read or a single shape.
+                Defaults to ``()``, meaning no constraint -- all IDs.
+            column_names: the named columns to read and return.
+                Defaults to ``None``, meaning no constraint -- all column names.
+            extra_coords: a name to coordinate mapping non-spatial index columns.
+                Defaults to selecting entire region for non-spatial coordinates.
+            transform: coordinate transform to apply to results.
+                Defaults to ``None``, meaning an identity transform.
+            region_coord_space: the coordinate space of the region being read.
+                Defaults to ``None``, coordinate space will be infer from transform.
+            batch_size: The size of batched reads.
+                Defaults to `unbatched`.
             partitions: If present, specifies that this is part of
                 a partitioned read, and which part of the data to include.
             result_order: the order to return results, specified as a
@@ -350,14 +408,36 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @abc.abstractmethod
     def read_level(
         self,
-        level: int,
-        coords: options.DenseNDCoords = (),
+        level: Union[int, str],
+        region: options.SpatialRegion = (),
         *,
+        channel_coords: options.DenseCoord = None,
         transform: Optional[coordinates.CoordinateTransform] = None,
+        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
+        apply_mask: bool = False,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> pa.Tensor:
-        """TODO: Add read_image_level documentation"""
+    ) -> "SpatialRead[pa.Tensor]":
+        """Reads a user-defined slice or region into a Tensor.
+
+        Input query region may be a geometric shape or coordinates.
+        Coordinates must specify a contiguous subarray, and the number of
+        coordinates must be less than or equal to the number of dimensions.
+        For example, if the array is 10×20, acceptable values of ``coords``
+        include ``()``, ``(3, 4)``, ``[slice(5, 10)]``, and
+        ``[slice(5, 10), slice(6, 12)]``. The requested region is specified in the
+        transformed space.
+
+        The returned data will take the bounding box of the requested region with the
+        box parallel to the image coordinates.
+
+        TODO: Add details about the output SpatialReadIter.
+
+        TODO: Add arguments.
+
+        Returns:
+            A :class:`SpatialReadIter` or :class:`pa.Tensor`s.
+        """
         raise NotImplementedError()
 
     # Metadata opeations
@@ -498,3 +578,33 @@ class ImageProperties(Protocol):
 
         Lifecycle: experimental
         """
+
+
+@dataclass
+class SpatialRead(Generic[_ReadData]):
+    """Reader for spatial data.
+
+    Args:
+        data: The data accessor.
+        data_coordinate_space: The coordinate space the read data is defined on.
+        output_coordinate_space: The requested output coordinate space.
+        coordinate_transform: A coordinate transform from the data coordiante space to
+            thedesired output coordiante space.
+    """
+
+    data: _ReadData
+    data_coordinate_space: coordinates.CoordinateSpace
+    output_coordinate_space: coordinates.CoordinateSpace
+    coordinate_transform: coordinates.CoordinateTransform
+
+    def __post_init__(self):
+        if (
+            self.data_coordinate_space.axis_names
+            != self.coordinate_transform.input_axes
+        ):
+            raise ValueError()  # TODO: Add error message
+        if (
+            self.output_coordinate_space.axis_names
+            != self.coordinate_transform.output_axes
+        ):
+            raise ValueError()  # TODO: Add error message
