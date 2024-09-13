@@ -125,19 +125,13 @@ class AffineTransform(CoordinateTransform):
     """An affine coordinate trasformation from one coordinate space to another.
 
     An affine transform is a combination of a linear transformation and a translation.
-    For a vector x it can be written as
-
-        y = Ax + b
-
-    where A is a matrix and b is a vector.
-
 
     Args:
         input_axes: The names of the axes for the input coordinate space.
         output_axes: The names of the axes for the output coordinate space.
-        matrix: Matrix for that represetnts the transformation. Can be provided as
-            just the linear transform (if no translation), the full augmented matrix,
-            or the augmented matrix without the final row.
+        matrix: Matrix (perhaps augmented) that represents the affine transformation.
+            Can be provided as just the linear transform (if no translation), the
+            full augmented matrix, or the augmented matrix without the final row.
     """
 
     def __init__(
@@ -301,7 +295,7 @@ class ScaleTransform(AffineTransform):
                 return AffineTransform(
                     other.input_axes,
                     self.output_axes,
-                    self.augmented_matrix @ other.augmented_matrix,
+                    self.augmented_matrix.__matmul__(other.augmented_matrix),
                 )
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
@@ -329,7 +323,7 @@ class ScaleTransform(AffineTransform):
                 return AffineTransform(
                     self.input_axes,
                     other.output_axes,
-                    other.augmented_matrix @ self.augmented_matrix,
+                    other.augmented_matrix.__matmul__(self.augmented_matrix),
                 )
         if isinstance(other, np.ndarray):
             raise NotImplementedError(
