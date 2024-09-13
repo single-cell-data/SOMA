@@ -27,7 +27,11 @@ class Axis(metaclass=abc.ABCMeta):
 
 
 class CoordinateSpace(collections.abc.Sequence):
-    """A coordinate system for spatial data."""
+    """A coordinate space for spatial data.
+
+    Args:
+        axes: The axes of the coordinate system in order.
+    """
 
     def __init__(self, axes: Sequence[Axis]):
         self._axes = tuple(axes)
@@ -50,21 +54,26 @@ class CoordinateSpace(collections.abc.Sequence):
 
     @property
     def axes(self) -> Tuple[Axis, ...]:
-        """TODO: Add docstring"""
+        """The axes in the coordinate space"""
         return self._axes
 
     @property
     def axis_names(self) -> Tuple[str, ...]:
-        """TODO: Add docstring"""
+        """The names of the axes in order."""
         return tuple(axis.name for axis in self._axes)
 
     def rank(self) -> int:
-        """TODO: Add docstring"""
+        """The number of axes in this coordinate space."""
         return len(self)
 
 
 class CoordinateTransform(metaclass=abc.ABCMeta):
-    """TODO: Add docstring"""
+    """A coordinate transformation from one coordinate space to another.
+
+    Args:
+        input_axes: The names of the axes for the input coordinate space.
+        output_axes: The names of the axes for the output coordinate space.
+    """
 
     def __init__(
         self,
@@ -88,31 +97,48 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def inverse_transform(self) -> "CoordinateTransform":
+        """Returns the inverse coordinate transform."""
         raise NotImplementedError()
 
     @property
     def input_axes(self) -> Tuple[str, ...]:
-        """TODO: Add docstring"""
+        """The names of the axes of the input coordinate space."""
         return self._input_axes
 
     @property
     def input_rank(self) -> int:
-        """TODO: Add docstring"""
+        """The number of axes in the input coordinate space."""
         return len(self._input_axes)
 
     @property
     def output_axes(self) -> Tuple[str, ...]:
-        """TODO: Add docstring"""
+        """The names of the axes of the output coordinate space"""
         return self._output_axes
 
     @property
     def output_rank(self) -> int:
-        """TODO: Add docstring"""
+        """The number of axes in the output coordinate space."""
         return len(self._output_axes)
 
 
 class AffineTransform(CoordinateTransform):
-    """TODO: Add docstring"""
+    """An affine coordinate trasformation from one coordinate space to another.
+
+    An affine transform is a combination of a linear transformation and a translation.
+    For a vector x it can be written as
+
+        y = Ax + b
+
+    where A is a matrix and b is a vector.
+
+
+    Args:
+        input_axes: The names of the axes for the input coordinate space.
+        output_axes: The names of the axes for the output coordinate space.
+        matrix: Matrix for that represetnts the transformation. Can be provided as
+            just the linear transform (if no translation), the full augmented matrix,
+            or the augmented matrix without the final row.
+    """
 
     def __init__(
         self,
@@ -145,6 +171,13 @@ class AffineTransform(CoordinateTransform):
             self._matrix = np.vstack(
                 (
                     self._matrix,
+                    np.hstack((np.zeros((rank,)), np.array([1]))),
+                )
+            )
+        elif self._matrix.shape == (rank, rank):
+            self._matrix = np.vstack(
+                (
+                    np.hstack((self._matrix, np.zeros((rank, 1)))),
                     np.hstack((np.zeros((rank,)), np.array([1]))),
                 )
             )
@@ -201,7 +234,7 @@ class AffineTransform(CoordinateTransform):
         return self._matrix
 
     def inverse_transform(self) -> CoordinateTransform:
-        """TODO: Add docstring"""
+        """Returns the inverse coordinate transform."""
         inv_a = np.linalg.inv(self._matrix[:-1, :-1])
         b2 = -inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
         inv_augmented: npt.NDArray[np.float64] = np.vstack(
@@ -214,7 +247,16 @@ class AffineTransform(CoordinateTransform):
 
 
 class ScaleTransform(AffineTransform):
-    """TODO: Add docstring"""
+    """A scale coordinate transformation from one coordinate space to another.
+
+    Args:
+        input_axes: The names of the axes for the input coordinate space.
+        output_axes: The names of the axes for the output coordinate space.
+        scale_factors: The scale factors for the transformation. May be a single
+            value for isotropic (uniform) scale transformations or a value per axis
+            for non-isotropic transformations.
+
+    """
 
     def __init__(
         self,
@@ -234,7 +276,11 @@ class ScaleTransform(AffineTransform):
             self._isotropic = True
         elif self._scale_factors.size == self.input_rank:
             self._scale_factors = self._scale_factors.reshape((self.input_rank,))
-            self._isotropic = False
+            if np.all(self._scale_factors == self._scale_factors[0]):
+                self._scale_factors = self._scale_factors[0]
+                self._isotropic = True
+            else:
+                self._isotropic = False
         else:
             raise ValueError(
                 f"Scale factors have unexpected shape={self._scale_factors.shape} "
@@ -295,24 +341,28 @@ class ScaleTransform(AffineTransform):
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        """TODO: Add docstring"""
+        """Returns the augmented affine matrix for the transformation."""
         scales = np.append(self.scale_factors, [1.0])
         return np.diag(scales)
 
     def inverse_transform(self) -> CoordinateTransform:
-        """TODO: Add docstring"""
+        """Returns the inverse coordinate transform."""
         return ScaleTransform(
             self.output_axes, self.input_axes, 1.0 / self._scale_factors
         )
 
     @property
     def isotropic(self) -> bool:
-        """TODO: Add docstring"""
+        """Returns ``True`` if this is an isotropic (uniform) scale transform."""
         return self._isotropic
 
     @property
     def scale(self) -> np.float64:
-        """TODO: Add docstring"""
+        """Returns the scale factor for an isotropic (uniform) scale transform.
+
+        Raises:
+            RuntimeError: If scale transform is not isotropic.
+        """
         if not self._isotropic:
             raise RuntimeError(
                 "Scale transform is not isotropic. Cannot get a single scale."
@@ -322,7 +372,7 @@ class ScaleTransform(AffineTransform):
 
     @property
     def scale_factors(self) -> npt.NDArray[np.float64]:
-        """TODO: Add docstring"""
+        """Returns the scale factors as an one-dimensional numpy array."""
         if self._isotropic:
             assert isinstance(self._scale_factors, np.float64)
             return np.array(self.input_rank * [self._scale_factors], dtype=np.float64)
@@ -331,7 +381,14 @@ class ScaleTransform(AffineTransform):
 
 
 class IdentityTransform(ScaleTransform):
-    """TODO: Add docstring"""
+    """The identify transform from one coordinate space to another.
+
+    This transform only changes the name of the axes.
+
+    Args:
+        input_axes: The names of the axes for the input coordinate space.
+        output_axes: The names of the axes for the output coordinate space.
+    """
 
     def __init__(
         self,
@@ -378,15 +435,26 @@ class IdentityTransform(ScaleTransform):
         return np.identity(self.input_rank + 1)
 
     def inverse_transform(self) -> CoordinateTransform:
-        """TODO: Add docstring"""
+        """Returns the inverse coordinate transform."""
         return IdentityTransform(self.output_axes, self.input_axes)
 
     @property
     def isotropic(self) -> bool:
-        """TODO: Add docstring"""
+        """Returns ``True`` if this is an isotropic (uniform) scale transform."""
         return True
 
     @property
+    def scale(self) -> np.float64:
+        """Returns the scale factor for an isotropic (uniform) scale transform.
+
+        This will always return 1.
+        """
+        return np.float64(1)
+
+    @property
     def scale_factors(self) -> npt.NDArray[np.float64]:
-        """TODO: Add docstring"""
+        """Returns the scale factors as an one-dimensional numpy array.
+
+        This will always be a vector of ones.
+        """
         return np.array(self.input_rank * [1.0], dtype=np.float64)
