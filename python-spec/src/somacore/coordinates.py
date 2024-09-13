@@ -31,6 +31,8 @@ class CoordinateSpace(collections.abc.Sequence):
 
     Args:
         axes: The axes of the coordinate system in order.
+
+    Lifecycle: experimental
     """
 
     def __init__(self, axes: Sequence[Axis]):
@@ -54,16 +56,25 @@ class CoordinateSpace(collections.abc.Sequence):
 
     @property
     def axes(self) -> Tuple[Axis, ...]:
-        """The axes in the coordinate space"""
+        """The axes in the coordinate space.
+
+        Lifecycle: experimental
+        """
         return self._axes
 
     @property
     def axis_names(self) -> Tuple[str, ...]:
-        """The names of the axes in order."""
+        """The names of the axes in order.
+
+        Lifecycle: experimental
+        """
         return tuple(axis.name for axis in self._axes)
 
     def rank(self) -> int:
-        """The number of axes in this coordinate space."""
+        """The number of axes in this coordinate space.
+
+        Lifecycle: experimental
+        """
         return len(self)
 
 
@@ -73,6 +84,8 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
     Args:
         input_axes: The names of the axes for the input coordinate space.
         output_axes: The names of the axes for the output coordinate space.
+
+    Lifecycle: experimental
     """
 
     def __init__(
@@ -97,27 +110,42 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def inverse_transform(self) -> "CoordinateTransform":
-        """Returns the inverse coordinate transform."""
+        """Returns the inverse coordinate transform.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @property
     def input_axes(self) -> Tuple[str, ...]:
-        """The names of the axes of the input coordinate space."""
+        """The names of the axes of the input coordinate space.
+
+        Lifecycle: experimental
+        """
         return self._input_axes
 
     @property
     def input_rank(self) -> int:
-        """The number of axes in the input coordinate space."""
+        """The number of axes in the input coordinate space.
+
+        Lifecycle: experimental
+        """
         return len(self._input_axes)
 
     @property
     def output_axes(self) -> Tuple[str, ...]:
-        """The names of the axes of the output coordinate space"""
+        """The names of the axes of the output coordinate space.
+
+        Lifecycle: experimental
+        """
         return self._output_axes
 
     @property
     def output_rank(self) -> int:
-        """The number of axes in the output coordinate space."""
+        """The number of axes in the output coordinate space.
+
+        Lifecycle: experimental
+        """
         return len(self._output_axes)
 
 
@@ -132,6 +160,8 @@ class AffineTransform(CoordinateTransform):
         matrix: Matrix (perhaps augmented) that represents the affine transformation.
             Can be provided as just the linear transform (if no translation), the
             full augmented matrix, or the augmented matrix without the final row.
+
+    Lifecycle: experimental
     """
 
     def __init__(
@@ -224,11 +254,17 @@ class AffineTransform(CoordinateTransform):
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        """Returns the augmented affine matrix for the transformation."""
+        """Returns the augmented affine matrix for the transformation.
+
+        Lifecycle: experimental
+        """
         return self._matrix
 
     def inverse_transform(self) -> CoordinateTransform:
-        """Returns the inverse coordinate transform."""
+        """Returns the inverse coordinate transform.
+
+        Lifecycle: experimental
+        """
         inv_a = np.linalg.inv(self._matrix[:-1, :-1])
         b2 = -inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
         inv_augmented: npt.NDArray[np.float64] = np.vstack(
@@ -250,6 +286,7 @@ class ScaleTransform(AffineTransform):
             value for isotropic (uniform) scale transformations or a value per axis
             for non-isotropic transformations.
 
+    Lifecycle: experimental
     """
 
     def __init__(
@@ -335,19 +372,28 @@ class ScaleTransform(AffineTransform):
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        """Returns the augmented affine matrix for the transformation."""
+        """Returns the augmented affine matrix for the transformation.
+
+        Lifecycle: experimental
+        """
         scales = np.append(self.scale_factors, [1.0])
         return np.diag(scales)
 
     def inverse_transform(self) -> CoordinateTransform:
-        """Returns the inverse coordinate transform."""
+        """Returns the inverse coordinate transform.
+
+        Lifecycle: experimental
+        """
         return ScaleTransform(
             self.output_axes, self.input_axes, 1.0 / self._scale_factors
         )
 
     @property
     def isotropic(self) -> bool:
-        """Returns ``True`` if this is an isotropic (uniform) scale transform."""
+        """Returns ``True`` if this is an isotropic (uniform) scale transform.
+
+        Lifecycle: experimental
+        """
         return self._isotropic
 
     @property
@@ -356,6 +402,8 @@ class ScaleTransform(AffineTransform):
 
         Raises:
             RuntimeError: If scale transform is not isotropic.
+
+        Lifecycle: experimental
         """
         if not self._isotropic:
             raise RuntimeError(
@@ -366,7 +414,10 @@ class ScaleTransform(AffineTransform):
 
     @property
     def scale_factors(self) -> npt.NDArray[np.float64]:
-        """Returns the scale factors as an one-dimensional numpy array."""
+        """Returns the scale factors as an one-dimensional numpy array.
+
+        Lifecycle: experimental
+        """
         if self._isotropic:
             assert isinstance(self._scale_factors, np.float64)
             return np.array(self.input_rank * [self._scale_factors], dtype=np.float64)
@@ -382,6 +433,8 @@ class IdentityTransform(ScaleTransform):
     Args:
         input_axes: The names of the axes for the input coordinate space.
         output_axes: The names of the axes for the output coordinate space.
+
+    Lifecycle: experimental
     """
 
     def __init__(
@@ -425,16 +478,25 @@ class IdentityTransform(ScaleTransform):
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        """Returns the augmented affine matrix for the transformation."""
+        """Returns the augmented affine matrix for the transformation.
+
+        Lifecycle: experimental
+        """
         return np.identity(self.input_rank + 1)
 
     def inverse_transform(self) -> CoordinateTransform:
-        """Returns the inverse coordinate transform."""
+        """Returns the inverse coordinate transform.
+
+        Lifecycle: experimental
+        """
         return IdentityTransform(self.output_axes, self.input_axes)
 
     @property
     def isotropic(self) -> bool:
-        """Returns ``True`` if this is an isotropic (uniform) scale transform."""
+        """Returns ``True`` if this is an isotropic (uniform) scale transform.
+
+        Lifecycle: experimental
+        """
         return True
 
     @property
@@ -442,6 +504,8 @@ class IdentityTransform(ScaleTransform):
         """Returns the scale factor for an isotropic (uniform) scale transform.
 
         This will always return 1.
+
+        Lifecycle: experimental
         """
         return np.float64(1)
 
@@ -450,5 +514,8 @@ class IdentityTransform(ScaleTransform):
         """Returns the scale factors as an one-dimensional numpy array.
 
         This will always be a vector of ones.
+
+        Lifecycle: experimental
+
         """
         return np.array(self.input_rank * [1.0], dtype=np.float64)
