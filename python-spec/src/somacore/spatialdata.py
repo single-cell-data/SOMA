@@ -123,6 +123,7 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 The default of ``None`` represents no filter. Value filter
                 syntax is implementation-defined; see the documentation
                 for the particular SOMA implementation for details.
+
         Returns:
             A :class:`ReadIter` of :class:`pa.Table`s.
 
@@ -336,7 +337,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     MutableMapping[str, _DenseND],
     metaclass=abc.ABCMeta,
 ):
-    """TODO: Add documentation for image collection
+    """A multiscale image with an extendable number of levels.
+
+    The multiscale image defines the top level properties. Each level must
+    match the expected following properties:
 
     Lifecycle: experimental
     """
@@ -375,8 +379,11 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         Args:
             uri: The URI where the collection will be created.
             axis_names: The names of the axes of the image.
-            reference_level_shape: # TODO
-            image_type: The order of the image axes # TODO
+            reference_level_shape: The shape of the reference level for the multiscale
+                image. In most cases, this should correspond to the size of the image
+                at ``level=0``.
+            image_type: The order of the image axes using standard names. See
+                :class:`ImageProperties` for more details.
 
         Returns:
             The newly created collection, opened for writing.
@@ -406,7 +413,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     # Data operations
 
     @abc.abstractmethod
-    def read_level(
+    def read_region(
         self,
         level: Union[int, str],
         region: options.SpatialRegion = (),
@@ -414,29 +421,40 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         channel_coords: options.DenseCoord = None,
         transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
-        apply_mask: bool = False,
+        create_mask: bool = False,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "SpatialRead[pa.Tensor]":
-        """Reads a user-defined slice or region into a Tensor.
+    ) -> "SpatialRead[Union[pa.Tensor, pa.Table]]":
+        """Reads a user-defined region into a :class:`SpatialRead` with
+            :class:`pa.Tensor` or :class:`pa.Table` data.
 
-        Input query region may be a geometric shape or coordinates.
-        Coordinates must specify a contiguous subarray, and the number of
-        coordinates must be less than or equal to the number of dimensions.
-        For example, if the array is 10×20, acceptable values of ``coords``
-        include ``()``, ``(3, 4)``, ``[slice(5, 10)]``, and
-        ``[slice(5, 10), slice(6, 12)]``. The requested region is specified in the
-        transformed space.
+        Reads the bounding box of the input region from the requested image level. If
+        ``create_mask=True``, this will return a :class:`SpatialRead` with the image
+        data and mask stored in a :class`pa.Table`. Otherwise, the data will be stored
+        as a :class:`pa.Tensor`.
 
-        The returned data will take the bounding box of the requested region with the
-        box parallel to the image coordinates.
-
-        TODO: Add details about the output SpatialReadIter.
-
-        TODO: Add arguments.
+        Args:
+            level: The image level to read the data from. May use index of the level
+                or the image name.
+            region: The region to query. May be a box in the form
+                [x_min, y_min, x_max, y_max] (for 2D images), a box in the form
+                [x_min, y_min, z_min, x_max, y_max, z_max] (for 3D images), or
+                a shapely Geometry.
+            channel_coords: An optional slice that defines the channel coordinates
+                to read.
+            transform: An optional coordinate transform that provides desribes the
+                transformation from the provided region to the reference level fo this
+                image.
+            region_coord_space: An optional coordinate space for the region being
+                read. The axis names must match the input axis names of the transform.
+            create_mask: If ``True``, return a bitmask for the pixels in the returned
+                data that intersect the region.
+            result_order: the order to return results, specified as a
+                :class:`~options.ResultOrder` or its string value.
 
         Returns:
-            A :class:`SpatialReadIter` or :class:`pa.Tensor`s.
+            The data bounding the requested region as a :class:`SpatialRead` with
+            :class:`pa.Tensor` or :class:`pa.Table` data.
         """
         raise NotImplementedError()
 
@@ -454,7 +472,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @property
     @abc.abstractmethod
     def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
-        """Coordinate system for this scene.
+        """Coordinate space for this scene.
 
         Lifecycle: experimental
         """
@@ -463,7 +481,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @coordinate_space.setter
     @abc.abstractmethod
     def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
-        """Coordinate system for this scene.
+        """Coordinate space for this scene.
 
         Lifecycle: experimental
         """
@@ -473,12 +491,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     def get_transformation_from_level(
         self, level: Union[int, str]
     ) -> coordinates.ScaleTransform:
-        """Returns the transformation from the MultiscaleImage base coordinate
-        system to the requested level.
-
-        If ``reference_shape`` is set, this will be the scale transformation from the
-        ``reference_shape`` to the requested level. If ``reference_shape`` is not set,
-        the transformation will be to from the level 0 image to the reequence level.
+        """Returns the transformation from user requested level to image reference level.
 
         Lifecycle: experimental
         """
@@ -488,12 +501,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     def get_transformation_to_level(
         self, level: Union[int, str]
     ) -> coordinates.ScaleTransform:
-        """Returns the transformation from the MultiscaleImage base coordinate
-        system to the requested level.
-
-        If ``reference_shape`` is set, this will be the scale transformation from the
-        ``reference_shape`` to the requested level. If ``reference_shape`` is not set,
-        the transformation will be to from the level 0 image to the reequence level.
+        """Returns the transformation from the image reference level to the user
+        requested level.
 
         Lifecycle: experimental
         """
@@ -527,17 +536,19 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     def reference_level(self) -> Optional[int]:
-        """TODO: Add docstring"""
+        """The index of image level that is used as a reference level.
+
+        This will return ``None`` if no current image level matches the size of the
+        reference level.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @property
     @abc.abstractmethod
     def reference_level_properties(self) -> "ImageProperties":
-        """The reference shape for this multiscale image pyramid.
-
-        In most cases this should correspond to the shape of the image at level 0. If
-        ``data_axis_order`` is not ``None``, the shape will be in the same order as the
-        data as stored on disk.
+        """The image properties of the reference level.
 
         Lifecycle: experimental
         """
@@ -559,7 +570,7 @@ class ImageProperties(Protocol):
 
     @property
     def image_type(self) -> str:
-        """A string describing the axis order of the image data.
+        """The axis order of the image data using standardized names.
 
         A valid image type is a permuation of 'YX', 'YXC', 'YXZ', or 'YXZC'. The
         letters have the following meanings:
@@ -589,7 +600,9 @@ class SpatialRead(Generic[_ReadData]):
         data_coordinate_space: The coordinate space the read data is defined on.
         output_coordinate_space: The requested output coordinate space.
         coordinate_transform: A coordinate transform from the data coordiante space to
-            thedesired output coordiante space.
+            the desired output coordiante space.
+
+    Lifecycle: experimental
     """
 
     data: _ReadData
@@ -602,9 +615,15 @@ class SpatialRead(Generic[_ReadData]):
             self.data_coordinate_space.axis_names
             != self.coordinate_transform.input_axes
         ):
-            raise ValueError()  # TODO: Add error message
+            raise ValueError(
+                "Input coordinate transform axis names do not match the data coordinate"
+                "space."
+            )
         if (
             self.output_coordinate_space.axis_names
             != self.coordinate_transform.output_axes
         ):
-            raise ValueError()  # TODO: Add error message
+            raise ValueError(
+                "Output coordinate transform axis names do not match the output "
+                "coordinate space."
+            )
