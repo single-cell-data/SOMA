@@ -260,9 +260,8 @@ class ScaleTransform(AffineTransform):
     Args:
         input_axes: The names of the axes for the input coordinate space.
         output_axes: The names of the axes for the output coordinate space.
-        scale_factors: The scale factors for the transformation. May be a single
-            value for isotropic (uniform) scale transformations or a value per axis
-            for non-isotropic transformations.
+        scale_factors: The scale factors for the transformation. There must be one
+            value per axis.
 
     Lifecycle: experimental
     """
@@ -278,30 +277,21 @@ class ScaleTransform(AffineTransform):
             raise ValueError("Incompatible rank of input and output axes")
         rank = len(self.input_axes)
 
-        self._scale_factors: Union[np.float64, npt.NDArray[np.float64]] = np.array(
+        self._scale_factors: npt.NDArray[np.float64] = np.array(
             scale_factors, dtype=np.float64
         )
-        if self._scale_factors.size == 1:
-            self._scale_factors = self._scale_factors.reshape((1,))[0]
-            self._isotropic = True
-        elif self._scale_factors.size == rank:
-            self._scale_factors = self._scale_factors.reshape((rank,))
-            if np.all(self._scale_factors == self._scale_factors[0]):
-                self._scale_factors = self._scale_factors[0]
-                self._isotropic = True
-            else:
-                self._isotropic = False
-        else:
+        if self._scale_factors.size != rank:
             raise ValueError(
                 f"Scale factors have unexpected shape={self._scale_factors.shape} "
                 f"for a transform with rank={rank}."
             )
+        self._scale_factors = self._scale_factors.reshape((rank,))
 
     def __matmul__(self, other: Any) -> CoordinateTransform:
+        if self.input_axes != other.output_axes:
+            raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, CoordinateTransform):
-            if self.input_axes != other.output_axes:
-                raise ValueError("Axis mismatch between transformations.")
-            if isinstance(other, ScaleTransform):  # Includes IdentityTransform
+            if isinstance(other, ScaleTransform):  # Includes UniformScaleTransform
                 return ScaleTransform(
                     other.input_axes,
                     self.output_axes,
@@ -368,28 +358,52 @@ class ScaleTransform(AffineTransform):
         )
 
     @property
-    def isotropic(self) -> bool:
-        """Returns ``True`` if this is an isotropic (uniform) scale transform.
+    def scale_factors(self) -> npt.NDArray[np.float64]:
+        """Returns the scale factors as an one-dimensional numpy array.
 
         Lifecycle: experimental
         """
-        return self._isotropic
+        return self._scale_factors
+
+
+class UniformScaleTransform(ScaleTransform):
+    """A scale coordinate transformation from one coordinate space to another.
+
+    Args:
+        input_axes: The names of the axes for the input coordinate space.
+        output_axes: The names of the axes for the output coordinate space.
+        scale: The scale factor for all axes.
+
+    Lifecycle: experimental
+    """
+
+    def __init__(
+        self,
+        input_axes: Union[str, Sequence[str]],
+        output_axes: Union[str, Sequence[str]],
+        scale: Union[int, float],
+    ):
+        super(AffineTransform, self).__init__(input_axes, output_axes)
+        if len(self.input_axes) != len(self.output_axes):
+            raise ValueError("Incompatible rank of input and output axes")
+        self._scale = scale
+
+    def inverse_transform(self) -> CoordinateTransform:
+        """Returns the inverse coordinate transform.
+
+        Lifecycle: experimental
+        """
+        return UniformScaleTransform(
+            self.output_axes, self.input_axes, 1.0 / self._scale
+        )
 
     @property
     def scale(self) -> np.float64:
-        """Returns the scale factor for an isotropic (uniform) scale transform.
-
-        Raises:
-            RuntimeError: If scale transform is not isotropic.
+        """Returns the scale factor for the uniform scale transform.
 
         Lifecycle: experimental
         """
-        if not self._isotropic:
-            raise ValueError(
-                "Scale transform is not isotropic. Cannot get a single scale."
-            )
-        assert isinstance(self._scale_factors, np.float64)
-        return self._scale_factors
+        return self._scale
 
     @property
     def scale_factors(self) -> npt.NDArray[np.float64]:
@@ -397,16 +411,10 @@ class ScaleTransform(AffineTransform):
 
         Lifecycle: experimental
         """
-        if self._isotropic:
-            assert isinstance(self._scale_factors, np.float64)
-            return np.array(
-                len(self.input_axes) * [self._scale_factors], dtype=np.float64
-            )
-        assert isinstance(self._scale_factors, np.ndarray)
-        return self._scale_factors
+        return np.array(len(self.input_axes) * [self._scale], dtype=np.float64)
 
 
-class IdentityTransform(ScaleTransform):
+class IdentityTransform(UniformScaleTransform):
     """The identify transform from one coordinate space to another.
 
     This transform only changes the name of the axes.
@@ -473,16 +481,8 @@ class IdentityTransform(ScaleTransform):
         return IdentityTransform(self.output_axes, self.input_axes)
 
     @property
-    def isotropic(self) -> bool:
-        """Returns ``True`` if this is an isotropic (uniform) scale transform.
-
-        Lifecycle: experimental
-        """
-        return True
-
-    @property
     def scale(self) -> np.float64:
-        """Returns the scale factor for an isotropic (uniform) scale transform.
+        """Returns the scale factor for an uniform scale transform.
 
         This will always return 1.
 

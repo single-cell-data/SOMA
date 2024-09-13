@@ -22,6 +22,7 @@ from .coordinates import CoordinateSpace
 from .coordinates import CoordinateTransform
 from .coordinates import IdentityTransform
 from .coordinates import ScaleTransform
+from .coordinates import UniformScaleTransform
 from .data import DataFrame
 from .data import DenseNDArray
 from .data import NDArray
@@ -72,5 +73,6 @@ __all__ = (
     "CoordinateTransform",
     "AffineTransform",
     "ScaleTransform",
+    "UniformScaleTransform",
     "IdentityTransform",
 )

@@ -5,6 +5,7 @@ from somacore import AffineTransform
 from somacore import CoordinateTransform
 from somacore import IdentityTransform
 from somacore import ScaleTransform
+from somacore import UniformScaleTransform
 
 
 def check_transform_is_equal(
@@ -14,11 +15,11 @@ def check_transform_is_equal(
     assert actual.output_axes == desired.output_axes
     if isinstance(desired, IdentityTransform):
         assert isinstance(actual, IdentityTransform)
+    elif isinstance(desired, UniformScaleTransform):
+        assert isinstance(actual, UniformScaleTransform)
+        assert actual.scale == desired.scale
     elif isinstance(desired, ScaleTransform):
         assert isinstance(actual, ScaleTransform)
-        assert desired.isotropic == actual.isotropic
-        if desired.isotropic:
-            assert actual.scale == desired.scale
         np.testing.assert_array_equal(actual.scale_factors, desired.scale_factors)
     elif isinstance(desired, AffineTransform):
         assert isinstance(actual, AffineTransform)
@@ -67,36 +68,6 @@ def test_affine_augmented_matrix(input, expected):
 def test_affine_matrix_value_error(input_matrix):
     with pytest.raises(ValueError):
         AffineTransform(("x1", "y1"), ("x2", "y2"), input_matrix)
-
-
-@pytest.mark.parametrize(
-    ("input_scale_factors", "expected_scale_factors"),
-    [
-        (1.5, np.array([1.5, 1.5], dtype=np.float64)),
-        ([1.5], np.array([1.5, 1.5], dtype=np.float64)),
-        ([1, 2], np.array([1.0, 2.0], dtype=np.float64)),
-        (np.array([[1, 2]]), np.array([1.0, 2.0], dtype=np.float64)),
-    ],
-)
-def test_scale_factors(input_scale_factors, expected_scale_factors):
-    transform = ScaleTransform(("x1", "y1"), ("x2", "y2"), input_scale_factors)
-    np.testing.assert_array_equal(transform.scale_factors, expected_scale_factors)
-
-
-@pytest.mark.parametrize(
-    ("input_scale_factors", "expected_scale"),
-    [(2, 2.0), (1.4, 1.4), (np.array([2]), 2.0), ([2], 2.0), ([2, 2], 2.0)],
-)
-def test_isotropic(input_scale_factors, expected_scale):
-    transform = ScaleTransform(("x1", "y1"), ("x2", "y2"), input_scale_factors)
-
-    if expected_scale is None:
-        assert not transform.isotropic
-        with pytest.raises(RuntimeError):
-            transform.scale
-    else:
-        assert transform.isotropic
-        assert transform.scale == expected_scale
 
 
 def test_bad_number_of_scale_factors():
@@ -148,8 +119,8 @@ def test_bad_number_of_scale_factors():
             ScaleTransform(["x2", "y2"], ["x1", "y1"], [0.25, 10]),
         ),
         (
-            ScaleTransform(["x1", "y1"], ["x2", "y2"], 10),
-            ScaleTransform(["x2", "y2"], ["x1", "y1"], 0.1),
+            UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 10),
+            UniformScaleTransform(["x2", "y2"], ["x1", "y1"], 0.1),
         ),
         (
             IdentityTransform(["x1", "y1"], ["x2", "y2"]),
@@ -221,7 +192,7 @@ def test_inverse_transform(input, expected):
         ),
         (
             ScaleTransform(["x2", "y2"], ["x3", "y3"], [1.0, -1.0]),
-            ScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
+            UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
             ScaleTransform(["x1", "y1"], ["x3", "y3"], [1.5, -1.5]),
         ),
         (
