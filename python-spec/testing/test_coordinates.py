@@ -19,8 +19,7 @@ def check_transform_is_equal(
         assert desired.isotropic == actual.isotropic
         if desired.isotropic:
             assert actual.scale == desired.scale
-        else:
-            np.testing.assert_array_equal(actual.scale_factors, desired.scale_factors)
+        np.testing.assert_array_equal(actual.scale_factors, desired.scale_factors)
     elif isinstance(desired, AffineTransform):
         assert isinstance(actual, AffineTransform)
         np.testing.assert_array_equal(actual.augmented_matrix, desired.augmented_matrix)
@@ -81,6 +80,7 @@ def test_affine_matrix_value_error(input_matrix):
 )
 def test_scale_factors(input_scale_factors, expected_scale_factors):
     transform = ScaleTransform(("x1", "y1"), ("x2", "y2"), input_scale_factors)
+    np.testing.assert_array_equal(transform.scale_factors, expected_scale_factors)
 
 
 @pytest.mark.parametrize(
@@ -101,7 +101,7 @@ def test_isotropic(input_scale_factors, expected_scale):
 
 def test_bad_number_of_scale_factors():
     with pytest.raises(ValueError):
-        transform = ScaleTransform(("x1", "y1"), ("x2", "y2"), [1, 2, 3])
+        ScaleTransform(("x1", "y1"), ("x2", "y2"), [1, 2, 3])
 
 
 @pytest.mark.parametrize(
