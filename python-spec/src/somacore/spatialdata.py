@@ -97,22 +97,23 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
-        """Reads a user-defined slice of data into Arrow tables.
+        """Reads a data intersecting an user-defined region into a
+        :class:`SpatialRead` with data in Arrow tables.
 
-        TODO: Add details about the requested input region.
-        TODO: Add details about the output SpatialReadIter.
 
         Args:
-            region: for each index dimension, which rows to read or a single shape.
-                Defaults to ``()``, meaning no constraint -- all IDs.
+            region: The region to query. May be a box in the form
+                [x_min, y_min, x_max, y_max] (for 2D images), a box in the form
+                [x_min, y_min, z_min, x_max, y_max, z_max] (for 3D images), or
+                a shapely Geometry.
             column_names: the named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
             extra_coords: a name to coordinate mapping non-spatial index columns.
                 Defaults to selecting entire region for non-spatial coordinates.
-            transform: coordinate transform to apply to results.
+            transform: An optional coordinate transform that provides desribes the
                 Defaults to ``None``, meaning an identity transform.
-            region_coord_space: the coordinate space of the region being read.
-                Defaults to ``None``, coordinate space will be infer from transform.
+            region_coord_space: An optional coordinate space for the region being read.
+                Defaults to ``None``, coordinate space will be inferred from transform.
             batch_size: The size of batched reads.
                 Defaults to `unbatched`.
             partitions: If present, specifies that this is part of
@@ -125,7 +126,7 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 for the particular SOMA implementation for details.
 
         Returns:
-            A :class:`ReadIter` of :class:`pa.Table`s.
+            A :class:`SpatialRead` with :class:`ReadIter` of :class:`pa.Table`s data.
 
         Lifecycle: experimental
         """
@@ -229,20 +230,16 @@ class PointCloud(SpatialDataFrame, metaclass=abc.ABCMeta):
 
         Args:
             uri: The URI where the dataframe will be created.
-
             schema: Arrow schema defining the per-column schema. This schema
                 must define all columns, including columns to be named as index
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
-
             index_column_names: A list of column names to use as user-defined index
                 columns (e.g., ``['x', 'y']``). All named columns must exist in the
                 schema, and at least one index column name is required.
-
-            axis_names: An ordered list of axis column names that
-                coorespond to the names of axes of the the coordinate space the points
-                are defined on.
-
+            axis_names: An ordered list of axis column names that correspond to the
+                names of axes of the the coordinate space the points are defined on.
+                Must be the name of index columns.
             domain: An optional sequence of tuples specifying the domain of each
                 index column. Each tuple should be a pair consisting of the minimum
                 and maximum values storable in the index column. If omitted entirely,
@@ -299,21 +296,17 @@ class GeometryDataFrame(SpatialDataFrame, metaclass=abc.ABCMeta):
 
         Args:
             uri: The URI where the dataframe will be created.
-
             schema: Arrow schema defining the per-column schema. This schema
                 must define all columns, including columns to be named as index
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
-
             index_column_names: A list of column names to use as user-defined
                 index columns (e.g., ``['cell_type', 'tissue_type']``).
                 All named columns must exist in the schema, and at least one
                 index column name is required.
-
-            axis_names: An ordered list of axis column names that
-                coorespond to the names of the axes of the coordinate space the
-                geometries are defined on.
-
+            axis_names: An ordered list of axis column names that correspond to the
+                names of the axes of the coordinate space the geometries are defined
+                on.
             domain: An optional sequence of tuples specifying the domain of each
                 index column. Two tuples must be provided for the ``soma_geometry``
                 column which store the width followed by the height. Each tuple should
@@ -425,8 +418,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[Union[pa.Tensor, pa.Table]]":
-        """Reads a user-defined region into a :class:`SpatialRead` with
-            :class:`pa.Tensor` or :class:`pa.Table` data.
+        """Reads a user-defined region into a :class:`SpatialRead` with data in
+        either an Arrow tensor or table.
 
         Reads the bounding box of the input region from the requested image level. If
         ``create_mask=True``, this will return a :class:`SpatialRead` with the image
@@ -444,9 +437,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 to read.
             transform: An optional coordinate transform that provides desribes the
                 transformation from the provided region to the reference level fo this
-                image.
-            region_coord_space: An optional coordinate space for the region being
-                read. The axis names must match the input axis names of the transform.
+                image. Defaults to ``None``.
+            region_coord_space: An optional coordinate space for the region being read.
+                The axis names must match the input axis names of the transform.
+                Defaults to ``None``, coordinate space will be inferred from transform.
             create_mask: If ``True``, return a bitmask for the pixels in the returned
                 data that intersect the region.
             result_order: the order to return results, specified as a
