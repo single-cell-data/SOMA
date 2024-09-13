@@ -161,7 +161,9 @@ def test_inverse_transform(input, expected):
     result = input.inverse_transform()
     check_transform_is_equal(result, expected)
     result_matrix = input.augmented_matrix @ result.augmented_matrix
-    expected_matrix: np.ndarray = np.identity(result.input_rank + 1, dtype=np.float64)
+    expected_matrix: np.ndarray = np.identity(
+        len(result.input_axes) + 1, dtype=np.float64
+    )
     np.testing.assert_allclose(result_matrix, expected_matrix)
 
 

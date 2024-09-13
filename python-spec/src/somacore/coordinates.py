@@ -70,13 +70,6 @@ class CoordinateSpace(collections.abc.Sequence):
         """
         return tuple(axis.name for axis in self._axes)
 
-    def rank(self) -> int:
-        """The number of axes in this coordinate space.
-
-        Lifecycle: experimental
-        """
-        return len(self)
-
 
 class CoordinateTransform(metaclass=abc.ABCMeta):
     """A coordinate transformation from one coordinate space to another.
@@ -125,28 +118,12 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         return self._input_axes
 
     @property
-    def input_rank(self) -> int:
-        """The number of axes in the input coordinate space.
-
-        Lifecycle: experimental
-        """
-        return len(self._input_axes)
-
-    @property
     def output_axes(self) -> Tuple[str, ...]:
         """The names of the axes of the output coordinate space.
 
         Lifecycle: experimental
         """
         return self._output_axes
-
-    @property
-    def output_rank(self) -> int:
-        """The number of axes in the output coordinate space.
-
-        Lifecycle: experimental
-        """
-        return len(self._output_axes)
 
 
 class AffineTransform(CoordinateTransform):
@@ -173,12 +150,12 @@ class AffineTransform(CoordinateTransform):
         super().__init__(input_axes, output_axes)
 
         # Check the rank of the input/output axes match.
-        if self.input_rank != self.output_rank:
+        if len(self.input_axes) != len(self.output_axes):
             raise ValueError(
                 "The input axes and output axes must be the same length for an "
                 "affine transform."
             )
-        rank = self.input_rank
+        rank = len(self.input_axes)
 
         # Create and validate the augmented matrix.
         self._matrix: npt.NDArray[np.float64] = np.array(matrix, dtype=np.float64)
@@ -265,12 +242,13 @@ class AffineTransform(CoordinateTransform):
 
         Lifecycle: experimental
         """
+        rank = len(self.output_axes)
         inv_a = np.linalg.inv(self._matrix[:-1, :-1])
-        b2 = -inv_a @ self._matrix[:-1, -1].reshape((self.output_rank, 1))
+        b2 = -inv_a @ self._matrix[:-1, -1].reshape((rank, 1))
         inv_augmented: npt.NDArray[np.float64] = np.vstack(
             (
                 np.hstack((inv_a, b2)),
-                np.hstack((np.zeros(self.output_rank), np.array([1]))),
+                np.hstack((np.zeros(rank), np.array([1]))),
             )
         )
         return AffineTransform(self.output_axes, self.input_axes, inv_augmented)
@@ -296,8 +274,9 @@ class ScaleTransform(AffineTransform):
         scale_factors: npt.ArrayLike,
     ):
         super(AffineTransform, self).__init__(input_axes, output_axes)
-        if self.input_rank != self.output_rank:
+        if len(self.input_axes) != len(self.output_axes):
             raise ValueError("Incompatible rank of input and output axes")
+        rank = len(self.input_axes)
 
         self._scale_factors: Union[np.float64, npt.NDArray[np.float64]] = np.array(
             scale_factors, dtype=np.float64
@@ -305,8 +284,8 @@ class ScaleTransform(AffineTransform):
         if self._scale_factors.size == 1:
             self._scale_factors = self._scale_factors.reshape((1,))[0]
             self._isotropic = True
-        elif self._scale_factors.size == self.input_rank:
-            self._scale_factors = self._scale_factors.reshape((self.input_rank,))
+        elif self._scale_factors.size == rank:
+            self._scale_factors = self._scale_factors.reshape((rank,))
             if np.all(self._scale_factors == self._scale_factors[0]):
                 self._scale_factors = self._scale_factors[0]
                 self._isotropic = True
@@ -315,7 +294,7 @@ class ScaleTransform(AffineTransform):
         else:
             raise ValueError(
                 f"Scale factors have unexpected shape={self._scale_factors.shape} "
-                f"for a transform with rank={self.input_rank}."
+                f"for a transform with rank={rank}."
             )
 
     def __matmul__(self, other: Any) -> CoordinateTransform:
@@ -420,7 +399,9 @@ class ScaleTransform(AffineTransform):
         """
         if self._isotropic:
             assert isinstance(self._scale_factors, np.float64)
-            return np.array(self.input_rank * [self._scale_factors], dtype=np.float64)
+            return np.array(
+                len(self.input_axes) * [self._scale_factors], dtype=np.float64
+            )
         assert isinstance(self._scale_factors, np.ndarray)
         return self._scale_factors
 
@@ -443,7 +424,7 @@ class IdentityTransform(ScaleTransform):
         output_axes: Union[str, Sequence[str]],
     ):
         super(AffineTransform, self).__init__(input_axes, output_axes)
-        if self.input_rank != self.output_rank:
+        if len(self.input_axes) != len(self.output_axes):
             raise ValueError("Incompatible rank of input and output axes")
 
     def __matmul__(self, other: Any) -> CoordinateTransform:
@@ -482,7 +463,7 @@ class IdentityTransform(ScaleTransform):
 
         Lifecycle: experimental
         """
-        return np.identity(self.input_rank + 1)
+        return np.identity(len(self.input_axes) + 1)
 
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
@@ -518,4 +499,4 @@ class IdentityTransform(ScaleTransform):
         Lifecycle: experimental
 
         """
-        return np.array(self.input_rank * [1.0], dtype=np.float64)
+        return np.array(len(self.input_axes) * [1.0], dtype=np.float64)
