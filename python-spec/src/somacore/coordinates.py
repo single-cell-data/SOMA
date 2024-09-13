@@ -15,15 +15,15 @@ class Axis(metaclass=abc.ABCMeta):
 
     Args:
         name: Name of the axis.
-        unit: Optional string units. Defaults to ``None``.
-        scale: Optional scale for units. Defaults to ``None``.
+        unit_name: Optional string name for the units. Defaults to ``None``.
+        unit_scale: Optional scale for units. Defaults to ``None``.
 
     Lifecycle: experimental
     """
 
     name: str
-    units: Optional[str] = None
-    scale: Optional[np.float64] = None
+    unit_name: Optional[str] = None
+    unit_scale: Optional[np.float64] = None
 
 
 class CoordinateSpace(collections.abc.Sequence):
@@ -77,6 +77,8 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
     Args:
         input_axes: The names of the axes for the input coordinate space.
         output_axes: The names of the axes for the output coordinate space.
+
+    CoordinateTransform classes are composable using the ``@`` (__matmul__) operator.
 
     Lifecycle: experimental
     """
