@@ -385,7 +385,7 @@ class ScaleTransform(AffineTransform):
         Lifecycle: experimental
         """
         if not self._isotropic:
-            raise RuntimeError(
+            raise ValueError(
                 "Scale transform is not isotropic. Cannot get a single scale."
             )
         assert isinstance(self._scale_factors, np.float64)
