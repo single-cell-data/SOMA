@@ -37,6 +37,12 @@ from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
+from .spatialdata import GeometryDataFrame
+from .spatialdata import ImageProperties
+from .spatialdata import MultiscaleImage
+from .spatialdata import PointCloud
+from .spatialdata import SpatialDataFrame
+from .spatialdata import SpatialRead
 from .types import ContextBase
 
 try:
@@ -59,8 +65,14 @@ __all__ = (
     "ReadIter",
     "SparseNDArray",
     "SparseRead",
+    "SpatialRead",
     "Experiment",
     "Measurement",
+    "ImageProperties",
+    "MultiscaleImage",
+    "SpatialDataFrame",
+    "GeometryDataFrame",
+    "PointCloud",
     "BatchSize",
     "IOfN",
     "ResultOrder",
