@@ -54,7 +54,10 @@ class Scene(
     soma_type: Final = "SOMAScene"  # type: ignore[misc]
 
     img = _mixin.item[collection.Collection[_MultiscaleImage]]()
-    """A collection of multiscale images backing the spatial data."""
+    """A collection of multiscale images backing the spatial data.
+
+    Lifecycle: experimental
+    """
 
     obsl = _mixin.item[collection.Collection[Union[_PointCloud, _GeometryDataFrame]]]()
     """A collection of observation location data.
@@ -62,6 +65,8 @@ class Scene(
     This collection exists to store any spatial data in the scene that joins on the obs
     ``soma_joinid``. Each dataframe in ``obsl`` can be either a PointCloud
     or a GeometryDataFrame.
+    
+    Lifecycle: experimental
     """
 
     varl = _mixin.item[
@@ -77,12 +82,17 @@ class Scene(
 
     Each dataframe in a ``varl`` subcollection can be either a GeometryDataFrame or a
     PointCloud.
+    
+    Lifecycle: experimental
     """
 
     @property
     @abc.abstractmethod
     def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
-        """Coordinate system for this scene."""
+        """Coordinate system for this scene.
+
+        Lifecycle: experimental
+        """
         raise NotImplementedError()
 
     @coordinate_space.setter
@@ -121,6 +131,8 @@ class Scene(
 
         Returns:
             The registered geometry dataframe in write mode.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -151,6 +163,8 @@ class Scene(
 
         Returns:
             The registered multiscale image in write mode.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -186,6 +200,8 @@ class Scene(
 
         Returns:
             The registered point cloud in write mode.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -200,6 +216,11 @@ class Scene(
             key: The name of the geometry dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            Coordinate transform from the scene to the requested dataframe.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -221,6 +242,11 @@ class Scene(
             level: The level of the image to get the transformation to.
                 Defaults to ``None`` -- the transformation will be to the reference
                 level.
+
+        Returns:
+            Coordinate transform from the scene to the requested multiscale image.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
 
@@ -235,5 +261,10 @@ class Scene(
             key: The name of the point cloud.
             subcollection: The name, or sequence of names, of the subcollection the
                 point cloud is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            Coordinate transform from the scene to the requested point cloud.
+
+        Lifecycle: experimental
         """
         raise NotImplementedError()
