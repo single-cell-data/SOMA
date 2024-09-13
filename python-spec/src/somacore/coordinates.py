@@ -94,11 +94,11 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def __matmul__(self, other: Any) -> "CoordinateTransform":
+    def __matmul__(self, other: "CoordinateTransform") -> "CoordinateTransform":
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def __rmatmul__(self, other: Any) -> "CoordinateTransform":
+    def __rmatmul__(self, other: "CoordinateTransform") -> "CoordinateTransform":
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -188,42 +188,32 @@ class AffineTransform(CoordinateTransform):
             )
 
     def __matmul__(self, other: Any) -> CoordinateTransform:
-        if isinstance(other, CoordinateTransform):
-            if self.input_axes != other.output_axes:
-                raise ValueError("Axis mismatch between transformations.")
-            if isinstance(other, IdentityTransform):
-                return AffineTransform(other.input_axes, self.output_axes, self._matrix)
-            if isinstance(other, AffineTransform):
-                return AffineTransform(
-                    other.input_axes,
-                    self.output_axes,
-                    self.augmented_matrix @ other.augmented_matrix,
-                )
-        if isinstance(other, np.ndarray):
-            raise NotImplementedError(
-                "Support for multiplying by numpy arrays is not yet implemented."
+        if self.input_axes != other.output_axes:
+            raise ValueError("Axis mismatch between transformations.")
+        if isinstance(other, IdentityTransform):
+            return AffineTransform(other.input_axes, self.output_axes, self._matrix)
+        if isinstance(other, AffineTransform):
+            return AffineTransform(
+                other.input_axes,
+                self.output_axes,
+                self.augmented_matrix @ other.augmented_matrix,
             )
         raise TypeError(
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
     def __rmatmul__(self, other: Any) -> CoordinateTransform:
-        if isinstance(other, CoordinateTransform):
-            if other.input_axes != self.output_axes:
-                raise ValueError("Axis mismatch between transformations.")
-            if isinstance(other, IdentityTransform):
-                return AffineTransform(
-                    self.input_axes, other.output_axes, self.augmented_matrix
-                )
-            if isinstance(other, AffineTransform):
-                return AffineTransform(
-                    self.input_axes,
-                    other.output_axes,
-                    other.augmented_matrix @ self.augmented_matrix,
-                )
-        if isinstance(other, np.ndarray):
-            raise NotImplementedError(
-                "Support for multiplying by numpy arrays is not yet implemented."
+        if other.input_axes != self.output_axes:
+            raise ValueError("Axis mismatch between transformations.")
+        if isinstance(other, IdentityTransform):
+            return AffineTransform(
+                self.input_axes, other.output_axes, self.augmented_matrix
+            )
+        if isinstance(other, AffineTransform):
+            return AffineTransform(
+                self.input_axes,
+                other.output_axes,
+                other.augmented_matrix @ self.augmented_matrix,
             )
         raise TypeError(
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
@@ -287,57 +277,31 @@ class ScaleTransform(AffineTransform):
             )
         self._scale_factors = self._scale_factors.reshape((rank,))
 
-    def __matmul__(self, other: Any) -> CoordinateTransform:
+    def __matmul__(self, other: CoordinateTransform) -> CoordinateTransform:
         if self.input_axes != other.output_axes:
             raise ValueError("Axis mismatch between transformations.")
-        if isinstance(other, CoordinateTransform):
-            if isinstance(other, ScaleTransform):  # Includes UniformScaleTransform
-                return ScaleTransform(
-                    other.input_axes,
-                    self.output_axes,
-                    self.scale_factors * other.scale_factors,
-                )
-            if isinstance(other, AffineTransform):
-                return AffineTransform(
-                    other.input_axes,
-                    self.output_axes,
-                    self.augmented_matrix.__matmul__(other.augmented_matrix),
-                )
-        if isinstance(other, np.ndarray):
-            raise NotImplementedError(
-                "Support for multiplying by numpy arrays is not yet implemented."
+        if isinstance(other, ScaleTransform):
+            return ScaleTransform(
+                other.input_axes,
+                self.output_axes,
+                self.scale_factors * other.scale_factors,
             )
-        raise TypeError(
-            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
-        )
+        return super().__matmul__(other)
 
-    def __rmatmul__(self, other: Any) -> CoordinateTransform:
-        if isinstance(other, CoordinateTransform):
-            if other.input_axes != self.output_axes:
-                raise ValueError("Axis mismatch between transformations.")
-            if isinstance(other, IdentityTransform):
-                return ScaleTransform(
-                    self.input_axes, other.output_axes, self._scale_factors
-                )
-            if isinstance(other, ScaleTransform):
-                return ScaleTransform(
-                    self.input_axes,
-                    other.output_axes,
-                    self._scale_factors * other._scale_factors,
-                )
-            if isinstance(other, AffineTransform):
-                return AffineTransform(
-                    self.input_axes,
-                    other.output_axes,
-                    other.augmented_matrix.__matmul__(self.augmented_matrix),
-                )
-        if isinstance(other, np.ndarray):
-            raise NotImplementedError(
-                "Support for multiplying by numpy arrays is not yet implemented."
+    def __rmatmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+        if other.input_axes != self.output_axes:
+            raise ValueError("Axis mismatch between transformations.")
+        if isinstance(other, IdentityTransform):
+            return ScaleTransform(
+                self.input_axes, other.output_axes, self._scale_factors
             )
-        raise TypeError(
-            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
-        )
+        if isinstance(other, ScaleTransform):
+            return ScaleTransform(
+                self.input_axes,
+                other.output_axes,
+                self.scale_factors * other.scale_factors,
+            )
+        return super().__rmatmul__(other)
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
@@ -381,12 +345,30 @@ class UniformScaleTransform(ScaleTransform):
         self,
         input_axes: Union[str, Sequence[str]],
         output_axes: Union[str, Sequence[str]],
-        scale: Union[int, float],
+        scale: Union[int, float, np.float64],
     ):
         super(AffineTransform, self).__init__(input_axes, output_axes)
         if len(self.input_axes) != len(self.output_axes):
             raise ValueError("Incompatible rank of input and output axes")
-        self._scale = scale
+        self._scale = np.float64(scale)
+
+    def __matmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+        if isinstance(other, UniformScaleTransform):
+            if self.input_axes != other.output_axes:
+                raise ValueError("Axis mismatch between transformations.")
+            return UniformScaleTransform(
+                other.input_axes, self.output_axes, self.scale * other.scale
+            )
+        return super().__matmul__(other)
+
+    def __rmatmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+        if isinstance(other, IdentityTransform):
+            if other.input_axes != self.output_axes:
+                raise ValueError("Axis mismatch between transformations.")
+                return ScaleTransform(
+                    self.input_axes, other.output_axes, self._scale_factors
+                )
+        return super().__rmatmul__(other)
 
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
@@ -435,35 +417,19 @@ class IdentityTransform(UniformScaleTransform):
         if len(self.input_axes) != len(self.output_axes):
             raise ValueError("Incompatible rank of input and output axes")
 
-    def __matmul__(self, other: Any) -> CoordinateTransform:
-        if isinstance(other, CoordinateTransform):
-            if isinstance(other, IdentityTransform):
-                if other.output_axes != self.input_axes:
-                    raise ValueError("Axis mismatch between transformations.")
-                return IdentityTransform(other.input_axes, self.output_axes)
-            return other.__rmatmul__(self)
-        if isinstance(other, np.ndarray):
-            raise NotImplementedError(
-                "Support for multiplying by numpy arrays is not yet implemented."
-            )
-        raise TypeError(
-            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
-        )
+    def __matmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+        if isinstance(other, IdentityTransform):
+            if other.output_axes != self.input_axes:
+                raise ValueError("Axis mismatch between transformations.")
+            return IdentityTransform(other.input_axes, self.output_axes)
+        return other.__rmatmul__(self)
 
-    def __rmatmul__(self, other: Any) -> CoordinateTransform:
-        if isinstance(other, CoordinateTransform):
-            if isinstance(other, IdentityTransform):
-                if other.output_axes != self.input_axes:
-                    raise ValueError("Axis mismatch between transformations.")
-                return IdentityTransform(self.input_axes, other.output_axes)
-            return other.__matmul__(self)
-        if isinstance(other, np.ndarray):
-            raise NotImplementedError(
-                "Support for multiplying by numpy arrays is not yet implemented."
-            )
-        raise TypeError(
-            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
-        )
+    def __rmatmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+        if isinstance(other, IdentityTransform):
+            if other.output_axes != self.input_axes:
+                raise ValueError("Axis mismatch between transformations.")
+            return IdentityTransform(self.input_axes, other.output_axes)
+        return other.__matmul__(self)
 
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
