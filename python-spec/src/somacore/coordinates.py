@@ -1,29 +1,27 @@
 """Definitions of types related to coordinate systems."""
 
 import abc
+import attrs
 import collections.abc
-from dataclasses import dataclass
 from typing import Any, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
 
 
-@dataclass
-class Axis(metaclass=abc.ABCMeta):
+@attrs.define(frozen=True)
+class Axis:
     """A description of an axis of a coordinate system
 
     Args:
         name: Name of the axis.
-        unit_name: Optional string name for the units. Defaults to ``None``.
-        unit_scale: Optional scale for units. Defaults to ``None``.
+        unit: Optional units. Defaults to ``None``.
 
     Lifecycle: experimental
     """
 
     name: str
-    unit_name: Optional[str] = None
-    unit_scale: Optional[np.float64] = None
+    unit: Optional[str] = None
 
 
 class CoordinateSpace(collections.abc.Sequence):
