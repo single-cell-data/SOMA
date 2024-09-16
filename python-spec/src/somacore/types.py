@@ -8,7 +8,6 @@ their own internal type-checking purposes.
 import sys
 from concurrent import futures
 from typing import TYPE_CHECKING, Any, NoReturn, Optional, Sequence, Type, TypeVar
-from types import get_original_bases # only exists in Python 3.12 and above
 
 from typing_extensions import Protocol, TypeGuard
 
@@ -58,9 +57,15 @@ class Slice(Protocol[_T_co]):
     @property
     def step(self) -> Optional[_T_co]: ...
 
-    @property
-    def __orig_bases__(self) -> Any:
-        return get_original_bases(_T_co)
+    if sys.version_info >= (3, 12):
+
+        @property
+        def __orig_bases__(self) -> Any:
+            # Only exists in Python 3.12 and above
+            from types import get_original_bases
+
+            return get_original_bases(int)
+            # return get_original_bases(_T_co)
 
     if sys.version_info < (3, 10) and not TYPE_CHECKING:
         # Python 3.9 and below have a bug where any Protocol with an @property
