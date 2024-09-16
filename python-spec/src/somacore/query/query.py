@@ -2,6 +2,7 @@ import enum
 from concurrent import futures
 from typing import (
     Any,
+    Callable,
     Dict,
     Generic,
     Mapping,
@@ -10,6 +11,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    cast,
     overload,
 )
 
@@ -94,6 +96,10 @@ class ExperimentAxisQuery(Generic[_Exp]):
     ):
         if measurement_name not in experiment.ms:
             raise ValueError("Measurement does not exist in the experiment")
+
+        # Users often like to pass `foo=None` and we should let them
+        obs_query = obs_query or axis.AxisQuery()
+        var_query = var_query or axis.AxisQuery()
 
         self.experiment = experiment
         self.measurement_name = measurement_name
@@ -251,13 +257,13 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
     def obsm(self, layer: str) -> data.SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._axism_inner(_Axis.OBS, layer)
 
     def varm(self, layer: str) -> data.SparseRead:
         """Returns a ``varm`` layer as a sparse read.
-        Lifecycle: experimental
+        Lifecycle: maturing
         """
         return self._axism_inner(_Axis.VAR, layer)
 
@@ -271,6 +277,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         obsp_layers: Sequence[str] = (),
         varm_layers: Sequence[str] = (),
         varp_layers: Sequence[str] = (),
+        drop_levels: bool = False,
     ) -> anndata.AnnData:
         """
         Executes the query and return result as an ``AnnData`` in-memory object.
@@ -289,10 +296,15 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 Additional varm layers to read and return in the varm slot.
             varp_layers:
                 Additional varp layers to read and return in the varp slot.
+            drop_levels:
+                Indicate whether unused categories on axis frames should be
+                dropped. By default, False, the categories which are present
+                in the SOMA Experimentand not present in the query output
+                are not dropped.
 
         Lifecycle: maturing
         """
-        return self._read(
+        ad = self._read(
             X_name,
             column_names=column_names or AxisColumnNames(obs=None, var=None),
             X_layers=X_layers,
@@ -301,6 +313,17 @@ class ExperimentAxisQuery(Generic[_Exp]):
             varm_layers=varm_layers,
             varp_layers=varp_layers,
         ).to_anndata()
+
+        # Drop unused categories on axis dataframes if requested
+        if drop_levels:
+            for name in ad.obs:
+                if ad.obs[name].dtype.name == "category":
+                    ad.obs[name] = ad.obs[name].cat.remove_unused_categories()
+            for name in ad.var:
+                if ad.var[name].dtype.name == "category":
+                    ad.var[name] = ad.var[name].cat.remove_unused_categories()
+
+        return ad
 
     # Context management
 
@@ -545,9 +568,12 @@ class ExperimentAxisQuery(Generic[_Exp]):
     def _convert_to_ndarray(
         self, axis: "_Axis", table: pa.Table, n_row: int, n_col: int
     ) -> np.ndarray:
-        indexer: pd.Index = axis.getattr_from(self.indexer, pre="by_")
+        indexer = cast(
+            Callable[[_Numpyable], npt.NDArray[np.intp]],
+            axis.getattr_from(self.indexer, pre="by_"),
+        )
         idx = indexer(table["soma_dim_0"])
-        z = np.zeros(n_row * n_col, dtype=np.float32)
+        z: np.ndarray = np.zeros(n_row * n_col, dtype=np.float32)
         np.put(z, idx * n_col + table["soma_dim_1"], table["soma_data"])
         return z.reshape(n_row, n_col)
 
@@ -567,11 +593,11 @@ class ExperimentAxisQuery(Generic[_Exp]):
         layer: str,
     ) -> np.ndarray:
         axism = axis.getitem_from(self._ms, suf="m")
+        table = axism[layer].read().tables().concat()
 
-        _, n_col = axism[layer].shape
         n_row = len(axis.getattr_from(self._joinids))
+        n_col = len(table["soma_dim_1"].unique())
 
-        table = self._axism_inner(axis, layer).tables().concat()
         return self._convert_to_ndarray(axis, table, n_row, n_col)
 
     @property
@@ -646,18 +672,17 @@ class _Axis(enum.Enum):
         return super().value
 
     @overload
-    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T":
-        ...
+    def getattr_from(self, __source: "_HasObsVar[_T]") -> "_T": ...
 
     @overload
     def getattr_from(
         self, __source: Any, *, pre: Literal[""], suf: Literal[""]
-    ) -> object:
-        ...
+    ) -> object: ...
 
     @overload
-    def getattr_from(self, __source: Any, *, pre: str = ..., suf: str = ...) -> object:
-        ...
+    def getattr_from(
+        self, __source: Any, *, pre: str = ..., suf: str = ...
+    ) -> object: ...
 
     def getattr_from(self, __source: Any, *, pre: str = "", suf: str = "") -> object:
         """Equivalent to ``something.<pre><obs/var><suf>``."""
@@ -750,21 +775,21 @@ class AxisIndexer:
 
     query: ExperimentAxisQuery
     _index_factory: types.IndexFactory
-    _cached_obs: Optional[pd.Index] = None
-    _cached_var: Optional[pd.Index] = None
+    _cached_obs: Optional[types.IndexLike] = None
+    _cached_var: Optional[types.IndexLike] = None
 
     @property
-    def _obs_index(self) -> pd.Index:
+    def _obs_index(self) -> types.IndexLike:
         """Private. Return an index for the ``obs`` axis."""
         if self._cached_obs is None:
-            self._cached_obs = pd.Index(data=self.query.obs_joinids().to_numpy())
+            self._cached_obs = self._index_factory(self.query.obs_joinids().to_numpy())
         return self._cached_obs
 
     @property
-    def _var_index(self) -> pd.Index:
+    def _var_index(self) -> types.IndexLike:
         """Private. Return an index for the ``var`` axis."""
         if self._cached_var is None:
-            self._cached_var = pd.Index(data=self.query.var_joinids().to_numpy())
+            self._cached_var = self._index_factory(self.query.var_joinids().to_numpy())
         return self._cached_var
 
     def by_obs(self, coords: _Numpyable) -> npt.NDArray[np.intp]:
@@ -794,16 +819,13 @@ class _Experimentish(Protocol):
     """The API we need from an Experiment."""
 
     @property
-    def ms(self) -> Mapping[str, measurement.Measurement]:
-        ...
+    def ms(self) -> Mapping[str, measurement.Measurement]: ...
 
     @property
-    def obs(self) -> data.DataFrame:
-        ...
+    def obs(self) -> data.DataFrame: ...
 
     @property
-    def context(self) -> Optional[base_types.ContextBase]:
-        ...
+    def context(self) -> Optional[base_types.ContextBase]: ...
 
 
 class _HasObsVar(Protocol[_T_co]):
@@ -813,9 +835,7 @@ class _HasObsVar(Protocol[_T_co]):
     """
 
     @property
-    def obs(self) -> _T_co:
-        ...
+    def obs(self) -> _T_co: ...
 
     @property
-    def var(self) -> _T_co:
-        ...
+    def var(self) -> _T_co: ...

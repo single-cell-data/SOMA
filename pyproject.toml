@@ -17,18 +17,19 @@ dependencies = [
   "numpy>=1.21",
   "pandas",
   "pyarrow",
-  # TODO: once we no longer support Python 3.7, remove this and pin to pyarrow >= 14.0.1
-  # https://github.com/single-cell-data/TileDB-SOMA/issues/1926
+  # TODO: pyarrow >= 14.0.1 doesn't play well with some other PyPI packages
+  # on Mac OS: https://github.com/apache/arrow/issues/42154
+  # Remove this once we can specify a recent pyarrow.
   "pyarrow-hotfix",
   "scipy",
-  "typing-extensions>=4.1", # For LiteralString
+  "typing-extensions>=4.1", # For LiteralString (py3.11)
 ]
-requires-python = "~=3.7"
+requires-python = "~=3.8"
 urls = { repository = "https://github.com/single-cell-data/SOMA.git" }
 classifiers = ["License :: OSI Approved :: MIT License"]
 
 [project.optional-dependencies]
-dev = ["black", "isort", "mypy~=1.0", "ruff"]
+dev = ["black", "isort", "mypy~=1.0", "ruff", "pandas-stubs"]
 
 [tool.setuptools]
 packages.find.where = ["python-spec/src"]
@@ -41,9 +42,10 @@ write_to = "python-spec/src/somacore/_version.py"
 tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
 [tool.ruff]
-extend-select = ["I"]
+lint.extend-select = ["I"]
+target-version = "py38"
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 force-single-line = true
 known-first-party = ["somacore"]
 single-line-exclusions = ["typing", "typing_extensions"]
@@ -52,6 +54,7 @@ single-line-exclusions = ["typing", "typing_extensions"]
 check_untyped_defs = true
 enable_error_code = ["ignore-without-code"]
 warn_redundant_casts = true
+python_version = 3.8
 # We want to enable this but it won't work when running locally due to the
 # presence of _version.py (which invalidates the ignore, which causes an error).
 #
@@ -59,5 +62,5 @@ warn_redundant_casts = true
 
 [[tool.mypy.overrides]]
 # These dependencies do not currently have canonical type stubs.
-module = ["anndata", "numba", "pandas", "pyarrow", "pyarrow_hotfix", "scipy"]
+module = ["anndata", "pyarrow", "pyarrow_hotfix", "scipy"]
 ignore_missing_imports = true

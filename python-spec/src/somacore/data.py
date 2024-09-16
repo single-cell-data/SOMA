@@ -242,7 +242,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
             shape: The maximum capacity of each dimension, including room
                 for any intended future appends, specified as one element
                 per dimension, e.g. ``(100, 10)``.  All lengths must be in
-                the postive int64 range, or ``None``.  It's necessary to say
+                the positive int64 range, or ``None``.  It's necessary to say
                 ``shape=(None, None)`` or ``shape=(None, None, None)``,
                 as the sequence length determines the number of dimensions
                 (N) in the N-dimensional array.
