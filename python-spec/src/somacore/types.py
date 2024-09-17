@@ -34,7 +34,7 @@ def is_nonstringy_sequence(it: object) -> TypeGuard[Sequence]:
 def to_string_tuple(obj: Union[str, Sequence[str]]) -> Tuple[str, ...]:
     """Returns a tuple of string values.
 
-    If the input is a string, it is returned as a tuple with the sting as its
+    If the input is a string, it is returned as a tuple with the string as its
     only item. If it is otherwise a sequence of strings, the sequence is converted
     to a tuple.
     """
