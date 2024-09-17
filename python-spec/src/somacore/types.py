@@ -41,6 +41,15 @@ def to_string_tuple(obj: Union[str, Sequence[str]]) -> Tuple[str, ...]:
     return (obj,) if isinstance(obj, str) else tuple(obj)
 
 
+def str_or_seq_length(obj: Union[str, Sequence[str]]) -> int:
+    """Returns the number of str values
+
+    If input is a string, returns 1. Otherwise, returns the number of strings in the
+    sequence.
+    """
+    return 1 if isinstance(obj, str) else len(obj)
+
+
 _T = TypeVar("_T")
 _T_co = TypeVar("_T_co", covariant=True)
 

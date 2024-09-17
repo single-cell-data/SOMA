@@ -8,6 +8,7 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
+from .types import str_or_seq_length
 from .types import to_string_tuple
 
 
@@ -255,11 +256,7 @@ class ScaleTransform(AffineTransform):
         output_axes: Union[str, Sequence[str]],
         scale_factors: npt.ArrayLike,
     ):
-        super(AffineTransform, self).__init__(input_axes, output_axes)
-        if len(self.input_axes) != len(self.output_axes):
-            raise ValueError("Incompatible rank of input and output axes")
-        rank = len(self.input_axes)
-
+        rank = str_or_seq_length(input_axes)
         self._scale_factors: npt.NDArray[np.float64] = np.array(
             scale_factors, dtype=np.float64
         )
@@ -269,6 +266,8 @@ class ScaleTransform(AffineTransform):
                 f"for a transform with rank={rank}."
             )
         self._scale_factors = self._scale_factors.reshape((rank,))
+
+        super().__init__(input_axes, output_axes, np.diag(self._scale_factors))
 
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
@@ -303,15 +302,6 @@ class ScaleTransform(AffineTransform):
                 self.scale_factors * other.scale_factors,
             )
         return super().__rmatmul__(other)
-
-    @property
-    def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        """Returns the augmented affine matrix for the transformation.
-
-        Lifecycle: experimental
-        """
-        scales = np.append(self.scale_factors, [1.0])
-        return np.diag(scales)
 
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
@@ -348,10 +338,9 @@ class UniformScaleTransform(ScaleTransform):
         output_axes: Union[str, Sequence[str]],
         scale: Union[int, float, np.float64],
     ):
-        super(AffineTransform, self).__init__(input_axes, output_axes)
-        if len(self.input_axes) != len(self.output_axes):
-            raise ValueError("Incompatible rank of input and output axes")
-        self._scale = np.float64(scale)
+        self._scale = float(scale)
+        rank = str_or_seq_length(input_axes)
+        super().__init__(input_axes, output_axes, rank * [self._scale])
 
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
@@ -389,20 +378,12 @@ class UniformScaleTransform(ScaleTransform):
         )
 
     @property
-    def scale(self) -> np.float64:
+    def scale(self) -> float:
         """Returns the scale factor for the uniform scale transform.
 
         Lifecycle: experimental
         """
         return self._scale
-
-    @property
-    def scale_factors(self) -> npt.NDArray[np.float64]:
-        """Returns the scale factors as an one-dimensional numpy array.
-
-        Lifecycle: experimental
-        """
-        return np.array(len(self.input_axes) * [self._scale], dtype=np.float64)
 
 
 class IdentityTransform(UniformScaleTransform):
@@ -422,9 +403,7 @@ class IdentityTransform(UniformScaleTransform):
         input_axes: Union[str, Sequence[str]],
         output_axes: Union[str, Sequence[str]],
     ):
-        super(AffineTransform, self).__init__(input_axes, output_axes)
-        if len(self.input_axes) != len(self.output_axes):
-            raise ValueError("Incompatible rank of input and output axes")
+        super().__init__(input_axes, output_axes, 1)
 
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
@@ -448,38 +427,9 @@ class IdentityTransform(UniformScaleTransform):
             return IdentityTransform(self.input_axes, other.output_axes)
         return other.__matmul__(self)
 
-    @property
-    def augmented_matrix(self) -> npt.NDArray[np.float64]:
-        """Returns the augmented affine matrix for the transformation.
-
-        Lifecycle: experimental
-        """
-        return np.identity(len(self.input_axes) + 1)
-
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
 
         Lifecycle: experimental
         """
         return IdentityTransform(self.output_axes, self.input_axes)
-
-    @property
-    def scale(self) -> np.float64:
-        """Returns the scale factor for an uniform scale transform.
-
-        This will always return 1.
-
-        Lifecycle: experimental
-        """
-        return np.float64(1)
-
-    @property
-    def scale_factors(self) -> npt.NDArray[np.float64]:
-        """Returns the scale factors as an one-dimensional numpy array.
-
-        This will always be a vector of ones.
-
-        Lifecycle: experimental
-
-        """
-        return np.array(len(self.input_axes) * [1.0], dtype=np.float64)
