@@ -7,7 +7,16 @@ their own internal type-checking purposes.
 
 import sys
 from concurrent import futures
-from typing import TYPE_CHECKING, NoReturn, Optional, Sequence, Type, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    NoReturn,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from typing_extensions import Protocol, TypeGuard
 
@@ -20,6 +29,16 @@ def is_nonstringy_sequence(it: object) -> TypeGuard[Sequence]:
     sequence is not what users want.
     """
     return not isinstance(it, (str, bytes)) and isinstance(it, Sequence)
+
+
+def to_string_tuple(obj: Union[str, Sequence[str]]) -> Tuple[str, ...]:
+    """Returns a tuple of string values.
+
+    If the input is a string, it is returned as a tuple with the sting as its
+    only item. If it is otherwise a sequence of strings, the sequence is converted
+    to a tuple.
+    """
+    return (obj,) if isinstance(obj, str) else tuple(obj)
 
 
 _T = TypeVar("_T")

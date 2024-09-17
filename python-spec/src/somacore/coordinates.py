@@ -8,22 +8,23 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
+from .types import to_string_tuple
+
 
 @attrs.define(frozen=True)
 class Axis:
     """A description of an axis of a coordinate system
 
-    Args:
-        name: Name of the axis.
-        unit: Optional units. Defaults to ``None``.
-
     Lifecycle: experimental
     """
 
     name: str
+    """Name of the axis."""
     unit: Optional[str] = None
+    """Optional string name for the units of the axis."""
 
 
+@attrs.define(frozen=True)
 class CoordinateSpace(collections.abc.Sequence):
     """A coordinate space for spatial data.
 
@@ -33,32 +34,20 @@ class CoordinateSpace(collections.abc.Sequence):
     Lifecycle: experimental
     """
 
-    def __init__(self, axes: Sequence[Axis]):
-        self._axes = tuple(axes)
-        if len(self._axes) == 0:
-            raise ValueError("Coordinate space must have at least one axis.")
-        if len(set(axis.name for axis in self._axes)) != len(axes):
-            raise ValueError("The names for the axes must be unique.")
+    axes: Tuple[Axis, ...] = attrs.field(converter=tuple)
+
+    @axes.validator
+    def _validate(self, _, axes: Tuple[Axis, ...]) -> None:
+        if not axes:
+            raise ValueError("at least one")
+        if len(set(axis.name for axis in self.axes)) != len(axes):
+            raise ValueError("unique")
 
     def __len__(self) -> int:
-        return len(self._axes)
+        return len(self.axes)
 
     def __getitem__(self, index: int) -> Axis:  # type: ignore[override]
-        return self._axes[index]
-
-    def __repr__(self) -> str:
-        output = f"<{type(self).__name__}\n"
-        for axis in self._axes:
-            output += f"  {axis},\n"
-        return output + ">"
-
-    @property
-    def axes(self) -> Tuple[Axis, ...]:
-        """The axes in the coordinate space.
-
-        Lifecycle: experimental
-        """
-        return self._axes
+        return self.axes[index]
 
     @property
     def axis_names(self) -> Tuple[str, ...]:
@@ -66,7 +55,7 @@ class CoordinateSpace(collections.abc.Sequence):
 
         Lifecycle: experimental
         """
-        return tuple(axis.name for axis in self._axes)
+        return tuple(axis.name for axis in self.axes)
 
 
 class CoordinateTransform(metaclass=abc.ABCMeta):
@@ -86,12 +75,8 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         input_axes: Union[str, Sequence[str]],
         output_axes: Union[str, Sequence[str]],
     ):
-        self._input_axes = (
-            (input_axes,) if isinstance(input_axes, str) else tuple(input_axes)
-        )
-        self._output_axes = (
-            (output_axes,) if isinstance(output_axes, str) else tuple(output_axes)
-        )
+        self._input_axes = to_string_tuple(input_axes)
+        self._output_axes = to_string_tuple(output_axes)
 
     @abc.abstractmethod
     def __matmul__(self, other: "CoordinateTransform") -> "CoordinateTransform":
