@@ -2,7 +2,7 @@
 
 import abc
 import collections.abc
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple, Union
 
 import attrs
 import numpy as np
@@ -79,11 +79,11 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         self._output_axes = to_string_tuple(output_axes)
 
     @abc.abstractmethod
-    def __matmul__(self, other: "CoordinateTransform") -> "CoordinateTransform":
+    def __matmul__(self, other: object) -> "CoordinateTransform":
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def __rmatmul__(self, other: "CoordinateTransform") -> "CoordinateTransform":
+    def __rmatmul__(self, other: object) -> "CoordinateTransform":
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -172,7 +172,11 @@ class AffineTransform(CoordinateTransform):
                 f"Unexpected shape {self._matrix.shape} for the input affine matrix."
             )
 
-    def __matmul__(self, other: Any) -> CoordinateTransform:
+    def __matmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if self.input_axes != other.output_axes:
             raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, IdentityTransform):
@@ -183,11 +187,15 @@ class AffineTransform(CoordinateTransform):
                 self.output_axes,
                 self.augmented_matrix @ other.augmented_matrix,
             )
-        raise TypeError(
+        raise NotImplementedError(
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def __rmatmul__(self, other: Any) -> CoordinateTransform:
+    def __rmatmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if other.input_axes != self.output_axes:
             raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, IdentityTransform):
@@ -200,7 +208,7 @@ class AffineTransform(CoordinateTransform):
                 other.output_axes,
                 other.augmented_matrix @ self.augmented_matrix,
             )
-        raise TypeError(
+        raise NotImplementedError(
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
@@ -262,7 +270,11 @@ class ScaleTransform(AffineTransform):
             )
         self._scale_factors = self._scale_factors.reshape((rank,))
 
-    def __matmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+    def __matmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if self.input_axes != other.output_axes:
             raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, ScaleTransform):
@@ -273,7 +285,11 @@ class ScaleTransform(AffineTransform):
             )
         return super().__matmul__(other)
 
-    def __rmatmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+    def __rmatmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if other.input_axes != self.output_axes:
             raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, IdentityTransform):
@@ -337,7 +353,11 @@ class UniformScaleTransform(ScaleTransform):
             raise ValueError("Incompatible rank of input and output axes")
         self._scale = np.float64(scale)
 
-    def __matmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+    def __matmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if isinstance(other, UniformScaleTransform):
             if self.input_axes != other.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
@@ -346,7 +366,11 @@ class UniformScaleTransform(ScaleTransform):
             )
         return super().__matmul__(other)
 
-    def __rmatmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+    def __rmatmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if isinstance(other, IdentityTransform):
             if other.input_axes != self.output_axes:
                 raise ValueError("Axis mismatch between transformations.")
@@ -402,14 +426,22 @@ class IdentityTransform(UniformScaleTransform):
         if len(self.input_axes) != len(self.output_axes):
             raise ValueError("Incompatible rank of input and output axes")
 
-    def __matmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+    def __matmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if isinstance(other, IdentityTransform):
             if other.output_axes != self.input_axes:
                 raise ValueError("Axis mismatch between transformations.")
             return IdentityTransform(other.input_axes, self.output_axes)
         return other.__rmatmul__(self)
 
-    def __rmatmul__(self, other: CoordinateTransform) -> CoordinateTransform:
+    def __rmatmul__(self, other: object) -> CoordinateTransform:
+        if not isinstance(other, CoordinateTransform):
+            raise NotImplementedError(
+                f"Matrix multiply is not implemented with type {type(other)!r}."
+            )
         if isinstance(other, IdentityTransform):
             if other.output_axes != self.input_axes:
                 raise ValueError("Axis mismatch between transformations.")
