@@ -79,6 +79,22 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         self._input_axes = to_string_tuple(input_axes)
         self._output_axes = to_string_tuple(output_axes)
 
+    def _check_matmul_inner_axes(self, other: "CoordinateTransform"):
+        """Throws a ``ValueError`` if ``self @ other`` has mismatched axes."""
+        if self.input_axes != other.output_axes:
+            raise ValueError(
+                f"Input axes of {type(self).__name__} must match output axes of "
+                f"{type(other).__name__}."
+            )
+
+    def _check_rmatmul_inner_axes(self, other: "CoordinateTransform"):
+        """Throws a ``ValueError `` if ``other @ self`` has mismatched axes."""
+        if self.output_axes != other.input_axes:
+            raise ValueError(
+                f"Input axes of {type(other).__name__} must match output axes of "
+                f"{type(self).__name__}."
+            )
+
     @abc.abstractmethod
     def __matmul__(self, other: object) -> "CoordinateTransform":
         raise NotImplementedError()
@@ -178,6 +194,7 @@ class AffineTransform(CoordinateTransform):
             raise NotImplementedError(
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
+        self._check_matmul_inner_axes(other)
         if self.input_axes != other.output_axes:
             raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, IdentityTransform):
@@ -197,8 +214,7 @@ class AffineTransform(CoordinateTransform):
             raise NotImplementedError(
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
-        if other.input_axes != self.output_axes:
-            raise ValueError("Axis mismatch between transformations.")
+        self._check_rmatmul_inner_axes(other)
         if isinstance(other, IdentityTransform):
             return AffineTransform(
                 self.input_axes, other.output_axes, self.augmented_matrix
@@ -274,8 +290,7 @@ class ScaleTransform(AffineTransform):
             raise NotImplementedError(
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
-        if self.input_axes != other.output_axes:
-            raise ValueError("Axis mismatch between transformations.")
+        self._check_matmul_inner_axes(other)
         if isinstance(other, ScaleTransform):
             return ScaleTransform(
                 other.input_axes,
@@ -289,8 +304,7 @@ class ScaleTransform(AffineTransform):
             raise NotImplementedError(
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
-        if other.input_axes != self.output_axes:
-            raise ValueError("Axis mismatch between transformations.")
+        self._check_rmatmul_inner_axes(other)
         if isinstance(other, IdentityTransform):
             return ScaleTransform(
                 self.input_axes, other.output_axes, self._scale_factors
@@ -348,8 +362,7 @@ class UniformScaleTransform(ScaleTransform):
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
         if isinstance(other, UniformScaleTransform):
-            if self.input_axes != other.output_axes:
-                raise ValueError("Axis mismatch between transformations.")
+            self._check_matmul_inner_axes(other)
             return UniformScaleTransform(
                 other.input_axes, self.output_axes, self.scale * other.scale
             )
@@ -360,12 +373,11 @@ class UniformScaleTransform(ScaleTransform):
             raise NotImplementedError(
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
-        if isinstance(other, IdentityTransform):
-            if other.input_axes != self.output_axes:
-                raise ValueError("Axis mismatch between transformations.")
-                return ScaleTransform(
-                    self.input_axes, other.output_axes, self._scale_factors
-                )
+        if isinstance(other, UniformScaleTransform):
+            self._check_rmatmul_inner_axes(other)
+            return ScaleTransform(
+                self.input_axes, other.output_axes, self.scale * other.scale
+            )
         return super().__rmatmul__(other)
 
     def inverse_transform(self) -> CoordinateTransform:
@@ -411,8 +423,7 @@ class IdentityTransform(UniformScaleTransform):
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
         if isinstance(other, IdentityTransform):
-            if other.output_axes != self.input_axes:
-                raise ValueError("Axis mismatch between transformations.")
+            self._check_matmul_inner_axes(other)
             return IdentityTransform(other.input_axes, self.output_axes)
         return other.__rmatmul__(self)
 
@@ -422,8 +433,7 @@ class IdentityTransform(UniformScaleTransform):
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
         if isinstance(other, IdentityTransform):
-            if other.output_axes != self.input_axes:
-                raise ValueError("Axis mismatch between transformations.")
+            self._check_rmatmul_inner_axes(other)
             return IdentityTransform(self.input_axes, other.output_axes)
         return other.__matmul__(self)
 
