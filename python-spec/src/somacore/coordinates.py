@@ -1,10 +1,10 @@
 """Definitions of types related to coordinate systems."""
 
 import abc
-import attrs
 import collections.abc
 from typing import Any, Optional, Sequence, Tuple, Union
 
+import attrs
 import numpy as np
 import numpy.typing as npt
 
