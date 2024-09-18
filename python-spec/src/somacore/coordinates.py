@@ -211,7 +211,7 @@ class AffineTransform(CoordinateTransform):
         """
         return self._matrix
 
-    def inverse_transform(self) -> CoordinateTransform:
+    def inverse_transform(self) -> "AffineTransform":
         """Returns the inverse coordinate transform.
 
         Lifecycle: experimental
@@ -273,7 +273,7 @@ class ScaleTransform(AffineTransform):
             )
         return super().__matmul__(other)
 
-    def inverse_transform(self) -> CoordinateTransform:
+    def inverse_transform(self) -> "ScaleTransform":
         """Returns the inverse coordinate transform.
 
         Lifecycle: experimental
@@ -324,7 +324,7 @@ class UniformScaleTransform(ScaleTransform):
             )
         return super().__matmul__(other)
 
-    def inverse_transform(self) -> CoordinateTransform:
+    def inverse_transform(self) -> "UniformScaleTransform":
         """Returns the inverse coordinate transform.
 
         Lifecycle: experimental
@@ -371,7 +371,7 @@ class IdentityTransform(UniformScaleTransform):
             return IdentityTransform(other.input_axes, self.output_axes)
         return super().__matmul__(other)
 
-    def inverse_transform(self) -> CoordinateTransform:
+    def inverse_transform(self) -> "IdentityTransform":
         """Returns the inverse coordinate transform.
 
         Lifecycle: experimental
