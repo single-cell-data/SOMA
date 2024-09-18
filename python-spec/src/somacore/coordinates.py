@@ -26,7 +26,9 @@ class Axis:
 
 
 @attrs.define(frozen=True)
-class CoordinateSpace(collections.abc.Sequence[Axis]):
+class CoordinateSpace(
+    collections.abc.Sequence
+):  # Change to Sequence[Axis] after 3.8 is dropped.
     """A coordinate space for spatial data.
 
     Args:
