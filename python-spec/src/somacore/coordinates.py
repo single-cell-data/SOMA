@@ -195,8 +195,6 @@ class AffineTransform(CoordinateTransform):
                 f"Matrix multiply is not implemented with type {type(other)!r}."
             )
         self._check_matmul_inner_axes(other)
-        if self.input_axes != other.output_axes:
-            raise ValueError("Axis mismatch between transformations.")
         if isinstance(other, IdentityTransform):
             return AffineTransform(other.input_axes, self.output_axes, self._matrix)
         if isinstance(other, AffineTransform):
