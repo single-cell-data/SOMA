@@ -40,9 +40,9 @@ class CoordinateSpace(collections.abc.Sequence):
     @axes.validator
     def _validate(self, _, axes: Tuple[Axis, ...]) -> None:
         if not axes:
-            raise ValueError("at least one")
+            raise ValueError("The coordinate space must have at least one axis.")
         if len(set(axis.name for axis in self.axes)) != len(axes):
-            raise ValueError("unique")
+            raise ValueError("The names for the axes must be unique.")
 
     def __len__(self) -> int:
         return len(self.axes)
