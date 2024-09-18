@@ -373,7 +373,7 @@ class UniformScaleTransform(ScaleTransform):
             )
         if isinstance(other, UniformScaleTransform):
             self._check_rmatmul_inner_axes(other)
-            return ScaleTransform(
+            return UniformScaleTransform(
                 self.input_axes, other.output_axes, self.scale * other.scale
             )
         return super().__rmatmul__(other)

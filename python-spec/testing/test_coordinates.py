@@ -138,6 +138,11 @@ def test_inverse_transform(input, expected):
     np.testing.assert_allclose(result_matrix, expected_matrix)
 
 
+def test_uniform_scale_factor():
+    UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5)
+    UniformScaleTransform(["x1", "y1"], ["x3", "y3"], 1.5)
+
+
 @pytest.mark.parametrize(
     ("transform_a", "transform_b", "expected"),
     [
@@ -147,26 +152,9 @@ def test_inverse_transform(input, expected):
             IdentityTransform(["x1", "y1"], ["x3", "y3"]),
         ),
         (
-            ScaleTransform(
-                ["x2", "y2"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
-            ),
-            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
-            ScaleTransform(
-                ["x1", "y1"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
-            ),
-        ),
-        (
-            AffineTransform(
-                ["x2", "y2"],
-                ["x3", "y3"],
-                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
-            ),
-            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
-            AffineTransform(
-                ["x1", "y1"],
-                ["x3", "y3"],
-                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
-            ),
+            IdentityTransform(["x2", "y2"], ["x3", "y3"]),
+            UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
+            UniformScaleTransform(["x1", "y1"], ["x3", "y3"], 1.5),
         ),
         (
             IdentityTransform(["x2", "y2"], ["x3", "y3"]),
@@ -191,9 +179,103 @@ def test_inverse_transform(input, expected):
             ),
         ),
         (
+            UniformScaleTransform(["x2", "y2"], ["x3", "y3"], 1.5),
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
+            UniformScaleTransform(["x1", "y1"], ["x3", "y3"], 1.5),
+        ),
+        (
+            UniformScaleTransform(["x2", "y2"], ["x3", "y3"], 1.5),
+            UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 3.0),
+            UniformScaleTransform(["x1", "y1"], ["x3", "y3"], 4.5),
+        ),
+        (
+            UniformScaleTransform(["x2", "y2"], ["x3", "y3"], -0.5),
+            ScaleTransform(["x1", "y1"], ["x2", "y2"], [-3.0, 3.0]),
+            ScaleTransform(["x1", "y1"], ["x3", "y3"], [1.5, -1.5]),
+        ),
+        (
+            UniformScaleTransform(["x2", "y2"], ["x3", "y3"], 0.5),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x2", "y2"],
+                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x3", "y3"],
+                np.array([[0.75, 1.5, 0.0], [-0.75, 1.5, 0.5]], dtype=np.float64),
+            ),
+        ),
+        (
+            ScaleTransform(
+                ["x2", "y2"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
+            ),
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
+            ScaleTransform(
+                ["x1", "y1"], ["x3", "y3"], np.array([1.5, 3.0], dtype=np.float64)
+            ),
+        ),
+        (
             ScaleTransform(["x2", "y2"], ["x3", "y3"], [1.0, -1.0]),
             UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 1.5),
             ScaleTransform(["x1", "y1"], ["x3", "y3"], [1.5, -1.5]),
+        ),
+        (
+            ScaleTransform(["x2", "y2"], ["x3", "y3"], [1.5, -1.0]),
+            ScaleTransform(["x1", "y1"], ["x2", "y2"], [2.0, 1.5]),
+            ScaleTransform(["x1", "y1"], ["x3", "y3"], [3.0, -1.5]),
+        ),
+        (
+            ScaleTransform(["x2", "y2"], ["x3", "y3"], [0.5, -0.5]),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x2", "y2"],
+                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x3", "y3"],
+                np.array([[0.75, 1.5, 0.0], [0.75, -1.5, -0.5]], dtype=np.float64),
+            ),
+        ),
+        (
+            AffineTransform(
+                ["x2", "y2"],
+                ["x3", "y3"],
+                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+            IdentityTransform(["x1", "y1"], ["x2", "y2"]),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x3", "y3"],
+                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+        ),
+        (
+            AffineTransform(
+                ["x2", "y2"],
+                ["x3", "y3"],
+                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+            UniformScaleTransform(["x1", "y1"], ["x2", "y2"], 2.0),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x3", "y3"],
+                np.array([[3.0, 6.0, 0.0], [-3.0, 6.0, 1.0]], dtype=np.float64),
+            ),
+        ),
+        (
+            AffineTransform(
+                ["x2", "y2"],
+                ["x3", "y3"],
+                np.array([[1.5, 3.0, 0.0], [-1.5, 3.0, 1.0]], dtype=np.float64),
+            ),
+            ScaleTransform(["x1", "y1"], ["x2", "y2"], [2.0, -2.0]),
+            AffineTransform(
+                ["x1", "y1"],
+                ["x3", "y3"],
+                np.array([[3.0, -6.0, 0.0], [-3.0, -6.0, 1.0]], dtype=np.float64),
+            ),
         ),
         (
             AffineTransform(
@@ -213,6 +295,7 @@ def test_inverse_transform(input, expected):
             ),
         ),
     ],
+    ids=lambda val: type(val).__name__,
 )
 def test_multiply_tranform(
     transform_a,
