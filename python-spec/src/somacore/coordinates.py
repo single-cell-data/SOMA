@@ -100,10 +100,6 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def __rmatmul__(self, other: object) -> "CoordinateTransform":
-        raise NotImplementedError()
-
-    @abc.abstractmethod
     def inverse_transform(self) -> "CoordinateTransform":
         """Returns the inverse coordinate transform.
 
@@ -207,26 +203,6 @@ class AffineTransform(CoordinateTransform):
             f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
         )
 
-    def __rmatmul__(self, other: object) -> CoordinateTransform:
-        if not isinstance(other, CoordinateTransform):
-            raise NotImplementedError(
-                f"Matrix multiply is not implemented with type {type(other)!r}."
-            )
-        self._check_rmatmul_inner_axes(other)
-        if isinstance(other, IdentityTransform):
-            return AffineTransform(
-                self.input_axes, other.output_axes, self.augmented_matrix
-            )
-        if isinstance(other, AffineTransform):
-            return AffineTransform(
-                self.input_axes,
-                other.output_axes,
-                other.augmented_matrix @ self.augmented_matrix,
-            )
-        raise NotImplementedError(
-            f"Cannot multiply a CoordinateTransform by type {type(other)!r}."
-        )
-
     @property
     def augmented_matrix(self) -> npt.NDArray[np.float64]:
         """Returns the augmented affine matrix for the transformation.
@@ -297,24 +273,6 @@ class ScaleTransform(AffineTransform):
             )
         return super().__matmul__(other)
 
-    def __rmatmul__(self, other: object) -> CoordinateTransform:
-        if not isinstance(other, CoordinateTransform):
-            raise NotImplementedError(
-                f"Matrix multiply is not implemented with type {type(other)!r}."
-            )
-        self._check_rmatmul_inner_axes(other)
-        if isinstance(other, IdentityTransform):
-            return ScaleTransform(
-                self.input_axes, other.output_axes, self._scale_factors
-            )
-        if isinstance(other, ScaleTransform):
-            return ScaleTransform(
-                self.input_axes,
-                other.output_axes,
-                self.scale_factors * other.scale_factors,
-            )
-        return super().__rmatmul__(other)
-
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
 
@@ -366,18 +324,6 @@ class UniformScaleTransform(ScaleTransform):
             )
         return super().__matmul__(other)
 
-    def __rmatmul__(self, other: object) -> CoordinateTransform:
-        if not isinstance(other, CoordinateTransform):
-            raise NotImplementedError(
-                f"Matrix multiply is not implemented with type {type(other)!r}."
-            )
-        if isinstance(other, UniformScaleTransform):
-            self._check_rmatmul_inner_axes(other)
-            return UniformScaleTransform(
-                self.input_axes, other.output_axes, self.scale * other.scale
-            )
-        return super().__rmatmul__(other)
-
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
 
@@ -423,17 +369,7 @@ class IdentityTransform(UniformScaleTransform):
         if isinstance(other, IdentityTransform):
             self._check_matmul_inner_axes(other)
             return IdentityTransform(other.input_axes, self.output_axes)
-        return other.__rmatmul__(self)
-
-    def __rmatmul__(self, other: object) -> CoordinateTransform:
-        if not isinstance(other, CoordinateTransform):
-            raise NotImplementedError(
-                f"Matrix multiply is not implemented with type {type(other)!r}."
-            )
-        if isinstance(other, IdentityTransform):
-            self._check_rmatmul_inner_axes(other)
-            return IdentityTransform(self.input_axes, other.output_axes)
-        return other.__matmul__(self)
+        return super().__matmul__(other)
 
     def inverse_transform(self) -> CoordinateTransform:
         """Returns the inverse coordinate transform.
