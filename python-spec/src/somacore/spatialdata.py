@@ -106,18 +106,19 @@ class SpatialDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 [x_min, y_min, x_max, y_max] (for 2D images), a box in the form
                 [x_min, y_min, z_min, x_max, y_max, z_max] (for 3D images), or
                 a shapely Geometry.
-            column_names: the named columns to read and return.
+            column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            extra_coords: a name to coordinate mapping non-spatial index columns.
-                Defaults to selecting entire region for non-spatial coordinates.
-            transform: An optional coordinate transform that provides desribes the
+            extra_coords: A name to coordinate mapping for non-spatial index columns.
+                Defaults to selecting the entire region for non-spatial coordinates.
+            transform: An optional coordinate transform from the read region to the
+                coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
             region_coord_space: An optional coordinate space for the region being read.
                 Defaults to ``None``, coordinate space will be inferred from transform.
             batch_size: The size of batched reads.
                 Defaults to `unbatched`.
-            partitions: If present, specifies that this is part of
-                a partitioned read, and which part of the data to include.
+            partitions: If present, specifies that this is part of a partitioned read,
+                and which part of the data to include.
             result_order: the order to return results, specified as a
                 :class:`~options.ResultOrder` or its string value.
             value_filter: an optional value filter to apply to the results.
