@@ -593,8 +593,8 @@ class SpatialRead(Generic[_ReadData]):
         data: The data accessor.
         data_coordinate_space: The coordinate space the read data is defined on.
         output_coordinate_space: The requested output coordinate space.
-        coordinate_transform: A coordinate transform from the data coordiante space to
-            the desired output coordiante space.
+        coordinate_transform: A coordinate transform from the data coordinate space to
+            the desired output coordinate space.
 
     Lifecycle: experimental
     """
