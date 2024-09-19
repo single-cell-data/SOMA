@@ -41,7 +41,6 @@ from .spatialdata import GeometryDataFrame
 from .spatialdata import ImageProperties
 from .spatialdata import MultiscaleImage
 from .spatialdata import PointCloud
-from .spatialdata import SpatialDataFrame
 from .spatialdata import SpatialRead
 from .types import ContextBase
 
