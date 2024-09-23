@@ -20,11 +20,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
+          cache-dependency-path: "python-spec/requirements-py${{ env.PYTHON_VERSION }}*.txt"
 
       - name: Install static analysis packages
-        run: |
-          pip install -r python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
+        working-directory: python-spec
+        run: pip install -r requirements-py${PYTHON_VERSION}.txt -r requirements-py${PYTHON_VERSION}-lint.txt
 
       - name: Restore pre-commit cache
         uses: actions/cache@v3
