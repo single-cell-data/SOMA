@@ -1,3 +1,0 @@
-mypy==1.11.2
-pandas-stubs==2.0.3.230814  # last version that supports Python 3.8
-pre-commit==3.5.0
