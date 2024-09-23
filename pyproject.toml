@@ -24,7 +24,7 @@ dependencies = [
   "scipy",
   "typing-extensions>=4.1", # For LiteralString (py3.11)
 ]
-requires-python = "~=3.8"
+requires-python = ">=3.9"
 urls = { repository = "https://github.com/single-cell-data/SOMA.git" }
 classifiers = ["License :: OSI Approved :: MIT License"]
 
@@ -43,7 +43,7 @@ tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 
 [tool.ruff]
 lint.extend-select = ["I"]
-target-version = "py38"
+target-version = "py39"
 
 [tool.ruff.lint.isort]
 force-single-line = true
@@ -54,7 +54,7 @@ single-line-exclusions = ["typing", "typing_extensions"]
 check_untyped_defs = true
 enable_error_code = ["ignore-without-code"]
 warn_redundant_casts = true
-python_version = 3.8
+python_version = 3.9
 # We want to enable this but it won't work when running locally due to the
 # presence of _version.py (which invalidates the ignore, which causes an error).
 #
