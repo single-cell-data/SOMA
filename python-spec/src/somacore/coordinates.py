@@ -35,7 +35,7 @@ class CoordinateSpace(collections.abc.Sequence[Axis]):
     Lifecycle: experimental
     """
 
-    axes: Tuple[Axis] = attrs.field(converter=tuple)
+    axes: Tuple[Axis, ...] = attrs.field(converter=tuple)
 
     @axes.validator
     def _validate(self, _, axes: Tuple[Axis, ...]) -> None:
