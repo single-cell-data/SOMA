@@ -780,7 +780,7 @@ class SpatialRead(Generic[_ReadData]):
             != self.coordinate_transform.input_axes
         ):
             raise ValueError(
-                "Input coordinate transform axis names do not match the data coordinate"
+                "Input coordinate transform axis names do not match the data coordinate "
                 "space."
             )
         if (
