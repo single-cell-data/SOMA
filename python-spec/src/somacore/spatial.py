@@ -133,7 +133,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
-        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
@@ -152,7 +152,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
                 a shapely Geometry.
             column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            transform: An optional coordinate transform from the read region to the
+            region_transform: An optional coordinate transform from the read region to the
                 coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
             region_coord_space: An optional coordinate space for the region being read.
@@ -368,7 +368,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
-        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
@@ -387,7 +387,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 a shapely Geometry.
             column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            transform: An optional coordinate transform from the read region to the
+            region_transform: An optional coordinate transform from the read region to the
                 coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
             region_coord_space: An optional coordinate space for the region being read.
@@ -581,7 +581,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         region: options.SpatialRegion = (),
         *,
         channel_coords: options.DenseCoord = None,
-        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         create_mask: bool = False,
         result_order: options.ResultOrderStr = _RO_AUTO,
@@ -604,7 +604,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 a shapely Geometry.
             channel_coords: An optional slice that defines the channel coordinates
                 to read.
-            transform: An optional coordinate transform that provides desribes the
+            region_transform: An optional coordinate transform that provides desribes the
                 transformation from the provided region to the reference level fo this
                 image. Defaults to ``None``.
             region_coord_space: An optional coordinate space for the region being read.
