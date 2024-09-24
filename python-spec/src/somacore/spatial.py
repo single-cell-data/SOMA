@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
-    Mapping,
     MutableMapping,
     Optional,
     Sequence,
@@ -134,7 +133,6 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
-        extra_coords: Optional[Mapping[str, options.SparseDFCoord]] = None,
         transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
@@ -154,8 +152,6 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
                 a shapely Geometry.
             column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            extra_coords: A name to coordinate mapping for non-spatial index columns.
-                Defaults to selecting the entire region for non-spatial coordinates.
             transform: An optional coordinate transform from the read region to the
                 coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
@@ -372,7 +368,6 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
-        extra_coords: Optional[Mapping[str, options.SparseDFCoord]] = None,
         transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
@@ -392,8 +387,6 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 a shapely Geometry.
             column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            extra_coords: A name to coordinate mapping for non-spatial index columns.
-                Defaults to selecting the entire region for non-spatial coordinates.
             transform: An optional coordinate transform from the read region to the
                 coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
