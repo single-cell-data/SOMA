@@ -224,6 +224,24 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+        """Coordinate space for this point cloud.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @coordinate_space.setter
+    @abc.abstractmethod
+    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
+        """Coordinate space for this point cloud.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
     def axis_names(self) -> Tuple[str, ...]:
         """The names of the axes of the coordinate space the data is defined on.
 
@@ -453,6 +471,24 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+        """Coordinate space for this geometry dataframe.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @coordinate_space.setter
+    @abc.abstractmethod
+    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
+        """Coordinate space for this geometry dataframe.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
     def domain(self) -> Tuple[Tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
@@ -606,7 +642,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @property
     @abc.abstractmethod
     def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
-        """Coordinate space for this scene.
+        """Coordinate space for this multiscale image.
 
         Lifecycle: experimental
         """
@@ -615,7 +651,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @coordinate_space.setter
     @abc.abstractmethod
     def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
-        """Coordinate space for this scene.
+        """Coordinate space for this multiscale image.
 
         Lifecycle: experimental
         """
