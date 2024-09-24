@@ -584,17 +584,15 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         channel_coords: options.DenseCoord = None,
         region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
-        create_mask: bool = False,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "SpatialRead[Union[pa.Tensor, pa.Table]]":
+    ) -> "SpatialRead[pa.Tensor]":
         """Reads a user-defined region into a :class:`SpatialRead` with data in
         either an Arrow tensor or table.
 
-        Reads the bounding box of the input region from the requested image level. If
-        ``create_mask=True``, this will return a :class:`SpatialRead` with the image
-        data and mask stored in a :class`pa.Table`. Otherwise, the data will be stored
-        as a :class:`pa.Tensor`.
+        Reads the bounding box of the input region from the requested image level. This
+        will return a :class:`SpatialRead` with the image data stored as a
+        :class:`pa.Tensor`.
 
         Args:
             level: The image level to read the data from. May use index of the level
@@ -611,14 +609,12 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
             region_coord_space: An optional coordinate space for the region being read.
                 The axis names must match the input axis names of the transform.
                 Defaults to ``None``, coordinate space will be inferred from transform.
-            create_mask: If ``True``, return a bitmask for the pixels in the returned
-                data that intersect the region.
             result_order: the order to return results, specified as a
                 :class:`~options.ResultOrder` or its string value.
 
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
-            :class:`pa.Tensor` or :class:`pa.Table` data.
+            :class:`pa.Tensor` data.
         """
         raise NotImplementedError()
 
