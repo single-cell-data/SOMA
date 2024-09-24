@@ -532,7 +532,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         type: pa.DataType,
         image_type: str = "CYX",
         reference_level_shape: Sequence[int],
-        axis_names: Sequence[str] = ("c", "x", "y"),
+        axis_names: Sequence[str] = ("c", "y", "x"),
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -540,12 +540,13 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
         Args:
             uri: The URI where the collection will be created.
-            axis_names: The names of the axes of the image.
+            image_type: The order of the image axes using standard names. See
+                :class:`ImageProperties` for more details.
             reference_level_shape: The shape of the reference level for the multiscale
                 image. In most cases, this should correspond to the size of the image
                 at ``level=0``.
-            image_type: The order of the image axes using standard names. See
-                :class:`ImageProperties` for more details.
+            axis_names: The names of the axes of the image. Should be in the same order
+                as the `image_type.
 
         Returns:
             The newly created collection, opened for writing.
