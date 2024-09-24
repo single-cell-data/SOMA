@@ -26,7 +26,7 @@ class Axis:
 
 
 @attrs.define(frozen=True)
-class CoordinateSpace(collections.abc.Sequence):
+class CoordinateSpace(collections.abc.Sequence[Axis]):
     """A coordinate space for spatial data.
 
     Args:
@@ -35,7 +35,7 @@ class CoordinateSpace(collections.abc.Sequence):
     Lifecycle: experimental
     """
 
-    axes: Sequence[Axis] = attrs.field(converter=tuple)
+    axes: Tuple[Axis] = attrs.field(converter=tuple)
 
     @axes.validator
     def _validate(self, _, axes: Tuple[Axis, ...]) -> None:
