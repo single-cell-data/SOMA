@@ -37,11 +37,11 @@ from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
-from .spatialdata import GeometryDataFrame
-from .spatialdata import ImageProperties
-from .spatialdata import MultiscaleImage
-from .spatialdata import PointCloud
-from .spatialdata import SpatialRead
+from .spatial import GeometryDataFrame
+from .spatial import ImageProperties
+from .spatial import MultiscaleImage
+from .spatial import PointCloud
+from .spatial import SpatialRead
 from .types import ContextBase
 
 try:
