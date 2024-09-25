@@ -185,5 +185,7 @@ SparseNDCoord = Union[
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
 
-SpatialRegion = Union[Sequence[int], Sequence[float], shapely.geometry.base.BaseGeometry]
+SpatialRegion = Union[
+    Sequence[int], Sequence[float], shapely.geometry.base.BaseGeometry
+]
 """A spatial region used for reading spatial dataframes and multiscale images."""
