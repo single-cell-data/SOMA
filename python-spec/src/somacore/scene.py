@@ -1,14 +1,16 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
 import abc
-from typing import Generic, Optional, Sequence, TypeVar, Union
+from typing import Any, Generic, Optional, Sequence, Tuple, TypeVar, Union
 
+import pyarrow as pa
 from typing_extensions import Final
 
 from . import _mixin
 from . import base
 from . import collection
 from . import coordinates
+from . import options
 from . import spatialdata
 
 _MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatialdata.MultiscaleImage)
@@ -65,7 +67,7 @@ class Scene(
     This collection exists to store any spatial data in the scene that joins on the obs
     ``soma_joinid``. Each dataframe in ``obsl`` can be either a PointCloud
     or a GeometryDataFrame.
-    
+
     Lifecycle: experimental
     """
 
@@ -82,7 +84,7 @@ class Scene(
 
     Each dataframe in a ``varl`` subcollection can be either a GeometryDataFrame or a
     PointCloud.
-    
+
     Lifecycle: experimental
     """
 
@@ -101,7 +103,115 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def register_geometry_dataframe(
+    def add_geometry_dataframe(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: str,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (
+            options.SOMA_JOINID,
+            options.SOMA_GEOMETRY,
+        ),
+        axis_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> _GeometryDataFrame:
+        """Adds a ``GeometryDataFrame`` to the scene and sets a coordinate transform
+        between the scene and the dataframe.
+
+        If the subcollection the geometry dataframe is inside of is more than one
+        layer deep, the input should be provided as a sequence of names. For example,
+        to set the transformation to a geometry dataframe named  "transcripts" in
+        the "var/RNA" collection::
+
+            scene.add_geometry_dataframe(
+                'cell_boundaries', subcollection=['var', 'RNA'], **kwargs
+            )
+
+        Args:
+            key: The name of the geometry dataframe.
+            transform: The coordinate transformation from the scene to the dataframe.
+            subcollection: The name, or sequence of names, of the subcollection the
+                dataframe is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            The newly create ``GeometryDataFrame``, opened for writing.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def add_multiscale_image(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: str,
+        type: pa.DataType,
+        image_type: str = "CYX",  # TODO: Replace this arg after PR #219 is merged
+        reference_level_shape: Sequence[int],
+        axis_names: Sequence[str] = ("c", "x", "y"),
+    ) -> _MultiscaleImage:
+        """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
+        between the scene and the dataframe.
+
+        Parameters are as in :meth:`spatial.PointCloud.create`.
+        See :meth:`add_new_collection` for details about child URIs.
+
+        Args:
+            key: The name of the geometry dataframe.
+            transform: The coordinate transformation from the scene to the dataframe.
+            subcollection: The name, or sequence of names, of the subcollection the
+                dataframe is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            The newly create ``MultiscaleImage``, opened for writing.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def add_new_point_cloud(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: Optional[str] = None,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        axis_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> spatialdata.PointCloud:
+        """Adds a point cloud to the scene and sets a coordinate transform
+        between the scene and the dataframe.
+
+        Parameters are as in :meth:`spatial.PointCloud.create`.
+        See :meth:`add_new_collection` for details about child URIs.
+
+        Args:
+            key: The name of the geometry dataframe.
+            transform: The coordinate transformation from the scene to the dataframe.
+            subcollection: The name, or sequence of names, of the subcollection the
+                dataframe is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            The newly created ``PointCloud``, opened for writing.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def set_transformation_to_geometry_dataframe(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -110,14 +220,14 @@ class Scene(
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
     ) -> _GeometryDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
-        a point cloud stored in the scene.
+        a geometry dataframe stored in the scene.
 
         If the subcollection the geometry dataframe is inside of is more than one
         layer deep, the input should be provided as a sequence of names. For example,
-        to register a geometry dataframe named  "transcripts" in the "var/RNA"
-        collection::
+        to set a transformation for geometry dataframe named  "transcripts" in the
+        "var/RNA" collection::
 
-            scene.register_geometry_dataframe(
+            scene.set_transfrom_for_geometry_dataframe(
                 'transcripts', transform, subcollection=['var', 'RNA'],
             )
 
@@ -130,14 +240,14 @@ class Scene(
                 replace the existing coordinate space of the dataframe.
 
         Returns:
-            The registered geometry dataframe in write mode.
+            The geometry dataframe, opened for writing.
 
         Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def register_multiscale_image(
+    def set_transformation_to_multiscale_image(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -162,14 +272,14 @@ class Scene(
                 replace the existing coordinate space of the multiscale image.
 
         Returns:
-            The registered multiscale image in write mode.
+            The multiscale image, opened for writing.
 
         Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def register_point_cloud(
+    def set_transformation_to_point_cloud(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -182,10 +292,10 @@ class Scene(
 
         If the subcollection the point cloud is inside of is more than one
         layer deep, the input should be provided as a sequence of names. For example,
-        to register a point named `transcripts` in the `var/RNA`
+        to set a transform for  a point named `transcripts` in the `var/RNA`
         collection::
 
-            scene.register_point_cloud(
+            scene.set_transformation_for_point_cloud(
                 'transcripts', transform, subcollection=['var', 'RNA'],
             )
 
@@ -199,7 +309,7 @@ class Scene(
                 ``None``.
 
         Returns:
-            The registered point cloud in write mode.
+            The point cloud, opened for writing.
 
         Lifecycle: experimental
         """
