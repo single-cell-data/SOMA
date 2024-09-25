@@ -530,9 +530,9 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         uri: str,
         *,
         type: pa.DataType,
-        image_type: str = "CYX",
         reference_level_shape: Sequence[int],
         axis_names: Sequence[str] = ("c", "y", "x"),
+        axis_types: Sequence[str] = ("channel", "height", "width"),
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -540,13 +540,13 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
         Args:
             uri: The URI where the collection will be created.
-            image_type: The order of the image axes using standard names. See
-                :class:`ImageProperties` for more details.
             reference_level_shape: The shape of the reference level for the multiscale
                 image. In most cases, this should correspond to the size of the image
                 at ``level=0``.
-            axis_names: The names of the axes of the image. Should be in the same order
-                as the `image_type.
+            axis_names: The names of the axes of the image.
+            axis_types: The types of the axes of the image. Must be the same lenght as
+                ``axis_names``. Valid types are: ``channel``, ``height``, ``width``,
+                and ``depth``.
 
         Returns:
             The newly created collection, opened for writing.
@@ -724,21 +724,6 @@ class ImageProperties(Protocol):
     @property
     def name(self) -> str:
         """The key for the image.
-
-        Lifecycle: experimental
-        """
-
-    @property
-    def image_type(self) -> str:
-        """The axis order of the image data using standardized names.
-
-        A valid image type is a permuation of 'YX', 'YXC', 'YXZ', or 'YXZC'. The
-        letters have the following meanings:
-
-        * 'X' - image width
-        * 'Y' - image height
-        * 'Z' - image depth (for three dimensional images)
-        * 'C' - channels/bands
 
         Lifecycle: experimental
         """
