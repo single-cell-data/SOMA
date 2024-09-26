@@ -19,7 +19,7 @@ from .. import experiment
 from .. import measurement
 from .. import options
 from .. import scene
-from .. import spatialdata
+from .. import spatial
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 
@@ -133,9 +133,9 @@ _BasicAbstractMeasurement = measurement.Measurement[
 """The loosest possible constraint of the abstract Measurement type."""
 
 _BasicAbstractScene = scene.Scene[
-    spatialdata.MultiscaleImage,
-    spatialdata.PointCloud,
-    spatialdata.GeometryDataFrame,
+    spatial.MultiscaleImage,
+    spatial.PointCloud,
+    spatial.GeometryDataFrame,
     base.SOMAObject,
 ]
 """The loosest possible constraint of the abstract Scene type."""
@@ -172,7 +172,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         *,
         subcollection: Union[str, Sequence[str]] = "obsl",
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
-    ) -> spatialdata.GeometryDataFrame:
+    ) -> spatial.GeometryDataFrame:
         raise NotImplementedError()
 
     def register_multiscale_image(
@@ -182,7 +182,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         *,
         subcollection: Union[str, Sequence[str]] = "img",
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
-    ) -> spatialdata.MultiscaleImage:
+    ) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
     def register_point_cloud(
@@ -192,7 +192,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         *,
         subcollection: Union[str, Sequence[str]] = "obsl",
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
-    ) -> spatialdata.PointCloud:
+    ) -> spatial.PointCloud:
         raise NotImplementedError()
 
     def get_transformation_to_geometry_dataframe(

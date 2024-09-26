@@ -592,8 +592,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        axism = axis.getitem_from(self._ms, suf="m")
-        table = axism[layer].read().tables().concat()
+        table = self._axism_inner(axis, layer).tables().concat()
 
         n_row = len(axis.getattr_from(self._joinids))
         n_col = len(table["soma_dim_1"].unique())

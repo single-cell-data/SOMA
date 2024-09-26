@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
-    Mapping,
     MutableMapping,
     Optional,
     Sequence,
@@ -36,7 +35,11 @@ _ReadData = TypeVar("_ReadData")
 
 
 class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table with point data and a user-defined schema.
+    """A specialized SOMA DataFrame for storing collections of points in multi-dimensional space.
+
+    The ``PointCloud`` class is designed to efficiently store and query point data, where each
+    point is represented by coordinates in one or more spatial dimensions (e.g., x, y, z) and
+    may have additional columns for associated attributes.
 
     Lifecycle: experimental
     """
@@ -129,13 +132,12 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def read_region(
+    def read_spatial_region(
         self,
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
-        extra_coords: Optional[Mapping[str, options.SparseDFCoord]] = None,
-        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
@@ -143,7 +145,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
-        """Reads a data intersecting an user-defined region into a
+        """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
 
 
@@ -154,9 +156,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
                 a shapely Geometry.
             column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            extra_coords: A name to coordinate mapping for non-spatial index columns.
-                Defaults to selecting the entire region for non-spatial coordinates.
-            transform: An optional coordinate transform from the read region to the
+            region_transform: An optional coordinate transform from the read region to the
                 coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
             region_coord_space: An optional coordinate space for the region being read.
@@ -224,6 +224,24 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+        """Coordinate space for this point cloud.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @coordinate_space.setter
+    @abc.abstractmethod
+    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
+        """Coordinate space for this point cloud.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
     def axis_names(self) -> Tuple[str, ...]:
         """The names of the axes of the coordinate space the data is defined on.
 
@@ -245,8 +263,10 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
 
 
 class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table of geometries with spatial indexing and a user-defined
-    schema.
+    """A specialized SOMA object for storing complex geometries with spatial indexing.
+
+    The ``GeometryDataFrame`` class is designed to store and manage geometric shapes such as
+    polygons, lines, and multipoints, along with additional columns for associated attributes.
 
     Lifecycle: experimental
     """
@@ -274,7 +294,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     ) -> Self:
         """Creates a new ``GeometryDataFrame`` at the given URI.
 
-        The schema of the created geoemetry dataframe will include a column named
+        The schema of the created geometry dataframe will include a column named
         ``soma_joinid`` of type ``pyarrow.int64``, with negative values
         disallowed, and a column named ``soma_geometry of type ``pyarrow.binary`` or
         ``pyarrow.large_binary``.  If a ``soma_joinid`` column or ``soma_geometry``
@@ -349,13 +369,12 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def read_region(
+    def read_spatial_region(
         self,
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
         *,
-        extra_coords: Optional[Mapping[str, options.SparseDFCoord]] = None,
-        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         batch_size: options.BatchSize = options.BatchSize(),
         partitions: Optional[options.ReadPartitions] = None,
@@ -363,7 +382,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
-        """Reads a data intersecting an user-defined region into a
+        """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
 
 
@@ -374,9 +393,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 a shapely Geometry.
             column_names: The named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
-            extra_coords: A name to coordinate mapping for non-spatial index columns.
-                Defaults to selecting the entire region for non-spatial coordinates.
-            transform: An optional coordinate transform from the read region to the
+            region_transform: An optional coordinate transform from the read region to the
                 coordinate system of the spatial dataframe.
                 Defaults to ``None``, meaning an identity transform.
             region_coord_space: An optional coordinate space for the region being read.
@@ -453,6 +470,24 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
+    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+        """Coordinate space for this geometry dataframe.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @coordinate_space.setter
+    @abc.abstractmethod
+    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
+        """Coordinate space for this geometry dataframe.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
     def domain(self) -> Tuple[Tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
@@ -470,10 +505,12 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     MutableMapping[str, _DenseND],
     metaclass=abc.ABCMeta,
 ):
-    """A multiscale image with an extendable number of levels.
+    """A multiscale image with an extendable number of resolution levels.
 
     The multiscale image defines the top level properties. Each level must
     match the expected following properties:
+    * number of channels
+    * axis order
 
     Lifecycle: experimental
     """
@@ -501,9 +538,9 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         uri: str,
         *,
         type: pa.DataType,
-        image_type: str = "CYX",
         reference_level_shape: Sequence[int],
-        axis_names: Sequence[str] = ("c", "x", "y"),
+        axis_names: Sequence[str] = ("c", "y", "x"),
+        axis_types: Sequence[str] = ("channel", "height", "width"),
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
@@ -511,12 +548,13 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
         Args:
             uri: The URI where the collection will be created.
-            axis_names: The names of the axes of the image.
             reference_level_shape: The shape of the reference level for the multiscale
-                image. In most cases, this should correspond to the size of the image
+                image. In most cases, this corresponds to the size of the image
                 at ``level=0``.
-            image_type: The order of the image axes using standard names. See
-                :class:`ImageProperties` for more details.
+            axis_names: The names of the axes of the image.
+            axis_types: The types of the axes of the image. Must be the same length as
+                ``axis_names``. Valid types are: ``channel``, ``height``, ``width``,
+                and ``depth``.
 
         Returns:
             The newly created collection, opened for writing.
@@ -546,25 +584,23 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     # Data operations
 
     @abc.abstractmethod
-    def read_region(
+    def read_spatial_region(
         self,
         level: Union[int, str],
         region: options.SpatialRegion = (),
         *,
         channel_coords: options.DenseCoord = None,
-        transform: Optional[coordinates.CoordinateTransform] = None,
+        region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
-        create_mask: bool = False,
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> "SpatialRead[Union[pa.Tensor, pa.Table]]":
-        """Reads a user-defined region into a :class:`SpatialRead` with data in
-        either an Arrow tensor or table.
+    ) -> "SpatialRead[pa.Tensor]":
+        """Reads a user-defined region of space into a :class:`SpatialRead` with data
+        in either an Arrow tensor or table.
 
-        Reads the bounding box of the input region from the requested image level. If
-        ``create_mask=True``, this will return a :class:`SpatialRead` with the image
-        data and mask stored in a :class`pa.Table`. Otherwise, the data will be stored
-        as a :class:`pa.Tensor`.
+        Reads the bounding box of the input region from the requested image level. This
+        will return a :class:`SpatialRead` with the image data stored as a
+        :class:`pa.Tensor`.
 
         Args:
             level: The image level to read the data from. May use index of the level
@@ -575,24 +611,22 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 a shapely Geometry.
             channel_coords: An optional slice that defines the channel coordinates
                 to read.
-            transform: An optional coordinate transform that provides desribes the
-                transformation from the provided region to the reference level fo this
+            region_transform: An optional coordinate transform that provides the
+                transformation from the provided region to the reference level of this
                 image. Defaults to ``None``.
             region_coord_space: An optional coordinate space for the region being read.
                 The axis names must match the input axis names of the transform.
                 Defaults to ``None``, coordinate space will be inferred from transform.
-            create_mask: If ``True``, return a bitmask for the pixels in the returned
-                data that intersect the region.
             result_order: the order to return results, specified as a
                 :class:`~options.ResultOrder` or its string value.
 
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
-            :class:`pa.Tensor` or :class:`pa.Table` data.
+            :class:`pa.Tensor` data.
         """
         raise NotImplementedError()
 
-    # Metadata opeations
+    # Metadata operations
 
     @property
     @abc.abstractmethod
@@ -606,7 +640,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @property
     @abc.abstractmethod
     def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
-        """Coordinate space for this scene.
+        """Coordinate space for this multiscale image.
 
         Lifecycle: experimental
         """
@@ -615,14 +649,14 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @coordinate_space.setter
     @abc.abstractmethod
     def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
-        """Coordinate space for this scene.
+        """Coordinate space for this multiscale image.
 
         Lifecycle: experimental
         """
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_from_level(
+    def get_transform_from_level(
         self, level: Union[int, str]
     ) -> coordinates.ScaleTransform:
         """Returns the transformation from user requested level to image reference level.
@@ -632,7 +666,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_to_level(
+    def get_transform_to_level(
         self, level: Union[int, str]
     ) -> coordinates.ScaleTransform:
         """Returns the transformation from the image reference level to the user
@@ -703,21 +737,6 @@ class ImageProperties(Protocol):
         """
 
     @property
-    def image_type(self) -> str:
-        """The axis order of the image data using standardized names.
-
-        A valid image type is a permuation of 'YX', 'YXC', 'YXZ', or 'YXZC'. The
-        letters have the following meanings:
-
-        * 'X' - image width
-        * 'Y' - image height
-        * 'Z' - image depth (for three dimensional images)
-        * 'C' - channels/bands
-
-        Lifecycle: experimental
-        """
-
-    @property
     def shape(self) -> Tuple[int, ...]:
         """Size of each axis of the image.
 
@@ -750,7 +769,7 @@ class SpatialRead(Generic[_ReadData]):
             != self.coordinate_transform.input_axes
         ):
             raise ValueError(
-                "Input coordinate transform axis names do not match the data coordinate"
+                "Input coordinate transform axis names do not match the data coordinate "
                 "space."
             )
         if (

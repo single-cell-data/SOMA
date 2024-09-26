@@ -2,6 +2,8 @@ import numpy as np
 import pytest
 
 from somacore import AffineTransform
+from somacore import Axis
+from somacore import CoordinateSpace
 from somacore import CoordinateTransform
 from somacore import IdentityTransform
 from somacore import ScaleTransform
@@ -26,6 +28,15 @@ def check_transform_is_equal(
         np.testing.assert_array_equal(actual.augmented_matrix, desired.augmented_matrix)
     else:
         assert False
+
+
+def test_coordinate_space():
+    coord_space = CoordinateSpace(
+        (Axis("x", unit="nanometer"), Axis("y", unit="nanometer"))  # type: ignore[arg-type]
+    )
+    assert len(coord_space) == 2
+    assert coord_space.axis_names == ("x", "y")
+    assert coord_space[0] == Axis("x", unit="nanometer")
 
 
 @pytest.mark.parametrize(

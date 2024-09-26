@@ -57,7 +57,7 @@ _T_co = TypeVar("_T_co", covariant=True)
 class Slice(Protocol[_T_co]):
     """A slice which stores a certain type of object.
 
-    This protocol describes the built in ``slice`` type, with a hint to callers
+    This protocol describes the built-in ``slice`` type, with a hint to callers
     about what type they should put *inside* the slice.  It is for type
     annotations only and is not runtime-checkable (i.e., you can't do
     ``isinstance(thing, Slice)``), because ``range`` objects also have
@@ -86,7 +86,7 @@ class Slice(Protocol[_T_co]):
     def step(self) -> Optional[_T_co]: ...
 
     if sys.version_info < (3, 10) and not TYPE_CHECKING:
-        # Python 3.9 and below have a bug where any Protocol with an @property
+        # Python 3.9 and below have a bug where any Protocol with a @property
         # was always regarded as runtime-checkable.
         @classmethod
         def __subclasscheck__(cls, __subclass: type) -> NoReturn:

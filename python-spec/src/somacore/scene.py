@@ -11,15 +11,15 @@ from . import base
 from . import collection
 from . import coordinates
 from . import options
-from . import spatialdata
+from . import spatial
 
-_MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatialdata.MultiscaleImage)
+_MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatial.MultiscaleImage)
 """A particular implementation of a multiscale image."""
 
-_PointCloud = TypeVar("_PointCloud", bound=spatialdata.PointCloud)
+_PointCloud = TypeVar("_PointCloud", bound=spatial.PointCloud)
 """A particular implementation of a point cloud."""
 
-_GeometryDataFrame = TypeVar("_GeometryDataFrame", bound=spatialdata.GeometryDataFrame)
+_GeometryDataFrame = TypeVar("_GeometryDataFrame", bound=spatial.GeometryDataFrame)
 """A particular implementation of a geometry dataframe."""
 
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
@@ -190,7 +190,7 @@ class Scene(
         axis_names: Sequence[str] = ("x", "y"),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> spatialdata.PointCloud:
+    ) -> _PointCloud:
         """Adds a point cloud to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
