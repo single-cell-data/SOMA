@@ -503,6 +503,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     The multiscale image defines the top level properties. Each level must
     match the expected following properties:
+    * number of channels
+    * axis order
 
     Lifecycle: experimental
     """
