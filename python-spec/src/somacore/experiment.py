@@ -72,8 +72,8 @@ class Experiment(
     This provides a join table for the obs ``soma_joinid`` and the scene names used in
     the ``spatial`` collection. This dataframe must contain index columns ``soma_joinid``
     and ``scene_id``. The ``scene_id`` column must have type ``string``. The
-    dataframe must contain a ``boolean`` column ``data``. The values of ``data`` are
-    ``True`` if the obs with obsid ``soma_joinid`` is contained in the scene
+    dataframe must contain a ``boolean`` column ``soma_data``. The values of ``soma_data`` are
+    ``True`` if the obs ``soma_joinid`` is contained in the scene
     ``scene_id`` and ``False`` otherwise.
     """
 
