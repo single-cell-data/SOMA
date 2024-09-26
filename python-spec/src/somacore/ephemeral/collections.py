@@ -1,13 +1,27 @@
-from typing import Any, Dict, Iterator, NoReturn, Optional, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    NoReturn,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
+import pyarrow as pa
 from typing_extensions import Literal, Self
 
 from .. import base
 from .. import collection
+from .. import coordinates
 from .. import data
 from .. import experiment
 from .. import measurement
 from .. import options
+from .. import scene
+from .. import spatial
 
 _Elem = TypeVar("_Elem", bound=base.SOMAObject)
 
@@ -120,6 +134,14 @@ _BasicAbstractMeasurement = measurement.Measurement[
 ]
 """The loosest possible constraint of the abstract Measurement type."""
 
+_BasicAbstractScene = scene.Scene[
+    spatial.MultiscaleImage,
+    spatial.PointCloud,
+    spatial.GeometryDataFrame,
+    base.SOMAObject,
+]
+"""The loosest possible constraint of the abstract Scene type."""
+
 
 class Measurement(  # type: ignore[misc]  # __eq__ false positive
     BaseCollection[base.SOMAObject], _BasicAbstractMeasurement
@@ -129,11 +151,145 @@ class Measurement(  # type: ignore[misc]  # __eq__ false positive
     __slots__ = ()
 
 
+class Scene(  # type: ignore[misc]   # __eq__ false positive
+    BaseCollection[base.SOMAObject], _BasicAbstractScene
+):
+    """An in-memory Collection with Scene semantics."""
+
+    __slots__ = ()
+
+    @property
+    def coordinate_space(self) -> coordinates.CoordinateSpace:
+        """Coordinate system for this scene."""
+        raise NotImplementedError()
+
+    @coordinate_space.setter
+    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
+        raise NotImplementedError()
+
+    def add_geometry_dataframe(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: str,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (
+            options.SOMA_JOINID,
+            options.SOMA_GEOMETRY,
+        ),
+        axis_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> spatial.GeometryDataFrame:
+        raise NotImplementedError()
+
+    def add_multiscale_image(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: str,
+        type: pa.DataType,
+        image_type: str = "CYX",  # TODO: Replace this arg after PR #219 is merged
+        reference_level_shape: Sequence[int],
+        axis_names: Sequence[str] = ("c", "x", "y"),
+    ) -> spatial.MultiscaleImage:
+        raise NotImplementedError()
+
+    def add_new_point_cloud(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: Optional[str] = None,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        axis_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> spatial.PointCloud:
+        raise NotImplementedError()
+
+    def set_transform_to_geometry_dataframe(
+        self,
+        key: str,
+        transform: coordinates.CoordinateTransform,
+        *,
+        subcollection: Union[str, Sequence[str]] = "obsl",
+        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+    ) -> spatial.GeometryDataFrame:
+        raise NotImplementedError()
+
+    def set_transform_to_multiscale_image(
+        self,
+        key: str,
+        transform: coordinates.CoordinateTransform,
+        *,
+        subcollection: Union[str, Sequence[str]] = "img",
+        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+    ) -> spatial.MultiscaleImage:
+        raise NotImplementedError()
+
+    def set_transform_to_point_cloud(
+        self,
+        key: str,
+        transform: coordinates.CoordinateTransform,
+        *,
+        subcollection: Union[str, Sequence[str]] = "obsl",
+        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+    ) -> spatial.PointCloud:
+        raise NotImplementedError()
+
+    def get_transform_from_geometry_dataframe(
+        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_from_multiscale_image(
+        self,
+        key: str,
+        *,
+        subcollection: str = "img",
+        level: Optional[Union[str, int]] = None,
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_from_point_cloud(
+        self, key: str, *, subcollection: str = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_to_geometry_dataframe(
+        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_to_multiscale_image(
+        self,
+        key: str,
+        *,
+        subcollection: str = "img",
+        level: Optional[Union[str, int]] = None,
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_to_point_cloud(
+        self, key: str, *, subcollection: str = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+
 class Experiment(  # type: ignore[misc]  # __eq__ false positive
     BaseCollection[base.SOMAObject],
     experiment.Experiment[
         data.DataFrame,
         collection.Collection[_BasicAbstractMeasurement],
+        collection.Collection[_BasicAbstractScene],
         base.SOMAObject,
     ],
 ):

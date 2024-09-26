@@ -37,6 +37,7 @@ from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
+from .scene import Scene
 from .spatial import GeometryDataFrame
 from .spatial import ImageProperties
 from .spatial import MultiscaleImage
@@ -67,6 +68,7 @@ __all__ = (
     "SpatialRead",
     "Experiment",
     "Measurement",
+    "Scene",
     "ImageProperties",
     "MultiscaleImage",
     "SpatialDataFrame",
