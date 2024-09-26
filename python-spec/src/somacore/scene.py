@@ -318,7 +318,7 @@ class Scene(
     @abc.abstractmethod
     def get_transform_from_geometry_dataframe(
         self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
-    ):
+    ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the requested geometry dataframe
         to the scene.
 
@@ -382,7 +382,7 @@ class Scene(
     @abc.abstractmethod
     def get_transform_to_geometry_dataframe(
         self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
-    ):
+    ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
         geometery dataframe.
 
