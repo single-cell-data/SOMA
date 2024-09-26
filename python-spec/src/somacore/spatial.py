@@ -288,7 +288,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     ) -> Self:
         """Creates a new ``GeometryDataFrame`` at the given URI.
 
-        The schema of the created geoemetry dataframe will include a column named
+        The schema of the created geometry dataframe will include a column named
         ``soma_joinid`` of type ``pyarrow.int64``, with negative values
         disallowed, and a column named ``soma_geometry of type ``pyarrow.binary`` or
         ``pyarrow.large_binary``.  If a ``soma_joinid`` column or ``soma_geometry``
