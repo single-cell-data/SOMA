@@ -128,7 +128,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def read_region(
+    def read_spatial_region(
         self,
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
@@ -141,7 +141,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
-        """Reads a data intersecting an user-defined region into a
+        """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
 
 
@@ -363,7 +363,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def read_region(
+    def read_spatial_region(
         self,
         region: Optional[options.SpatialRegion] = None,
         column_names: Optional[Sequence[str]] = None,
@@ -376,7 +376,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         value_filter: Optional[str] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
-        """Reads a data intersecting an user-defined region into a
+        """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
 
 
@@ -576,7 +576,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     # Data operations
 
     @abc.abstractmethod
-    def read_region(
+    def read_spatial_region(
         self,
         level: Union[int, str],
         region: options.SpatialRegion = (),
@@ -587,8 +587,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         result_order: options.ResultOrderStr = _RO_AUTO,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[pa.Tensor]":
-        """Reads a user-defined region into a :class:`SpatialRead` with data in
-        either an Arrow tensor or table.
+        """Reads a user-defined region of space into a :class:`SpatialRead` with data
+        in either an Arrow tensor or table.
 
         Reads the bounding box of the input region from the requested image level. This
         will return a :class:`SpatialRead` with the image data stored as a
