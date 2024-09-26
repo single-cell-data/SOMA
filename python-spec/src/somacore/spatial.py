@@ -499,7 +499,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     MutableMapping[str, _DenseND],
     metaclass=abc.ABCMeta,
 ):
-    """A multiscale image with an extendable number of levels.
+    """A multiscale image with an extendable number of resolution levels.
 
     The multiscale image defines the top level properties. Each level must
     match the expected following properties:
