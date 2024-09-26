@@ -541,10 +541,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         Args:
             uri: The URI where the collection will be created.
             reference_level_shape: The shape of the reference level for the multiscale
-                image. In most cases, this should correspond to the size of the image
+                image. In most cases, this corresponds to the size of the image
                 at ``level=0``.
             axis_names: The names of the axes of the image.
-            axis_types: The types of the axes of the image. Must be the same lenght as
+            axis_types: The types of the axes of the image. Must be the same length as
                 ``axis_names``. Valid types are: ``channel``, ``height``, ``width``,
                 and ``depth``.
 
@@ -603,8 +603,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 a shapely Geometry.
             channel_coords: An optional slice that defines the channel coordinates
                 to read.
-            region_transform: An optional coordinate transform that provides desribes the
-                transformation from the provided region to the reference level fo this
+            region_transform: An optional coordinate transform that provides the
+                transformation from the provided region to the reference level of this
                 image. Defaults to ``None``.
             region_coord_space: An optional coordinate space for the region being read.
                 The axis names must match the input axis names of the transform.
@@ -618,7 +618,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         """
         raise NotImplementedError()
 
-    # Metadata opeations
+    # Metadata operations
 
     @property
     @abc.abstractmethod
