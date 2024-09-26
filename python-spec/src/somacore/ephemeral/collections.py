@@ -5,10 +5,12 @@ from typing import (
     NoReturn,
     Optional,
     Sequence,
+    Tuple,
     TypeVar,
     Union,
 )
 
+import pyarrow as pa
 from typing_extensions import Literal, Self
 
 from .. import base
@@ -165,7 +167,55 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
         raise NotImplementedError()
 
-    def register_geometry_dataframe(
+    def add_geometry_dataframe(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: str,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (
+            options.SOMA_JOINID,
+            options.SOMA_GEOMETRY,
+        ),
+        axis_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> spatial.GeometryDataFrame:
+        raise NotImplementedError()
+
+    def add_multiscale_image(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: str,
+        type: pa.DataType,
+        image_type: str = "CYX",  # TODO: Replace this arg after PR #219 is merged
+        reference_level_shape: Sequence[int],
+        axis_names: Sequence[str] = ("c", "x", "y"),
+    ) -> spatial.MultiscaleImage:
+        raise NotImplementedError()
+
+    def add_new_point_cloud(
+        self,
+        key: str,
+        subcollection: Union[str, Sequence[str]],
+        transform: Optional[coordinates.CoordinateTransform],
+        *,
+        uri: Optional[str] = None,
+        schema: pa.Schema,
+        index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        axis_names: Sequence[str] = ("x", "y"),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+    ) -> spatial.PointCloud:
+        raise NotImplementedError()
+
+    def set_transform_to_geometry_dataframe(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -175,7 +225,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> spatial.GeometryDataFrame:
         raise NotImplementedError()
 
-    def register_multiscale_image(
+    def set_transform_to_multiscale_image(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -185,7 +235,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
-    def register_point_cloud(
+    def set_transform_to_point_cloud(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -195,12 +245,12 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> spatial.PointCloud:
         raise NotImplementedError()
 
-    def get_transformation_to_geometry_dataframe(
+    def get_transform_from_geometry_dataframe(
         self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
-    ):
+    ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
-    def get_transformation_to_multiscale_image(
+    def get_transform_from_multiscale_image(
         self,
         key: str,
         *,
@@ -209,7 +259,26 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
-    def get_transformation_to_point_cloud(
+    def get_transform_from_point_cloud(
+        self, key: str, *, subcollection: str = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_to_geometry_dataframe(
+        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_to_multiscale_image(
+        self,
+        key: str,
+        *,
+        subcollection: str = "img",
+        level: Optional[Union[str, int]] = None,
+    ) -> coordinates.CoordinateTransform:
+        raise NotImplementedError()
+
+    def get_transform_to_point_cloud(
         self, key: str, *, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
