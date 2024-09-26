@@ -648,7 +648,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_from_level(
+    def get_transform_from_level(
         self, level: Union[int, str]
     ) -> coordinates.ScaleTransform:
         """Returns the transformation from user requested level to image reference level.
@@ -658,7 +658,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_to_level(
+    def get_transform_to_level(
         self, level: Union[int, str]
     ) -> coordinates.ScaleTransform:
         """Returns the transformation from the image reference level to the user
