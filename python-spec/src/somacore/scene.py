@@ -211,7 +211,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def set_transformation_to_geometry_dataframe(
+    def set_transform_to_geometry_dataframe(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -247,7 +247,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def set_transformation_to_multiscale_image(
+    def set_transform_to_multiscale_image(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -279,7 +279,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def set_transformation_to_point_cloud(
+    def set_transform_to_point_cloud(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
@@ -316,7 +316,71 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_to_geometry_dataframe(
+    def get_transform_from_geometry_dataframe(
+        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+    ):
+        """Returns the coordinate transformation from the requested geometry dataframe
+        to the scene.
+
+        Args:
+            key: The name of the geometry dataframe.
+            subcollection: The name, or sequence of names, of the subcollection the
+                dataframe is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            Coordinate transform from the dataframe to the scene.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_transform_from_multiscale_image(
+        self,
+        key: str,
+        *,
+        subcollection: str = "img",
+        level: Optional[Union[str, int]] = None,
+    ) -> coordinates.CoordinateTransform:
+        """Returns the coordinate transformation from the requested multiscale image to
+        the scene.
+
+        Args:
+            key: The name of the multiscale image.
+            subcollection: The name, or sequence of names, of the subcollection the
+                dataframe is stored in. Defaults to ``'img'``.
+            level: The level of the image to get the transformation from.
+                Defaults to ``None`` -- the transformation will be to the reference
+                level.
+
+        Returns:
+            Coordinate transform from the multiscale image to the scene.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_transform_from_point_cloud(
+        self, key: str, *, subcollection: str = "obsl"
+    ) -> coordinates.CoordinateTransform:
+        """Returns the coordinate transformation from the requested point cloud to
+        the scene.
+
+        Args:
+            key: The name of the point cloud.
+            subcollection: The name, or sequence of names, of the subcollection the
+                point cloud is stored in. Defaults to ``'obsl'``.
+
+        Returns:
+            Coordinate transform from the scene to the point cloud.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def get_transform_to_geometry_dataframe(
         self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
     ):
         """Returns the coordinate transformation from the scene to a requested
@@ -335,7 +399,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_to_multiscale_image(
+    def get_transform_to_multiscale_image(
         self,
         key: str,
         *,
@@ -361,11 +425,11 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transformation_to_point_cloud(
+    def get_transform_to_point_cloud(
         self, key: str, *, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
-        geometery dataframe.
+        point cloud.
 
         Args:
             key: The name of the point cloud.
