@@ -35,7 +35,11 @@ _ReadData = TypeVar("_ReadData")
 
 
 class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table with point data and a user-defined schema.
+    """A specialized SOMA DataFrame for storing collections of points in multi-dimensional space.
+
+    The ``PointCloud`` class is designed to efficiently store and query point data, where each
+    point is represented by coordinates in one or more spatial dimensions (e.g., x, y, z) and
+    may have additional columns for associated attributes.
 
     Lifecycle: experimental
     """
@@ -259,8 +263,10 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
 
 
 class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table of geometries with spatial indexing and a user-defined
-    schema.
+    """A specialized SOMA object for storing complex geometries with spatial indexing.
+
+    The ``GeometryDataFrame`` class is designed to store and manage geometric shapes such as
+    polygons, lines, and multipoints, along with additional columns for associated attributes.
 
     Lifecycle: experimental
     """
