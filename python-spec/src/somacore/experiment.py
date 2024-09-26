@@ -66,6 +66,17 @@ class Experiment(
     spatial = _mixin.item[_SceneColl]()  # TODO: Discuss the name of this element.
     """A collection of named spatial scenes."""
 
+    obs_spatial_presence = _mixin.item[_DF]()
+    """A dataframe that stores the presence of obs in the spatial scenes.
+
+    This provides a join table for the obs ``soma_joinid`` and the scene names used in
+    the ``spatial`` collection. This dataframe must contain index columns ``soma_joinid``
+    and ``scene_id``. The ``scene_id`` column must have type ``string``. The
+    dataframe must contain a ``boolean`` column ``soma_data``. The values of ``soma_data`` are
+    ``True`` if the obs ``soma_joinid`` is contained in the scene
+    ``scene_id`` and ``False`` otherwise.
+    """
+
     def axis_query(
         self,
         measurement_name: str,

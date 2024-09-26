@@ -99,3 +99,14 @@ class Measurement(
 
     This is indexed by ``[varid_1, varid_2]``.
     """
+
+    var_spatial_presence = _mixin.item[_DF]()
+    """A dataframe that stores the presence of var in the spatial scenes.
+
+    This provides a join table for the var ``soma_joinid`` and the scene names used in
+    the ``spatial`` collection. This dataframe must contain index columns ``soma_joinid``
+    and ``scene_id``. The ``scene_id`` column  must have type ``string``. The
+    dataframe must contain a ``boolean`` column ``data``. The values of ``data`` are
+    ``True`` if the var with varid ``soma_joinid`` is contained in scene with name
+    ``scene_id`` and ``False`` otherwise.
+    """
