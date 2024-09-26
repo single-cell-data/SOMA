@@ -263,8 +263,10 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
 
 
 class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A multi-column table of geometries with spatial indexing and a user-defined
-    schema.
+    """A specialized SOMA object for storing complex geometries with spatial indexing.
+
+    The `GeometryDataFrame` class is designed to store and manage geometric shapes such as
+    polygons, lines, and multipoints, along with additional columns for associated attributes.
 
     Lifecycle: experimental
     """
