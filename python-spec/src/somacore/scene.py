@@ -154,9 +154,9 @@ class Scene(
         *,
         uri: str,
         type: pa.DataType,
-        image_type: str = "CYX",  # TODO: Replace this arg after PR #219 is merged
         reference_level_shape: Sequence[int],
         axis_names: Sequence[str] = ("c", "x", "y"),
+        axis_types: Sequence[str] = ("channel", "height", "width"),
     ) -> _MultiscaleImage:
         """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
         between the scene and the dataframe.
