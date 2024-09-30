@@ -71,7 +71,6 @@ __all__ = (
     "Scene",
     "ImageProperties",
     "MultiscaleImage",
-    "SpatialDataFrame",
     "GeometryDataFrame",
     "PointCloud",
     "BatchSize",

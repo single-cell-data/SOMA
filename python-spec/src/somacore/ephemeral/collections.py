@@ -194,9 +194,9 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         *,
         uri: str,
         type: pa.DataType,
-        image_type: str = "CYX",  # TODO: Replace this arg after PR #219 is merged
         reference_level_shape: Sequence[int],
         axis_names: Sequence[str] = ("c", "x", "y"),
+        axis_types: Sequence[str] = ("channel", "height", "width"),
     ) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
