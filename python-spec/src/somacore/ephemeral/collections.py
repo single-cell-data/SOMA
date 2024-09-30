@@ -136,7 +136,7 @@ _BasicAbstractMeasurement = measurement.Measurement[
 
 _BasicAbstractScene = scene.Scene[
     spatial.MultiscaleImage,
-    spatial.PointCloud,
+    spatial.PointCloudDataFrame,
     spatial.GeometryDataFrame,
     base.SOMAObject,
 ]
@@ -200,7 +200,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
-    def add_new_point_cloud(
+    def add_new_point_cloud_dataframe(
         self,
         key: str,
         subcollection: Union[str, Sequence[str]],
@@ -212,7 +212,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         axis_names: Sequence[str] = ("x", "y"),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> spatial.PointCloud:
+    ) -> spatial.PointCloudDataFrame:
         raise NotImplementedError()
 
     def set_transform_to_geometry_dataframe(
@@ -235,14 +235,14 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
-    def set_transform_to_point_cloud(
+    def set_transform_to_point_cloud_dataframe(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
         *,
         subcollection: Union[str, Sequence[str]] = "obsl",
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
-    ) -> spatial.PointCloud:
+    ) -> spatial.PointCloudDataFrame:
         raise NotImplementedError()
 
     def get_transform_from_geometry_dataframe(
@@ -259,7 +259,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
-    def get_transform_from_point_cloud(
+    def get_transform_from_point_cloud_dataframe(
         self, key: str, *, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
@@ -278,7 +278,7 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
-    def get_transform_to_point_cloud(
+    def get_transform_to_point_cloud_dataframe(
         self, key: str, *, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()

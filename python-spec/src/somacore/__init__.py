@@ -41,7 +41,7 @@ from .scene import Scene
 from .spatial import GeometryDataFrame
 from .spatial import ImageProperties
 from .spatial import MultiscaleImage
-from .spatial import PointCloud
+from .spatial import PointCloudDataFrame
 from .spatial import SpatialRead
 from .types import ContextBase
 
@@ -72,7 +72,7 @@ __all__ = (
     "ImageProperties",
     "MultiscaleImage",
     "GeometryDataFrame",
-    "PointCloud",
+    "PointCloudDataFrame",
     "BatchSize",
     "IOfN",
     "ResultOrder",

@@ -34,18 +34,20 @@ _RO_AUTO = options.ResultOrder.AUTO
 _ReadData = TypeVar("_ReadData")
 
 
-class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
-    """A specialized SOMA DataFrame for storing collections of points in multi-dimensional space.
+class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
+    """A specialized SOMA DataFrame for storing collections of points in
+    multi-dimensional space.
 
-    The ``PointCloud`` class is designed to efficiently store and query point data, where each
-    point is represented by coordinates in one or more spatial dimensions (e.g., x, y, z) and
-    may have additional columns for associated attributes.
+    The ``PointCloudDataFrame`` class is designed to efficiently store and query point
+    data, where each point is represented by coordinates in one or more spatial
+    dimensions (e.g., x, y, z) and may have additional columns for associated
+    attributes.
 
     Lifecycle: experimental
     """
 
     __slots__ = ()
-    soma_type: Final = "SOMAPointCloud"  # type: ignore[misc]
+    soma_type: Final = "SOMAPointCloudDataFrame"  # type: ignore[misc]
 
     @classmethod
     @abc.abstractmethod
@@ -60,7 +62,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new ``PointCloud`` at the given URI.
+        """Creates a new ``PointCloudDataFrame`` at the given URI.
 
         The schema of the created point cloud  will include a column named
         ``soma_joinid`` of type ``pyarrow.int64``, with negative values disallowed, and
