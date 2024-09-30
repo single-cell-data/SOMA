@@ -16,7 +16,9 @@ from . import spatial
 _MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatial.MultiscaleImage)
 """A particular implementation of a multiscale image."""
 
-_PointCloud = TypeVar("_PointCloud", bound=spatial.PointCloud)
+_PointCloudDataFrame = TypeVar(
+    "_PointCloudDataFrame", bound=spatial.PointCloudDataFrame
+)
 """A particular implementation of a point cloud."""
 
 _GeometryDataFrame = TypeVar("_GeometryDataFrame", bound=spatial.GeometryDataFrame)
@@ -28,7 +30,7 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 
 class Scene(
     collection.BaseCollection[_RootSO],
-    Generic[_MultiscaleImage, _PointCloud, _GeometryDataFrame, _RootSO],
+    Generic[_MultiscaleImage, _PointCloudDataFrame, _GeometryDataFrame, _RootSO],
 ):
     """A collection subtype representing spatial assets that can all be stored
     on a single coordinate space.
@@ -45,7 +47,7 @@ class Scene(
     #         ImplBaseCollection[ImplSOMAObject],
     #         somacore.Scene[
     #             ImplMultiscaleImage,
-    #             ImplPointCloud,
+    #             ImplPointCloudDataFrame,
     #             ImplGeometryDataFrame,
     #             ImplSOMAObject,
     #         ],
@@ -61,11 +63,13 @@ class Scene(
     Lifecycle: experimental
     """
 
-    obsl = _mixin.item[collection.Collection[Union[_PointCloud, _GeometryDataFrame]]]()
+    obsl = _mixin.item[
+        collection.Collection[Union[_PointCloudDataFrame, _GeometryDataFrame]]
+    ]()
     """A collection of observation location data.
 
     This collection exists to store any spatial data in the scene that joins on the obs
-    ``soma_joinid``. Each dataframe in ``obsl`` can be either a PointCloud
+    ``soma_joinid``. Each dataframe in ``obsl`` can be either a PointCloudDataFrame
     or a GeometryDataFrame.
 
     Lifecycle: experimental
@@ -73,7 +77,7 @@ class Scene(
 
     varl = _mixin.item[
         collection.Collection[
-            collection.Collection[Union[_PointCloud, _GeometryDataFrame]]
+            collection.Collection[Union[_PointCloudDataFrame, _GeometryDataFrame]]
         ]
     ]()
     """A collection of collections of variable location data.
@@ -83,7 +87,7 @@ class Scene(
     collection maps from measurement name to a collection of dataframes.
 
     Each dataframe in a ``varl`` subcollection can be either a GeometryDataFrame or a
-    PointCloud.
+    PointCloudDataFrame.
 
     Lifecycle: experimental
     """
@@ -161,7 +165,7 @@ class Scene(
         """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
-        Parameters are as in :meth:`spatial.PointCloud.create`.
+        Parameters are as in :meth:`spatial.PointCloudDataFrame.create`.
         See :meth:`add_new_collection` for details about child URIs.
 
         Args:
@@ -178,7 +182,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def add_new_point_cloud(
+    def add_new_point_cloud_dataframe(
         self,
         key: str,
         subcollection: Union[str, Sequence[str]],
@@ -190,11 +194,11 @@ class Scene(
         axis_names: Sequence[str] = ("x", "y"),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
-    ) -> _PointCloud:
+    ) -> _PointCloudDataFrame:
         """Adds a point cloud to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
-        Parameters are as in :meth:`spatial.PointCloud.create`.
+        Parameters are as in :meth:`spatial.PointCloudDataFrame.create`.
         See :meth:`add_new_collection` for details about child URIs.
 
         Args:
@@ -204,7 +208,7 @@ class Scene(
                 dataframe is stored in. Defaults to ``'obsl'``.
 
         Returns:
-            The newly created ``PointCloud``, opened for writing.
+            The newly created ``PointCloudDataFrame``, opened for writing.
 
         Lifecycle: experimental
         """
@@ -279,14 +283,14 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def set_transform_to_point_cloud(
+    def set_transform_to_point_cloud_dataframe(
         self,
         key: str,
         transform: coordinates.CoordinateTransform,
         *,
         subcollection: Union[str, Sequence[str]] = "obsl",
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
-    ) -> _PointCloud:
+    ) -> _PointCloudDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
         a point cloud stored in the scene.
 
@@ -295,7 +299,7 @@ class Scene(
         to set a transform for  a point named `transcripts` in the `var/RNA`
         collection::
 
-            scene.set_transformation_for_point_cloud(
+            scene.set_transformation_for_point_cloud_dataframe(
                 'transcripts', transform, subcollection=['var', 'RNA'],
             )
 
@@ -361,7 +365,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transform_from_point_cloud(
+    def get_transform_from_point_cloud_dataframe(
         self, key: str, *, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the requested point cloud to
@@ -425,7 +429,7 @@ class Scene(
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def get_transform_to_point_cloud(
+    def get_transform_to_point_cloud_dataframe(
         self, key: str, *, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
