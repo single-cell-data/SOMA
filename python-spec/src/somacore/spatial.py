@@ -224,7 +224,7 @@ class PointCloud(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+    def coordinate_space(self) -> coordinates.CoordinateSpace:
         """Coordinate space for this point cloud.
 
         Lifecycle: experimental
@@ -470,7 +470,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+    def coordinate_space(self) -> coordinates.CoordinateSpace:
         """Coordinate space for this geometry dataframe.
 
         Lifecycle: experimental
@@ -639,7 +639,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     @abc.abstractmethod
-    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+    def coordinate_space(self) -> coordinates.CoordinateSpace:
         """Coordinate space for this multiscale image.
 
         Lifecycle: experimental
