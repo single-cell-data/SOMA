@@ -159,7 +159,7 @@ class Scene(
         uri: str,
         type: pa.DataType,
         reference_level_shape: Sequence[int],
-        axis_names: Sequence[str] = ("c", "x", "y"),
+        axis_names: Sequence[str] = ("c", "y", "x"),
         axis_types: Sequence[str] = ("channel", "height", "width"),
     ) -> _MultiscaleImage:
         """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
@@ -169,7 +169,7 @@ class Scene(
         See :meth:`add_new_collection` for details about child URIs.
 
         Args:
-            key: The name of the geometry dataframe.
+            key: The name of the multiscale image.
             transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
@@ -202,7 +202,7 @@ class Scene(
         See :meth:`add_new_collection` for details about child URIs.
 
         Args:
-            key: The name of the geometry dataframe.
+            key: The name of the point cloud dataframe.
             transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
