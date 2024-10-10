@@ -39,6 +39,14 @@ def test_coordinate_space():
     assert coord_space[0] == Axis("x", unit="nanometer")
 
 
+def test_coordiante_space_from_axis_names():
+    coord_space = CoordinateSpace.from_axis_names(["alpha", "beta"])
+    assert len(coord_space) == 2
+    assert coord_space.axis_names == ("alpha", "beta")
+    assert coord_space[0] == Axis("alpha", unit=None)
+    assert coord_space[1] == Axis("beta", unit=None)
+
+
 @pytest.mark.parametrize(
     ("input", "expected"),
     [

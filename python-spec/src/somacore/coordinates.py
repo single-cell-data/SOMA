@@ -7,6 +7,7 @@ from typing import Optional, Sequence, Tuple, Union
 import attrs
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import Self
 
 from .types import str_or_seq_length
 from .types import to_string_tuple
@@ -36,6 +37,10 @@ class CoordinateSpace(collections.abc.Sequence[Axis]):
     """
 
     axes: Tuple[Axis, ...] = attrs.field(converter=tuple)
+
+    @classmethod
+    def from_axis_names(cls, axis_names: Sequence[str,]) -> Self:
+        return cls(tuple(Axis(name) for name in axis_names))  # type: ignore[misc]
 
     @axes.validator
     def _validate(self, _, axes: Tuple[Axis, ...]) -> None:
