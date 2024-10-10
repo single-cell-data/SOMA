@@ -2,11 +2,13 @@
 
 import abc
 import collections.abc
-from typing import Optional, Sequence, Tuple, Union
+import itertools
+from typing import Iterable, Optional, Sequence, Tuple, Union
 
 import attrs
 import numpy as np
 import numpy.typing as npt
+from typing_extensions import Self
 
 from .types import str_or_seq_length
 from .types import to_string_tuple
@@ -36,6 +38,10 @@ class CoordinateSpace(collections.abc.Sequence[Axis]):
     """
 
     axes: Tuple[Axis, ...] = attrs.field(converter=tuple)
+
+    @classmethod
+    def from_axis_names(cls, axis_names: Sequence[str,]) -> Self:
+        return cls(tuple(Axis(name) for name in axis_names))  # type: ignore[misc]
 
     @axes.validator
     def _validate(self, _, axes: Tuple[Axis, ...]) -> None:
@@ -94,6 +100,25 @@ class CoordinateTransform(metaclass=abc.ABCMeta):
                 f"Input axes of {type(other).__name__} must match output axes of "
                 f"{type(self).__name__}."
             )
+
+    @abc.abstractmethod
+    def _contents_lines(self) -> Iterable[str]:
+        return
+        yield
+
+    def _my_repr(self) -> Iterable[str]:
+        yield f"{type(self).__name__}"
+        yield f"  input axes: {self._input_axes}"
+        yield f"  output axes: {self._output_axes}"
+
+    def __repr__(self) -> str:
+        content = self._contents_lines
+        lines = (
+            self._my_repr()
+            if content is None
+            else itertools.chain(self._my_repr(), self._contents_lines())
+        )
+        return "<" + "\n".join(lines) + ">"
 
     @abc.abstractmethod
     def __matmul__(self, other: object) -> "CoordinateTransform":
@@ -185,6 +210,10 @@ class AffineTransform(CoordinateTransform):
                 f"Unexpected shape {self._matrix.shape} for the input affine matrix."
             )
 
+    def _contents_lines(self) -> Iterable[str]:
+        yield "  augmented matrix:"
+        yield "    " + str(self._matrix).replace("\n", "\n    ")
+
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
             raise NotImplementedError(
@@ -259,6 +288,9 @@ class ScaleTransform(AffineTransform):
 
         super().__init__(input_axes, output_axes, np.diag(self._scale_factors))
 
+    def _contents_lines(self) -> Iterable[str]:
+        yield f"  scales: {self._scale_factors}"
+
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
             raise NotImplementedError(
@@ -312,6 +344,9 @@ class UniformScaleTransform(ScaleTransform):
         rank = str_or_seq_length(input_axes)
         super().__init__(input_axes, output_axes, rank * [self._scale])
 
+    def _contents_lines(self) -> Iterable[str]:
+        yield f"  scale: {self._scale}"
+
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
             raise NotImplementedError(
@@ -360,6 +395,10 @@ class IdentityTransform(UniformScaleTransform):
         output_axes: Union[str, Sequence[str]],
     ):
         super().__init__(input_axes, output_axes, 1)
+
+    def _contents_lines(self) -> Iterable[str]:
+        return
+        yield
 
     def __matmul__(self, other: object) -> CoordinateTransform:
         if not isinstance(other, CoordinateTransform):
