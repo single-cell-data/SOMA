@@ -81,7 +81,7 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
-                coordinate space.
+                coordinate space the point cloud is defined on.
             index_column_names: A list of column names to use as user-defined index
                 columns (e.g., ``['x', 'y']``). Must include the axis names for all
                 axes in the coordinate space. May include the ``soma_joinid``.
@@ -248,15 +248,6 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
     @property
     @abc.abstractmethod
-    def axis_names(self) -> Tuple[str, ...]:
-        """The names of the axes of the coordinate space the data is defined on.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
     def domain(self) -> Tuple[Tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
@@ -293,7 +284,10 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             options.SOMA_JOINID,
             options.SOMA_GEOMETRY,
         ),
-        axis_names: Sequence[str] = ("x", "y"),
+        coordinate_space: Union[Sequence[str], coordinates.CoordinateSpace] = (
+            "x",
+            "y",
+        ),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
@@ -319,9 +313,8 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 index columns (e.g., ``['cell_type', 'tissue_type']``).
                 All named columns must exist in the schema, and at least one
                 index column name is required.
-            axis_names: An ordered list of axis column names that correspond to the
-                names of the axes of the coordinate space the geometries are defined
-                on.
+            coordinate_space: Either the coordinate space or the axis names for the
+                coordinate space the point cloud is defined on.
             domain: An optional sequence of tuples specifying the domain of each
                 index column. Two tuples must be provided for the ``soma_geometry``
                 column which store the width followed by the height. Each tuple should
@@ -460,15 +453,6 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def index_column_names(self) -> Tuple[str, ...]:
         """The names of the index (dimension) columns.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @property
-    @abc.abstractmethod
-    def axis_names(self) -> Tuple[str, ...]:
-        """The names of the axes of the coordinate space the data is defined on.
 
         Lifecycle: experimental
         """
