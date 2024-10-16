@@ -192,7 +192,7 @@ class Scene(
 
         If the subcollection the point cloud dataframe is inside of is more than one
         layer deep, the input should be provided as a sequence of names. For example,
-        to set the transformation to a geometry dataframe named  "transcripts" in
+        to set the transformation to a point cloud dataframe named  "transcripts" in
         the "var/RNA" collection::
 
             scene.add_point_cloud_dataframe(
