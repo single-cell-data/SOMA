@@ -130,9 +130,9 @@ class Scene(
 
         Args:
             key: The name of the geometry dataframe.
-            transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
+            transform: The coordinate transformation from the scene to the dataframe.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
             kwargs: Additional keyword arugments as specified in
@@ -162,9 +162,9 @@ class Scene(
 
         Args:
             key: The name of the multiscale image.
-            transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
+            transform: The coordinate transformation from the scene to the dataframe.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
             kwargs: Additional keyword arugments as specified in
@@ -204,9 +204,9 @@ class Scene(
 
         Args:
             key: The name of the point cloud dataframe.
-            transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
+            transform: The coordinate transformation from the scene to the dataframe.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
             kwargs: Additional keyword arugments as specified in
