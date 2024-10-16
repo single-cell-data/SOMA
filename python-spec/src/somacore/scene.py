@@ -123,7 +123,7 @@ class Scene(
         the "var/RNA" collection::
 
             scene.add_geometry_dataframe(
-                'cell_boundaries', subcollection=['var', 'RNA'], **kwargs
+                'transcripts', subcollection=['var', 'RNA'], **kwargs
             )
 
         See :meth:`add_new_collection` for details about child URIs.
@@ -196,7 +196,7 @@ class Scene(
         the "var/RNA" collection::
 
             scene.add_point_cloud_dataframe(
-                'cell_boundaries', subcollection=['var', 'RNA'], **kwargs
+                'transcripts', subcollection=['var', 'RNA'], **kwargs
             )
 
 
