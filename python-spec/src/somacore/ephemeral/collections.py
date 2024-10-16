@@ -5,12 +5,10 @@ from typing import (
     NoReturn,
     Optional,
     Sequence,
-    Tuple,
     TypeVar,
     Union,
 )
 
-import pyarrow as pa
 from typing_extensions import Literal, Self
 
 from .. import base
@@ -167,51 +165,14 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
     def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
         raise NotImplementedError()
 
-    def add_geometry_dataframe(
-        self,
-        key: str,
-        subcollection: Union[str, Sequence[str]],
-        transform: Optional[coordinates.CoordinateTransform],
-        *,
-        uri: str,
-        schema: pa.Schema,
-        index_column_names: Sequence[str] = (
-            options.SOMA_JOINID,
-            options.SOMA_GEOMETRY,
-        ),
-        axis_names: Sequence[str] = ("x", "y"),
-        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
-    ) -> spatial.GeometryDataFrame:
+    def add_new_geometry_dataframe(self, *args, **kwargs) -> spatial.GeometryDataFrame:
         raise NotImplementedError()
 
-    def add_multiscale_image(
-        self,
-        key: str,
-        subcollection: Union[str, Sequence[str]],
-        transform: Optional[coordinates.CoordinateTransform],
-        *,
-        uri: str,
-        type: pa.DataType,
-        reference_level_shape: Sequence[int],
-        axis_names: Sequence[str] = ("c", "x", "y"),
-        axis_types: Sequence[str] = ("channel", "height", "width"),
-    ) -> spatial.MultiscaleImage:
+    def add_new_multiscale_image(self, *args, **kwargs) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
     def add_new_point_cloud_dataframe(
-        self,
-        key: str,
-        subcollection: Union[str, Sequence[str]],
-        transform: Optional[coordinates.CoordinateTransform],
-        *,
-        uri: Optional[str] = None,
-        schema: pa.Schema,
-        index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        axis_names: Sequence[str] = ("x", "y"),
-        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        self, *args, **kwargs
     ) -> spatial.PointCloudDataFrame:
         raise NotImplementedError()
 
