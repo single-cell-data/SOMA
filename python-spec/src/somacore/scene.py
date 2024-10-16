@@ -9,7 +9,6 @@ from . import _mixin
 from . import base
 from . import collection
 from . import coordinates
-from . import options
 from . import spatial
 
 _MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatial.MultiscaleImage)
@@ -113,7 +112,6 @@ class Scene(
         transform: Optional[coordinates.CoordinateTransform],
         *,
         uri: Optional[str] = ...,
-        platform_config: Optional[options.PlatformConfig] = None,
         **kwargs,
     ) -> _GeometryDataFrame:
         """Adds a ``GeometryDataFrame`` to the scene and sets a coordinate transform
@@ -137,8 +135,6 @@ class Scene(
                 dataframe is stored in. Defaults to ``'obsl'``.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
-            platform_config: Platform-specific configuration options used
-                when creating the child.
             kwargs: Additional keyword arugments as specified in
                 :meth:`spatial.GeometryDataFrame.create`.
 
@@ -157,7 +153,6 @@ class Scene(
         transform: Optional[coordinates.CoordinateTransform],
         *,
         uri: Optional[str] = ...,
-        platform_config: Optional[options.PlatformConfig] = None,
         **kwargs,
     ) -> _MultiscaleImage:
         """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
@@ -172,8 +167,6 @@ class Scene(
                 dataframe is stored in. Defaults to ``'obsl'``.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
-            platform_config: Platform-specific configuration options used
-                when creating the child.
             kwargs: Additional keyword arugments as specified in
                 :meth:`spatial.MultiscaleImage.create`.
 
@@ -192,7 +185,6 @@ class Scene(
         transform: Optional[coordinates.CoordinateTransform],
         *,
         uri: Optional[str] = ...,
-        platform_config: Optional[options.PlatformConfig] = None,
         **kwargs,
     ) -> _PointCloudDataFrame:
         """Adds a point cloud to the scene and sets a coordinate transform
@@ -217,8 +209,6 @@ class Scene(
                 dataframe is stored in. Defaults to ``'obsl'``.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
-            platform_config: Platform-specific configuration options used
-                when creating the child.
             kwargs: Additional keyword arugments as specified in
                 :meth:`spatial.PointCloudDataFrame.create`.
 
