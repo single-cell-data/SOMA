@@ -109,20 +109,20 @@ class Scene(
         self,
         key: str,
         subcollection: Union[str, Sequence[str]],
-        transform: Optional[coordinates.CoordinateTransform],
         *,
+        transform: Optional[coordinates.CoordinateTransform],
         uri: Optional[str] = ...,
         **kwargs,
     ) -> _GeometryDataFrame:
         """Adds a ``GeometryDataFrame`` to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
-        If the subcollection the geometry dataframe is inside of is more than one
-        layer deep, the input should be provided as a sequence of names. For example,
-        to set the transformation to a geometry dataframe named  "transcripts" in
-        the "var/RNA" collection::
+        If the subcollection the geometry dataframe will be created inside of is more
+        than one layer deep, the input should be provided as a sequence of names. For
+        example, to add a new geometry dataframe named  "transcripts" in the "var/RNA"
+        collection::
 
-            scene.add_geometry_dataframe(
+            scene.add_new_geometry_dataframe(
                 'transcripts', subcollection=['var', 'RNA'], **kwargs
             )
 
@@ -150,8 +150,8 @@ class Scene(
         self,
         key: str,
         subcollection: Union[str, Sequence[str]],
-        transform: Optional[coordinates.CoordinateTransform],
         *,
+        transform: Optional[coordinates.CoordinateTransform],
         uri: Optional[str] = ...,
         **kwargs,
     ) -> _MultiscaleImage:
@@ -182,20 +182,20 @@ class Scene(
         self,
         key: str,
         subcollection: Union[str, Sequence[str]],
-        transform: Optional[coordinates.CoordinateTransform],
         *,
+        transform: Optional[coordinates.CoordinateTransform],
         uri: Optional[str] = ...,
         **kwargs,
     ) -> _PointCloudDataFrame:
         """Adds a point cloud to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
-        If the subcollection the point cloud dataframe is inside of is more than one
-        layer deep, the input should be provided as a sequence of names. For example,
-        to set the transformation to a point cloud dataframe named  "transcripts" in
-        the "var/RNA" collection::
+        If the subcollection the point cloud dataframe will be added to is more than
+        one layer deep, the input should be provided as a sequence of names. For
+        example, to add a new point cloud dataframe named  "transcripts" to the
+        "var/RNA" collection::
 
-            scene.add_point_cloud_dataframe(
+            scene.add_new_point_cloud_dataframe(
                 'transcripts', subcollection=['var', 'RNA'], **kwargs
             )
 
