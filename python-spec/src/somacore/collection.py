@@ -1,5 +1,14 @@
 import abc
-from typing import Any, MutableMapping, Optional, Sequence, Type, TypeVar, overload
+from typing import (
+    Any,
+    MutableMapping,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    overload,
+)
 
 import pyarrow as pa
 from typing_extensions import Final, Self
@@ -145,6 +154,7 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         uri: Optional[str] = None,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> data.DataFrame:
         """Creates a new DataFrame as a child of this collection.

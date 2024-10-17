@@ -21,6 +21,7 @@ import numpy as np
 import numpy.typing as npt
 import pandas as pd
 import pyarrow as pa
+import pyarrow.compute as pacomp
 from scipy import sparse
 from typing_extensions import Literal, Protocol, Self, TypedDict
 
@@ -266,6 +267,48 @@ class ExperimentAxisQuery(Generic[_Exp]):
         Lifecycle: maturing
         """
         return self._axism_inner(_Axis.VAR, layer)
+
+    def obs_scene_ids(self) -> pa.Array:
+        """Returns a pyarrow array with scene ids that contain obs from this
+        query.
+
+        Lifecycle: experimental
+        """
+        try:
+            obs_scene = self.experiment.obs_spatial_presence
+        except KeyError as ke:
+            raise KeyError("Missing obs_scene") from ke
+        if not isinstance(obs_scene, data.DataFrame):
+            raise TypeError("obs_scene must be a dataframe.")
+
+        full_table = obs_scene.read(
+            coords=((_Axis.OBS.getattr_from(self._joinids), slice(None))),
+            result_order=options.ResultOrder.COLUMN_MAJOR,
+            value_filter="data != 0",
+        ).concat()
+
+        return pacomp.unique(full_table["scene_id"])
+
+    def var_scene_ids(self) -> pa.Array:
+        """Return a pyarrow array with scene ids that contain var from this
+        query.
+
+        Lifecycle: experimental
+        """
+        try:
+            var_scene = self._ms.var_spatial_presence
+        except KeyError as ke:
+            raise KeyError("Missing var_scene") from ke
+        if not isinstance(var_scene, data.DataFrame):
+            raise TypeError("var_scene must be a dataframe.")
+
+        full_table = var_scene.read(
+            coords=((_Axis.OBS.getattr_from(self._joinids), slice(None))),
+            result_order=options.ResultOrder.COLUMN_MAJOR,
+            value_filter="data != 0",
+        ).concat()
+
+        return pacomp.unique(full_table["scene_id"])
 
     def to_anndata(
         self,
@@ -592,8 +635,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
         axis: "_Axis",
         layer: str,
     ) -> np.ndarray:
-        axism = axis.getitem_from(self._ms, suf="m")
-        table = axism[layer].read().tables().concat()
+        table = self._axism_inner(axis, layer).tables().concat()
 
         n_row = len(axis.getattr_from(self._joinids))
         n_col = len(table["soma_dim_1"].unique())
@@ -826,6 +868,9 @@ class _Experimentish(Protocol):
 
     @property
     def context(self) -> Optional[base_types.ContextBase]: ...
+
+    @property
+    def obs_spatial_presence(self) -> data.DataFrame: ...
 
 
 class _HasObsVar(Protocol[_T_co]):

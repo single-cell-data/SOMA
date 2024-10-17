@@ -8,16 +8,21 @@ from . import collection
 from . import data
 from . import measurement
 from . import query
+from . import scene
 
 _DF = TypeVar("_DF", bound=data.DataFrame)
 """An implementation of a DataFrame."""
 _MeasColl = TypeVar("_MeasColl", bound=collection.Collection[measurement.Measurement])
 """An implementation of a collection of Measurements."""
+_SceneColl = TypeVar("_SceneColl", bound=collection.Collection[scene.Scene])
+"""An implemenation of a collection of spatial data."""
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SOMA object type of the implementation."""
 
 
-class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _RootSO]):
+class Experiment(
+    collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _SceneColl, _RootSO]
+):
     """A collection subtype representing an annotated 2D matrix of measurements.
 
     In single cell biology, this can represent multiple modes of measurement
@@ -38,6 +43,7 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
     #         somacore.Experiment[
     #             ImplDataFrame,    # _DF
     #             ImplMeasurement,  # _MeasColl
+    #             ImplScene,        # _SceneColl
     #             ImplSOMAObject,   # _RootSO
     #         ],
     #     ):
@@ -56,6 +62,20 @@ class Experiment(collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _Ro
 
     ms = _mixin.item[_MeasColl]()
     """A collection of named measurements."""
+
+    spatial = _mixin.item[_SceneColl]()  # TODO: Discuss the name of this element.
+    """A collection of named spatial scenes."""
+
+    obs_spatial_presence = _mixin.item[_DF]()
+    """A dataframe that stores the presence of obs in the spatial scenes.
+
+    This provides a join table for the obs ``soma_joinid`` and the scene names used in
+    the ``spatial`` collection. This dataframe must contain index columns ``soma_joinid``
+    and ``scene_id``. The ``scene_id`` column must have type ``string``. The
+    dataframe must contain a ``boolean`` column ``soma_data``. The values of ``soma_data`` are
+    ``True`` if the obs ``soma_joinid`` is contained in the scene
+    ``scene_id`` and ``False`` otherwise.
+    """
 
     def axis_query(
         self,

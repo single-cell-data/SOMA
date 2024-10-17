@@ -7,7 +7,17 @@ their own internal type-checking purposes.
 
 import sys
 from concurrent import futures
-from typing import TYPE_CHECKING, Any, NoReturn, Optional, Sequence, Type, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    NoReturn,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from typing_extensions import Protocol, TypeGuard
 
@@ -22,6 +32,25 @@ def is_nonstringy_sequence(it: object) -> TypeGuard[Sequence]:
     return not isinstance(it, (str, bytes)) and isinstance(it, Sequence)
 
 
+def to_string_tuple(obj: Union[str, Sequence[str]]) -> Tuple[str, ...]:
+    """Returns a tuple of string values.
+
+    If the input is a string, it is returned as a tuple with the string as its
+    only item. If it is otherwise a sequence of strings, the sequence is converted
+    to a tuple.
+    """
+    return (obj,) if isinstance(obj, str) else tuple(obj)
+
+
+def str_or_seq_length(obj: Union[str, Sequence[str]]) -> int:
+    """Returns the number of str values
+
+    If input is a string, returns 1. Otherwise, returns the number of strings in the
+    sequence.
+    """
+    return 1 if isinstance(obj, str) else len(obj)
+
+
 _T = TypeVar("_T")
 _T_co = TypeVar("_T_co", covariant=True)
 
@@ -29,7 +58,7 @@ _T_co = TypeVar("_T_co", covariant=True)
 class Slice(Protocol[_T_co]):
     """A slice which stores a certain type of object.
 
-    This protocol describes the built in ``slice`` type, with a hint to callers
+    This protocol describes the built-in ``slice`` type, with a hint to callers
     about what type they should put *inside* the slice.  It is for type
     annotations only and is not runtime-checkable (i.e., you can't do
     ``isinstance(thing, Slice)``), because ``range`` objects also have
@@ -68,7 +97,7 @@ class Slice(Protocol[_T_co]):
             # return get_original_bases(_T_co)
 
     if sys.version_info < (3, 10) and not TYPE_CHECKING:
-        # Python 3.9 and below have a bug where any Protocol with an @property
+        # Python 3.9 and below have a bug where any Protocol with a @property
         # was always regarded as runtime-checkable.
         @classmethod
         def __subclasscheck__(cls, __subclass: type) -> NoReturn:
