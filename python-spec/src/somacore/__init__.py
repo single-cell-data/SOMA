@@ -39,7 +39,6 @@ from .query import AxisQuery
 from .query import ExperimentAxisQuery
 from .scene import Scene
 from .spatial import GeometryDataFrame
-from .spatial import ImageProperties
 from .spatial import MultiscaleImage
 from .spatial import PointCloudDataFrame
 from .spatial import SpatialRead
