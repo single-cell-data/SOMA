@@ -4,9 +4,7 @@ from typing import (
     Iterator,
     NoReturn,
     Optional,
-    Sequence,
     TypeVar,
-    Union,
 )
 
 from typing_extensions import Literal, Self
@@ -177,70 +175,47 @@ class Scene(  # type: ignore[misc]   # __eq__ false positive
         raise NotImplementedError()
 
     def set_transform_to_geometry_dataframe(
-        self,
-        key: str,
-        transform: coordinates.CoordinateTransform,
-        *,
-        subcollection: Union[str, Sequence[str]] = "obsl",
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        self, *args, **kwargs
     ) -> spatial.GeometryDataFrame:
         raise NotImplementedError()
 
     def set_transform_to_multiscale_image(
-        self,
-        key: str,
-        transform: coordinates.CoordinateTransform,
-        *,
-        subcollection: Union[str, Sequence[str]] = "img",
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        self, *args, **kwargs
     ) -> spatial.MultiscaleImage:
         raise NotImplementedError()
 
     def set_transform_to_point_cloud_dataframe(
-        self,
-        key: str,
-        transform: coordinates.CoordinateTransform,
-        *,
-        subcollection: Union[str, Sequence[str]] = "obsl",
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        self, *args, **kwargs
     ) -> spatial.PointCloudDataFrame:
         raise NotImplementedError()
 
     def get_transform_from_geometry_dataframe(
-        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+        self, *args, **kwargs
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
     def get_transform_from_multiscale_image(
-        self,
-        key: str,
-        *,
-        subcollection: str = "img",
-        level: Optional[Union[str, int]] = None,
+        self, *args, **kwargs
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
     def get_transform_from_point_cloud_dataframe(
-        self, key: str, *, subcollection: str = "obsl"
+        self, *args, **kwargs
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
     def get_transform_to_geometry_dataframe(
-        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+        self, *args, **kwargs
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
     def get_transform_to_multiscale_image(
-        self,
-        key: str,
-        *,
-        subcollection: str = "img",
-        level: Optional[Union[str, int]] = None,
+        self, *args, **kwargs
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
     def get_transform_to_point_cloud_dataframe(
-        self, key: str, *, subcollection: str = "obsl"
+        self, *args, **kwargs
     ) -> coordinates.CoordinateTransform:
         raise NotImplementedError()
 
