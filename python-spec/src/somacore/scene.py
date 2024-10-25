@@ -131,7 +131,7 @@ class Scene(
         Args:
             key: The name of the geometry dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
-                dataframe is stored in. Defaults to ``'obsl'``.
+                dataframe is stored in.
             transform: The coordinate transformation from the scene to the dataframe.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
@@ -163,7 +163,7 @@ class Scene(
         Args:
             key: The name of the multiscale image.
             subcollection: The name, or sequence of names, of the subcollection the
-                dataframe is stored in. Defaults to ``'obsl'``.
+                dataframe is stored in.
             transform: The coordinate transformation from the scene to the dataframe.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
@@ -205,7 +205,7 @@ class Scene(
         Args:
             key: The name of the point cloud dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
-                dataframe is stored in. Defaults to ``'obsl'``.
+                dataframe is stored in.
             transform: The coordinate transformation from the scene to the dataframe.
             uri: If provided, overrides the default URI what would be used to create
                 this object. This may be aboslution or relative.
@@ -223,9 +223,9 @@ class Scene(
     def set_transform_to_geometry_dataframe(
         self,
         key: str,
-        transform: coordinates.CoordinateTransform,
-        *,
         subcollection: Union[str, Sequence[str]] = "obsl",
+        *,
+        transform: coordinates.CoordinateTransform,
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
     ) -> _GeometryDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
@@ -259,9 +259,9 @@ class Scene(
     def set_transform_to_multiscale_image(
         self,
         key: str,
-        transform: coordinates.CoordinateTransform,
-        *,
         subcollection: Union[str, Sequence[str]] = "img",
+        *,
+        transform: coordinates.CoordinateTransform,
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
     ) -> _MultiscaleImage:
         """Adds the coordinate transform for the scene coordinate space to
@@ -273,10 +273,10 @@ class Scene(
 
         Args:
             key: The name of the multiscale image.
-            transform: The coordinate transformation from the scene to the reference
-                level of the multiscale image.
             subcollection: The name, or sequence of names, of the subcollection the
                 image is stored in. Defaults to ``'img'``.
+            transform: The coordinate transformation from the scene to the reference
+                level of the multiscale image.
             coordinate_space: Optional coordinate space for the image. This will
                 replace the existing coordinate space of the multiscale image.
 
@@ -291,9 +291,9 @@ class Scene(
     def set_transform_to_point_cloud_dataframe(
         self,
         key: str,
-        transform: coordinates.CoordinateTransform,
-        *,
         subcollection: Union[str, Sequence[str]] = "obsl",
+        *,
+        transform: coordinates.CoordinateTransform,
         coordinate_space: Optional[coordinates.CoordinateSpace] = None,
     ) -> _PointCloudDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
@@ -310,9 +310,9 @@ class Scene(
 
         Args:
             key: The name of the point cloud.
-            transform: The coordinate transformation from the scene to the point cloud.
             subcollection: The name, or sequence of names, of the subcollection the
                 point cloud is stored in. Defaults to ``'obsl'``.
+            transform: The coordinate transformation from the scene to the point cloud.
             coordinate_space: Optional coordinate space for the point cloud. This will
                 replace the existing coordinate space of the point cloud. Defaults to
                 ``None``.
@@ -326,7 +326,7 @@ class Scene(
 
     @abc.abstractmethod
     def get_transform_from_geometry_dataframe(
-        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+        self, key: str, subcollection: Union[str, Sequence[str]] = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the requested geometry dataframe
         to the scene.
@@ -347,8 +347,8 @@ class Scene(
     def get_transform_from_multiscale_image(
         self,
         key: str,
-        *,
         subcollection: str = "img",
+        *,
         level: Optional[Union[str, int]] = None,
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the requested multiscale image to
@@ -371,7 +371,7 @@ class Scene(
 
     @abc.abstractmethod
     def get_transform_from_point_cloud_dataframe(
-        self, key: str, *, subcollection: str = "obsl"
+        self, key: str, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the requested point cloud to
         the scene.
@@ -390,7 +390,7 @@ class Scene(
 
     @abc.abstractmethod
     def get_transform_to_geometry_dataframe(
-        self, key: str, *, subcollection: Union[str, Sequence[str]] = "obsl"
+        self, key: str, subcollection: Union[str, Sequence[str]] = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
         geometery dataframe.
@@ -411,8 +411,8 @@ class Scene(
     def get_transform_to_multiscale_image(
         self,
         key: str,
-        *,
         subcollection: str = "img",
+        *,
         level: Optional[Union[str, int]] = None,
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
@@ -435,7 +435,7 @@ class Scene(
 
     @abc.abstractmethod
     def get_transform_to_point_cloud_dataframe(
-        self, key: str, *, subcollection: str = "obsl"
+        self, key: str, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
         point cloud.
