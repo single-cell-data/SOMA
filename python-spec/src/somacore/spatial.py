@@ -501,6 +501,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     match the expected following properties:
     * number of channels
     * axis order
+    * type
 
     Lifecycle: experimental
     """
@@ -528,14 +529,17 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         uri: str,
         *,
         type: pa.DataType,
-        shape: Sequence[int],
+        level_shape: Sequence[int],
+        level_key: str = "level0",
+        level_uri: Optional[str] = None,
         coordinate_space: Union[Sequence[str], coordinates.CoordinateSpace] = (
             "x",
             "y",
         ),
-        axis_types: Sequence[str] = ("channel", "height", "width"),
+        data_axis_order: Optional[Sequence[str]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
+        has_channel_axis: bool = True,
     ) -> Self:
         """Creates a new MultiscaleImage with one initial level.
 
@@ -543,14 +547,22 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
             uri: The URI where the collection will be created.
             type: The Arrow type to store the image data in the array.
                 If the type is unsupported, an error will be raised.
-            shape: The shape of the multiscale image for ``level=0``. Must include the
-                channel dimension if there is one.
-            axis_types: The types of the axes of the image. Must be the same length as
-                ``shape``. Valid types are: ``channel``, ``height``, ``width``,
-                and ``depth``.
+            level_shape: The shape of the multiscale image for ``level=0``. Must
+                include the channel dimension if there is one.
+            level_key: The name for the ``level=0`` image. Defaults to ``level0``.
+            level_uri: The URI for the ``level=0`` image. If the URI is an existing
+                SOMADenseNDArray it must match have the shape provided by
+                ``level_shape`` and type specified in ``type. If set to ``None``, the
+                ``level_key`` will be used to construct a default child URI. For more
+                on URIs see :meth:`collection.Collection.add_new_collction`.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the ``level=0`` image is defined on. This does not
                 include the channel dimension, only spatial dimensions.
+            data_axis_order: The order of the axes as stored on disk. Use
+                ``soma_channel`` to specify the location of a channel axis. If no
+                axis is provided, this defaults to the channel axis followed by the
+                coordinate space axes in reverse order (e.g.
+                ``("soma_channel", "y", "x")`` if ``coordinate_space=("x", "y")``).
 
         Returns:
             The newly created collection, opened for writing.
@@ -589,6 +601,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
+        data_axis_order: Optional[Sequence[str]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[pa.Tensor]":
         """Reads a user-defined region of space into a :class:`SpatialRead` with data
@@ -613,8 +626,12 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
             region_coord_space: An optional coordinate space for the region being read.
                 The axis names must match the input axis names of the transform.
                 Defaults to ``None``, coordinate space will be inferred from transform.
-            result_order: the order to return results, specified as a
-                :class:`~options.ResultOrder` or its string value.
+            data_axis_order: The order to return the data axes in. Use ``soma_channel``
+                to specify the location of the channel coordinate.
+            result_order: The order data to return results, specified as a
+                :class:`~options.ResultOrder` or its string value. This is the result
+                order the data is read from disk. It may be permuted if
+                ``data_axis_order`` is not the default order.
 
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
