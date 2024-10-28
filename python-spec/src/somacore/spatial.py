@@ -589,6 +589,37 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         """
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def set(
+        self,
+        key: str,
+        value: data.DenseNDArray,
+        *,
+        use_relative_uri: Optional[bool] = None,
+    ):
+        """Sets a new level in the multi-scale image to be an existing SOMA
+        :class:`data.DenseNDArray`.
+
+        Args:
+            key: The string key to set.
+            value: The SOMA object to insert into the collection.
+            use_relative_uri: Determines whether to store the collection
+                entry with a relative URI (provided the storage engine
+                supports it).
+                If ``None`` (the default), will automatically determine whether
+                to use an absolute or relative URI based on their relative
+                location.
+                If ``True``, will always use a relative URI. If the new child
+                does not share a relative URI base, or use of relative URIs
+                is not possible at all, the collection should raise an error.
+                If ``False``, will always use an absolute URI.
+
+        Returns: ``self``, to enable method chaining.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
     # Data operations
 
     @abc.abstractmethod
