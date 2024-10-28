@@ -5,11 +5,8 @@ but are intended to be used by SOMA implementations for annotations and
 their own internal type-checking purposes.
 """
 
-import sys
 from concurrent import futures
 from typing import (
-    TYPE_CHECKING,
-    NoReturn,
     Optional,
     Sequence,
     Tuple,
@@ -84,13 +81,6 @@ class Slice(Protocol[_T_co]):
 
     @property
     def step(self) -> Optional[_T_co]: ...
-
-    if sys.version_info < (3, 10) and not TYPE_CHECKING:
-        # Python 3.9 and below have a bug where any Protocol with a @property
-        # was always regarded as runtime-checkable.
-        @classmethod
-        def __subclasscheck__(cls, __subclass: type) -> NoReturn:
-            raise TypeError("Slice is not a runtime-checkable protocol")
 
 
 def is_slice_of(__obj: object, __typ: Type[_T]) -> TypeGuard[Slice[_T]]:
