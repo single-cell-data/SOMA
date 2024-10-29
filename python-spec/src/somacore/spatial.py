@@ -258,6 +258,12 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
+    @property
+    @abc.abstractmethod
+    def data_axis_order(self) -> Tuple[str, ...]:
+        """Returns the data axis order of the image data."""
+        raise NotImplementedError()
+
 
 class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     """A specialized SOMA object for storing complex geometries with spatial indexing.
@@ -537,9 +543,9 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
             "y",
         ),
         data_axis_order: Optional[Sequence[str]] = None,
+        has_channel_axis: bool = True,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
-        has_channel_axis: bool = True,
     ) -> Self:
         """Creates a new MultiscaleImage with one initial level.
 
@@ -578,7 +584,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         *,
         uri: Optional[str] = None,
         shape: Sequence[int],
-    ) -> data.DenseNDArray:
+    ) -> _DenseND:
         """Add a new level in the multi-scale image.
 
         Parameters are as in :meth:`data.DenseNDArray.create`. The provided shape will
@@ -593,10 +599,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     def set(
         self,
         key: str,
-        value: data.DenseNDArray,
+        value: _DenseND,
         *,
         use_relative_uri: Optional[bool] = None,
-    ):
+    ) -> Self:
         """Sets a new level in the multi-scale image to be an existing SOMA
         :class:`data.DenseNDArray`.
 
@@ -690,6 +696,15 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         """
         raise NotImplementedError()
 
+    @property
+    @abc.abstractmethod
+    def data_axis_order(self) -> Tuple[str, ...]:
+        """The order of the axes for the images.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
     @abc.abstractmethod
     def get_transform_from_level(
         self, level: Union[int, str]
@@ -713,6 +728,15 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     @abc.abstractmethod
+    def has_channel_axis(self) -> bool:
+        """Returns if the images have an explicit channel axis.
+
+        Lifecycle: experimental.
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
     def level_count(self) -> int:
         """The number of image levels stored in the MultiscaleImage.
 
@@ -722,7 +746,16 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @abc.abstractmethod
     def level_shape(self, level: Union[int, str]) -> Tuple[int, ...]:
-        """The properties of an image at the specified level.
+        """The shape of the image at the specified level.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def nchannels(self) -> int:
+        """The number of channels.
 
         Lifecycle: experimental
         """
