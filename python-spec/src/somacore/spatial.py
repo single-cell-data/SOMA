@@ -258,12 +258,6 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         """
         raise NotImplementedError()
 
-    @property
-    @abc.abstractmethod
-    def data_axis_order(self) -> Tuple[str, ...]:
-        """Returns the data axis order of the image data."""
-        raise NotImplementedError()
-
 
 class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     """A specialized SOMA object for storing complex geometries with spatial indexing.
