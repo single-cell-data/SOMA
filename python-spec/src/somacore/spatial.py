@@ -14,7 +14,7 @@ from typing import (
 )
 
 import pyarrow as pa
-from typing_extensions import Final, Protocol, Self
+from typing_extensions import Final, Self
 
 from . import base
 from . import coordinates
@@ -501,6 +501,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     match the expected following properties:
     * number of channels
     * axis order
+    * type
 
     Lifecycle: experimental
     """
@@ -528,23 +529,40 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         uri: str,
         *,
         type: pa.DataType,
-        reference_level_shape: Sequence[int],
-        axis_names: Sequence[str] = ("c", "y", "x"),
-        axis_types: Sequence[str] = ("channel", "height", "width"),
+        level_shape: Sequence[int],
+        level_key: str = "level0",
+        level_uri: Optional[str] = None,
+        coordinate_space: Union[Sequence[str], coordinates.CoordinateSpace] = (
+            "x",
+            "y",
+        ),
+        data_axis_order: Optional[Sequence[str]] = None,
+        has_channel_axis: bool = True,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new collection of this type at the given URI.
+        """Creates a new MultiscaleImage with one initial level.
 
         Args:
             uri: The URI where the collection will be created.
-            reference_level_shape: The shape of the reference level for the multiscale
-                image. In most cases, this corresponds to the size of the image
-                at ``level=0``.
-            axis_names: The names of the axes of the image.
-            axis_types: The types of the axes of the image. Must be the same length as
-                ``axis_names``. Valid types are: ``channel``, ``height``, ``width``,
-                and ``depth``.
+            type: The Arrow type to store the image data in the array.
+                If the type is unsupported, an error will be raised.
+            level_shape: The shape of the multiscale image for ``level=0``. Must
+                include the channel dimension if there is one.
+            level_key: The name for the ``level=0`` image. Defaults to ``level0``.
+            level_uri: The URI for the ``level=0`` image. If the URI is an existing
+                SOMADenseNDArray it must match have the shape provided by
+                ``level_shape`` and type specified in ``type. If set to ``None``, the
+                ``level_key`` will be used to construct a default child URI. For more
+                on URIs see :meth:`collection.Collection.add_new_collction`.
+            coordinate_space: Either the coordinate space or the axis names for the
+                coordinate space the ``level=0`` image is defined on. This does not
+                include the channel dimension, only spatial dimensions.
+            data_axis_order: The order of the axes as stored on disk. Use
+                ``soma_channel`` to specify the location of a channel axis. If no
+                axis is provided, this defaults to the channel axis followed by the
+                coordinate space axes in reverse order (e.g.
+                ``("soma_channel", "y", "x")`` if ``coordinate_space=("x", "y")``).
 
         Returns:
             The newly created collection, opened for writing.
@@ -560,12 +578,43 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         *,
         uri: Optional[str] = None,
         shape: Sequence[int],
-    ) -> data.DenseNDArray:
+    ) -> _DenseND:
         """Add a new level in the multi-scale image.
 
         Parameters are as in :meth:`data.DenseNDArray.create`. The provided shape will
         be used to compute the scale between images and must correspond to the image
-        size for the entire image.
+        size for the entire image. The image must be smaller than the ``level=0`` image.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def set(
+        self,
+        key: str,
+        value: _DenseND,
+        *,
+        use_relative_uri: Optional[bool] = None,
+    ) -> Self:
+        """Sets a new level in the multi-scale image to be an existing SOMA
+        :class:`data.DenseNDArray`.
+
+        Args:
+            key: The string key to set.
+            value: The SOMA object to insert into the collection.
+            use_relative_uri: Determines whether to store the collection
+                entry with a relative URI (provided the storage engine
+                supports it).
+                If ``None`` (the default), will automatically determine whether
+                to use an absolute or relative URI based on their relative
+                location.
+                If ``True``, will always use a relative URI. If the new child
+                does not share a relative URI base, or use of relative URIs
+                is not possible at all, the collection should raise an error.
+                If ``False``, will always use an absolute URI.
+
+        Returns: ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -583,6 +632,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         region_transform: Optional[coordinates.CoordinateTransform] = None,
         region_coord_space: Optional[coordinates.CoordinateSpace] = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
+        data_axis_order: Optional[Sequence[str]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
     ) -> "SpatialRead[pa.Tensor]":
         """Reads a user-defined region of space into a :class:`SpatialRead` with data
@@ -607,8 +657,12 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
             region_coord_space: An optional coordinate space for the region being read.
                 The axis names must match the input axis names of the transform.
                 Defaults to ``None``, coordinate space will be inferred from transform.
-            result_order: the order to return results, specified as a
-                :class:`~options.ResultOrder` or its string value.
+            data_axis_order: The order to return the data axes in. Use ``soma_channel``
+                to specify the location of the channel coordinate.
+            result_order: The order data to return results, specified as a
+                :class:`~options.ResultOrder` or its string value. This is the result
+                order the data is read from disk. It may be permuted if
+                ``data_axis_order`` is not the default order.
 
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
@@ -617,15 +671,6 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         raise NotImplementedError()
 
     # Metadata operations
-
-    @property
-    @abc.abstractmethod
-    def axis_names(self) -> Tuple[str, ...]:
-        """The name of the image axes.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
 
     @property
     @abc.abstractmethod
@@ -640,6 +685,15 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
     @abc.abstractmethod
     def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
         """Coordinate space for this multiscale image.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
+
+    @property
+    @abc.abstractmethod
+    def data_axis_order(self) -> Tuple[str, ...]:
+        """The order of the axes for the images.
 
         Lifecycle: experimental
         """
@@ -668,10 +722,10 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     @abc.abstractmethod
-    def image_type(self) -> str:
-        """The order of the axes as stored in the data model.
+    def has_channel_axis(self) -> bool:
+        """Returns if the images have an explicit channel axis.
 
-        Lifecycle: experimental
+        Lifecycle: experimental.
         """
         raise NotImplementedError()
 
@@ -685,19 +739,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def level_properties(self, level: Union[int, str]) -> "ImageProperties":
-        """The properties of an image at the specified level.
-
-        Lifecycle: experimental
-        """
-        raise NotImplementedError()
-
-    @property
-    def reference_level(self) -> Optional[int]:
-        """The index of image level that is used as a reference level.
-
-        This will return ``None`` if no current image level matches the size of the
-        reference level.
+    def level_shape(self, level: Union[int, str]) -> Tuple[int, ...]:
+        """The shape of the image at the specified level.
 
         Lifecycle: experimental
         """
@@ -705,33 +748,12 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
 
     @property
     @abc.abstractmethod
-    def reference_level_properties(self) -> "ImageProperties":
-        """The image properties of the reference level.
+    def nchannels(self) -> int:
+        """The number of channels.
 
         Lifecycle: experimental
         """
         raise NotImplementedError()
-
-
-class ImageProperties(Protocol):
-    """Class requirements for level properties of images.
-
-    Lifecycle: experimental
-    """
-
-    @property
-    def name(self) -> str:
-        """The key for the image.
-
-        Lifecycle: experimental
-        """
-
-    @property
-    def shape(self) -> Tuple[int, ...]:
-        """Size of each axis of the image.
-
-        Lifecycle: experimental
-        """
 
 
 @dataclass
