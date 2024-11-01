@@ -82,8 +82,8 @@ class _CSRAccumulator:
 
     def __init__(
         self,
-        obs_joinids: npt.NDArray[np.int64],
-        var_joinids: npt.NDArray[np.int64],
+        obs_joinids: pa.Array,
+        var_joinids: pa.Array,
         pool: futures.Executor,
         index_factory: types.IndexFactory,
     ):
