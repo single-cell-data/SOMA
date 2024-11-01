@@ -414,7 +414,6 @@ class ExperimentAxisQuery(Generic[_Exp]):
     ) -> "_AxisQueryResult":
         """Reads the entire query result in memory.
 
-
         This is a low-level routine intended to be used by loaders for other
         in-core formats, such as AnnData, which can be created from the
         resulting objects.

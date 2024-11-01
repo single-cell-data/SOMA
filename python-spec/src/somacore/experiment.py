@@ -15,7 +15,7 @@ _DF = TypeVar("_DF", bound=data.DataFrame)
 _MeasColl = TypeVar("_MeasColl", bound=collection.Collection[measurement.Measurement])
 """An implementation of a collection of Measurements."""
 _SceneColl = TypeVar("_SceneColl", bound=collection.Collection[scene.Scene])
-"""An implemenation of a collection of spatial data."""
+"""An implementation of a collection of spatial data."""
 _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SOMA object type of the implementation."""
 
