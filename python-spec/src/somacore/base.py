@@ -113,13 +113,14 @@ class SOMAObject(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     soma_type: ClassVar[LiteralString]
-    """A string describing the SOMA type of this object. This is constant."""
-    # This uses ClassVar since you can't do abstract class properties.
-    # This is the equivalent, just without abc-based automatic verification.
-    #
-    # Overrides are marked Final with an ignore[misc] because mypy by default
-    # wants this to be mutable, and doesn't like overriding the mutable member
-    # with a Final member.
+    """A string describing the SOMA type of this object. This is constant.
+
+    This uses ClassVar since you can't do abstract class properties.
+    This is the equivalent, just without abc-based automatic verification.
+    Overrides are marked Final with an ignore[misc] because mypy by default
+    wants this to be mutable, and doesn't like overriding the mutable member
+    with a Final member.
+    """
 
     # Context management
 

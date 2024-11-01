@@ -1,10 +1,13 @@
 """Common types used across SOMA query modules."""
 
-from typing import Any, Callable
+from typing import Any, Callable, Union
 
 import numpy as np
 import numpy.typing as npt
+import pyarrow as pa
 from typing_extensions import Protocol
+
+_Array = Union[npt.NDArray[np.int64], pa.Array]
 
 
 class IndexLike(Protocol):
@@ -16,11 +19,11 @@ class IndexLike(Protocol):
     not as a full specification of the types and behavior of ``get_indexer``.
     """
 
-    def get_indexer(self, target: npt.NDArray[np.int64]) -> Any:
+    def get_indexer(self, target: _Array) -> Any:
         """Something compatible with Pandas' Index.get_indexer method."""
 
 
-IndexFactory = Callable[[npt.NDArray[np.int64]], "IndexLike"]
+IndexFactory = Callable[[_Array], "IndexLike"]
 """Function that builds an index over the given NDArray.
 
 This interface is implemented by the callable ``pandas.Index``.
