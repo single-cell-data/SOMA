@@ -166,14 +166,14 @@ class ExperimentAxisQuery(Generic[_Exp]):
             platform_config=platform_config,
         )
 
-    def obs_joinids(self) -> pa.Array:
+    def obs_joinids(self) -> pa.IntegerArray:
         """Returns ``obs`` ``soma_joinids`` as an Arrow array.
 
         Lifecycle: maturing
         """
         return self._joinids.obs
 
-    def var_joinids(self) -> pa.Array:
+    def var_joinids(self) -> pa.IntegerArray:
         """Returns ``var`` ``soma_joinids`` as an Arrow array.
 
         Lifecycle: maturing
@@ -750,8 +750,8 @@ class _JoinIDCache:
 
     owner: ExperimentAxisQuery
 
-    _cached_obs: Optional[pa.Array] = None
-    _cached_var: Optional[pa.Array] = None
+    _cached_obs: Optional[pa.IntegerArray] = None
+    _cached_var: Optional[pa.IntegerArray] = None
 
     def _is_cached(self, axis: _Axis) -> bool:
         field = "_cached_" + axis.value
@@ -767,7 +767,7 @@ class _JoinIDCache:
         var_ft.result()
 
     @property
-    def obs(self) -> pa.Array:
+    def obs(self) -> pa.IntegerArray:
         """Join IDs for the obs axis. Will load and cache if not already."""
         if not self._cached_obs:
             self._cached_obs = _load_joinids(
@@ -776,11 +776,11 @@ class _JoinIDCache:
         return self._cached_obs
 
     @obs.setter
-    def obs(self, val: pa.Array) -> None:
+    def obs(self, val: pa.IntegerArray) -> None:
         self._cached_obs = val
 
     @property
-    def var(self) -> pa.Array:
+    def var(self) -> pa.IntegerArray:
         """Join IDs for the var axis. Will load and cache if not already."""
         if not self._cached_var:
             self._cached_var = _load_joinids(
@@ -789,11 +789,11 @@ class _JoinIDCache:
         return self._cached_var
 
     @var.setter
-    def var(self, val: pa.Array) -> None:
+    def var(self, val: pa.IntegerArray) -> None:
         self._cached_var = val
 
 
-def _load_joinids(df: data.DataFrame, axq: axis.AxisQuery) -> pa.Array:
+def _load_joinids(df: data.DataFrame, axq: axis.AxisQuery) -> pa.IntegerArray:
     tbl = df.read(
         axq.coords,
         value_filter=axq.value_filter,
