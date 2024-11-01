@@ -62,7 +62,7 @@ class Measurement(
     soma_type: Final = "SOMAMeasurement"  # type: ignore[misc]
 
     var = _mixin.item[_DF]()
-    """Primary annotations on the variable axis for vars on this meansurement.
+    """Primary annotations on the variable axis for vars on this measurement.
 
     This annotates _columns_ of the ``X`` arrays. The contents of the
     ``soma_joinid`` pseudo-column define the variable index domain (``varid``)
@@ -83,7 +83,7 @@ class Measurement(
     """
 
     obsp = _mixin.item[_SparseNDColl]()
-    """Matrices containg pairwise annotations of each ``obs`` row.
+    """Matrices containing pairwise annotations of each ``obs`` row.
 
     This is indexed by ``[obsid_1, obsid_2]``.
     """
@@ -95,7 +95,7 @@ class Measurement(
     """
 
     varp = _mixin.item[_SparseNDColl]()
-    """Matrices containg pairwise annotations of each ``var`` row.
+    """Matrices containing pairwise annotations of each ``var`` row.
 
     This is indexed by ``[varid_1, varid_2]``.
     """
