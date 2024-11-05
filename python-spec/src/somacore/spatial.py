@@ -553,7 +553,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 SOMADenseNDArray it must match have the shape provided by
                 ``level_shape`` and type specified in ``type. If set to ``None``, the
                 ``level_key`` will be used to construct a default child URI. For more
-                on URIs see :meth:`collection.Collection.add_new_collction`.
+                on URIs see :meth:`collection.Collection.add_new_collection`.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the ``level=0`` image is defined on. This does not
                 include the channel dimension, only spatial dimensions.

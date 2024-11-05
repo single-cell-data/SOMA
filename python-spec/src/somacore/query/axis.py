@@ -72,9 +72,9 @@ class AxisQuery:
 
         AxisQuery()  # all data
         AxisQuery(coords=())  # also all data
-        AxisQuery(coords=(slice(1,10),))  # 1D, slice
-        AxisQuery(coords=([0,1,2]))  # 1D, point indexing using array-like
-        AxisQuery(coords=(slice(None), numpy.array([0,88,1001])))  # 2D
+        AxisQuery(coords=(slice(1, 10),))  # 1D, slice
+        AxisQuery(coords=([0, 1, 2]))  # 1D, point indexing using array-like
+        AxisQuery(coords=(slice(None), numpy.array([0, 88, 1001])))  # 2D
         AxisQuery(value_filter="tissue == 'lung'")
         AxisQuery(coords=(slice(1,None),), value_filter="tissue == 'lung'")
 

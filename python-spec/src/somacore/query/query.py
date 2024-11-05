@@ -539,7 +539,7 @@ class ExperimentAxisQuery(Generic[_Exp]):
 
         # Do the actual query.
         arrow_table = axis_df.read(
-            axis_query.coords,
+            coords=axis_query.coords,
             value_filter=axis_query.value_filter,
             column_names=query_columns,
         ).concat()
@@ -679,7 +679,7 @@ class _AxisQueryResult:
     var: pd.DataFrame
     """Experiment.ms[...].var query slice, as a pandas DataFrame"""
     X: sparse.csr_matrix
-    """Experiment.ms[...].X[...] query slice, as an SciPy sparse.csr_matrix """
+    """Experiment.ms[...].X[...] query slice, as a SciPy sparse.csr_matrix """
     X_layers: Dict[str, sparse.csr_matrix] = attrs.field(factory=dict)
     """Any additional X layers requested, as SciPy sparse.csr_matrix(s)"""
     obsm: Dict[str, np.ndarray] = attrs.field(factory=dict)
