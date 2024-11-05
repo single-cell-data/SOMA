@@ -16,8 +16,8 @@ from . import types
 
 def read_csr(
     matrix: scd.SparseNDArray,
-    obs_joinids: pa.Array,
-    var_joinids: pa.Array,
+    obs_joinids: pa.IntegerArray,
+    var_joinids: pa.IntegerArray,
     index_factory: types.IndexFactory,
 ) -> "AccumulatedCSR":
     if not isinstance(matrix, scd.SparseNDArray) or matrix.ndim != 2:
@@ -82,8 +82,8 @@ class _CSRAccumulator:
 
     def __init__(
         self,
-        obs_joinids: pa.Array,
-        var_joinids: pa.Array,
+        obs_joinids: pa.IntegerArray,
+        var_joinids: pa.IntegerArray,
         pool: futures.Executor,
         index_factory: types.IndexFactory,
     ):
