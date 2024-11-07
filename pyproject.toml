@@ -13,7 +13,6 @@ readme = "./python-spec/README.md"
 dependencies = [
   "anndata",
   "attrs>=22.1",
-  "numba",
   "numpy>=1.21",
   "pandas",
   "pyarrow",
