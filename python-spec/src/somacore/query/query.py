@@ -223,6 +223,8 @@ class ExperimentAxisQuery(Generic[_Exp]):
                 and which partition to include, if present.
             result_order: the order to return results, specified as a
                 :class:`~options.ResultOrder` or its string value.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Lifecycle: maturing
         """

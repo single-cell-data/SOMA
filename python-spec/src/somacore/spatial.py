@@ -93,6 +93,9 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 or if ``None`` in a given dimension, the corresponding index-column
                 domain will use the minimum and maximum possible values for the
                 column's datatype.  This makes a point cloud dataframe growable.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
+            context: Other implementation-specific configuration.
 
         Returns:
             The newly created geometry dataframe, opened for writing.
@@ -122,6 +125,8 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 Defaults to ``()``, meaning no constraint -- all IDs.
             column_names: the named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
+            batch_size: The size of batches that should be returned from a read.
+                See :class:`options.BatchSize` for details.
             partitions: If present, specifies that this is part of
                 a partitioned read, and which part of the data to include.
             result_order: the order to return results, specified as a
@@ -130,6 +135,8 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 The default of ``None`` represents no filter. Value filter
                 syntax is implementation-defined; see the documentation
                 for the particular SOMA implementation for details.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
         Returns:
             A :class:`ReadIter` of :class:`pa.Table`s.
 
@@ -177,6 +184,8 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 The default of ``None`` represents no filter. Value filter
                 syntax is implementation-defined; see the documentation
                 for the particular SOMA implementation for details.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns:
             A :class:`SpatialRead` with :class:`ReadIter` of :class:`pa.Table`s data.
@@ -201,6 +210,8 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             values: An Arrow table containing all columns, including
                 the index columns. The schema for the values must match
                 the schema for the ``DataFrame``.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns: ``self``, to enable method chaining.
 
@@ -323,6 +334,9 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 the corresponding index-column domain will use the minimum and maximum
                 possible values for the column's datatype.  This makes a dataframe
                 growable.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
+            context: Other implementation-specific configuration.
 
         Returns:
             The newly created geometry dataframe, opened for writing.
@@ -352,6 +366,8 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 Defaults to ``()``, meaning no constraint -- all IDs.
             column_names: the named columns to read and return.
                 Defaults to ``None``, meaning no constraint -- all column names.
+            batch_size: The size of batches that should be returned from a read.
+                See :class:`options.BatchSize` for details.
             partitions: If present, specifies that this is part of
                 a partitioned read, and which part of the data to include.
             result_order: the order to return results, specified as a
@@ -360,6 +376,8 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 The default of ``None`` represents no filter. Value filter
                 syntax is implementation-defined; see the documentation
                 for the particular SOMA implementation for details.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
         Returns:
             A :class:`ReadIter` of :class:`pa.Table`s.
 
@@ -407,6 +425,8 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 The default of ``None`` represents no filter. Value filter
                 syntax is implementation-defined; see the documentation
                 for the particular SOMA implementation for details.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns:
             A :class:`SpatialRead` with :class:`ReadIter` of :class:`pa.Table`s data.
@@ -431,6 +451,8 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             values: An Arrow table containing all columns, including
                 the index columns. The schema for the values must match
                 the schema for the ``DataFrame``.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns: ``self``, to enable method chaining.
 
@@ -562,6 +584,9 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 axis is provided, this defaults to the channel axis followed by the
                 coordinate space axes in reverse order (e.g.
                 ``("soma_channel", "y", "x")`` if ``coordinate_space=("x", "y")``).
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
+            context: Other implementation-specific configuration.
 
         Returns:
             The newly created collection, opened for writing.
@@ -662,6 +687,8 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
                 :class:`~options.ResultOrder` or its string value. This is the result
                 order the data is read from disk. It may be permuted if
                 ``data_axis_order`` is not the default order.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
