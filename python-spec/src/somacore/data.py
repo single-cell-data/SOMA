@@ -84,6 +84,11 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 the minimum and maximum possible values for the column's
                 datatype.  This makes a dataframe growable.
 
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
+
+            context: Other implementation-specific configuration.
+
         Returns:
             The newly created dataframe, opened for writing.
 
@@ -326,6 +331,8 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
                 a partitioned read, and which part of the data to include.
             result_order: the order to return results, specified as a
                 :class:`~options.ResultOrder` or its string value.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns: The data over the requested range as a tensor.
 
@@ -426,6 +433,8 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
                 and which partition to include, if present.
             result_order: the order to return results, specified as a
                 :class:`~options.ResultOrder` or its string value.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns: The data that was requested in a :class:`SparseRead`,
             allowing access in any supported format.
@@ -479,6 +488,8 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
                 Arrow table: a COO table, with columns named ``soma_dim_0``,
                     ..., ``soma_dim_N`` and ``soma_data``.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
 
         Returns: ``self``, to enable method chaining.
 
