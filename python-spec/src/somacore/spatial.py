@@ -537,7 +537,6 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
             "y",
         ),
         data_axis_order: Optional[Sequence[str]] = None,
-        has_channel_axis: bool = True,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
