@@ -1,3 +1,5 @@
+from abc import ABC
+from abc import abstractmethod
 from typing import (
     Any,
     Mapping,
@@ -39,7 +41,7 @@ class AxisColumnNames(TypedDict, total=False):
     """var columns to use. All columns if ``None`` or not present."""
 
 
-class ExperimentAxisQuery:
+class ExperimentAxisQuery(ABC):
     """Axis-based query against a SOMA Experiment.
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
@@ -53,6 +55,7 @@ class ExperimentAxisQuery:
     Lifecycle: maturing
     """
 
+    @abstractmethod
     def obs(
         self,
         *,
@@ -68,8 +71,9 @@ class ExperimentAxisQuery:
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def var(
         self,
         *,
@@ -85,46 +89,52 @@ class ExperimentAxisQuery:
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def obs_joinids(self) -> pa.IntegerArray:
         """Returns ``obs`` ``soma_joinids`` as an Arrow array.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def var_joinids(self) -> pa.IntegerArray:
         """Returns ``var`` ``soma_joinids`` as an Arrow array.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
     @property
+    @abstractmethod
     def n_obs(self) -> int:
         """The number of ``obs`` axis query results.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
     @property
+    @abstractmethod
     def n_vars(self) -> int:
         """The number of ``var`` axis query results.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
     @property
+    @abstractmethod
     def indexer(self) -> "AxisIndexer":
         """A ``soma_joinid`` indexer for both ``obs`` and ``var`` axes.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def X(
         self,
         layer_name: str,
@@ -149,50 +159,57 @@ class ExperimentAxisQuery:
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def obsp(self, layer: str) -> SparseRead:
         """Returns an ``obsp`` layer as a sparse read.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def varp(self, layer: str) -> SparseRead:
         """Returns a ``varp`` layer as a sparse read.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def obsm(self, layer: str) -> SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def varm(self, layer: str) -> SparseRead:
         """Returns a ``varm`` layer as a sparse read.
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def obs_scene_ids(self) -> pa.Array:
         """Returns a pyarrow array with scene ids that contain obs from this
         query.
 
         Lifecycle: experimental
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def var_scene_ids(self) -> pa.Array:
         """Return a pyarrow array with scene ids that contain var from this
         query.
 
         Lifecycle: experimental
         """
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def to_anndata(
         self,
         X_name: str,
@@ -230,10 +247,11 @@ class ExperimentAxisQuery:
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
     # Context management
 
+    @abstractmethod
     def close(self) -> None:
         """Releases resources associated with this query.
 
@@ -241,33 +259,35 @@ class ExperimentAxisQuery:
 
         Lifecycle: maturing
         """
-        raise NotImplementedError
+        ...
 
-    def __enter__(self) -> Self:
-        raise NotImplementedError
+    @abstractmethod
+    def __enter__(self) -> Self: ...
 
-    def __exit__(self, *_: Any) -> None:
-        raise NotImplementedError
+    @abstractmethod
+    def __exit__(self, *_: Any) -> None: ...
 
 
 Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 """Things that can be converted to a NumPy array."""
 
 
-class AxisIndexer:
+class AxisIndexer(ABC):
     """
     Given a query, provides index-building services for obs/var axis.
 
     Lifecycle: maturing
     """
 
+    @abstractmethod
     def by_obs(self, coords: Numpyable) -> npt.NDArray[np.intp]:
         """Reindex the coords (soma_joinids) over the ``obs`` axis."""
-        raise NotImplementedError
+        ...
 
+    @abstractmethod
     def by_var(self, coords: Numpyable) -> npt.NDArray[np.intp]:
         """Reindex for the coords (soma_joinids) over the ``var`` axis."""
-        raise NotImplementedError
+        ...
 
 
 class Experimentish(Protocol):

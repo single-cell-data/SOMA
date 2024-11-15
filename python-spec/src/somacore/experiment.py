@@ -1,4 +1,5 @@
-import abc
+from abc import ABC
+from abc import abstractmethod
 from typing import Generic, Optional, TypeVar
 
 from typing_extensions import Final
@@ -25,7 +26,7 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 class Experiment(  # type: ignore[misc]  # __eq__ false positive
     collection.BaseCollection[_RootSO],
     Generic[_DF, _MeasColl, _SceneColl, _RootSO],
-    abc.ABC,
+    ABC,
 ):
     """A collection subtype representing an annotated 2D matrix of measurements.
 
@@ -65,6 +66,7 @@ class Experiment(  # type: ignore[misc]  # __eq__ false positive
     ``scene_id`` and ``False`` otherwise.
     """
 
+    @abstractmethod
     def axis_query(
         self,
         measurement_name: str,
