@@ -1,14 +1,15 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
 import abc
-from typing import Generic, Optional, Sequence, TypeVar, Union
+from typing import Any, Generic, Optional, Sequence, TypeVar, Union
 
-from typing_extensions import Final
+from typing_extensions import Final, Self
 
 from . import _mixin
 from . import base
 from . import collection
 from . import coordinates
+from . import options
 from . import spatial
 
 _MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatial.MultiscaleImage)
@@ -89,6 +90,36 @@ class Scene(
 
     Lifecycle: experimental
     """
+
+    @classmethod
+    @abc.abstractmethod
+    def create(
+        cls,
+        uri: str,
+        *,
+        coordinate_space: Optional[
+            Union[Sequence[str], coordinates.CoordinateSpace]
+        ] = None,
+        platform_config: Optional[options.PlatformConfig] = None,
+        context: Optional[Any] = None,
+    ) -> Self:
+        """Creates a new scene at the given URI.
+
+        Args:
+            uri: The URI where the collection will be created.
+            coordinate_space: Optional coordinate space or the axis names for the
+                coordinate space the scene is defined on. If ``None`` no coordinate
+                system will be set at this time. Defaults to ``None``.
+            platform_config: platform-specific configuration; keys are SOMA
+                implementation names.
+            context: Other implementation-specific configuration.
+
+        Returns:
+            The newly created collection, opened for writing.
+
+        Lifecycle: experimental
+        """
+        raise NotImplementedError()
 
     @property
     @abc.abstractmethod
