@@ -103,12 +103,13 @@ class Scene(
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
     ) -> Self:
-        """Creates a new collection of this type at the given URI.
+        """Creates a new scene at the given URI.
 
         Args:
             uri: The URI where the collection will be created.
             coordinate_space: Optional coordinate space or the axis names for the
-                coordinate space the scene is defined on. Defaults to ``None``.
+                coordinate space the scene is defined on. If ``None`` no coordinate
+                system will be set at this time. Defaults to ``None``.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
