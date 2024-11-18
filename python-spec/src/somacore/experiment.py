@@ -1,6 +1,8 @@
+from abc import ABC
+from abc import abstractmethod
 from typing import Generic, Optional, TypeVar
 
-from typing_extensions import Final, Self
+from typing_extensions import Final
 
 from . import _mixin
 from . import base
@@ -9,6 +11,7 @@ from . import data
 from . import measurement
 from . import query
 from . import scene
+from .query import ExperimentAxisQuery
 
 _DF = TypeVar("_DF", bound=data.DataFrame)
 """An implementation of a DataFrame."""
@@ -20,8 +23,10 @@ _RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
 """The root SOMA object type of the implementation."""
 
 
-class Experiment(
-    collection.BaseCollection[_RootSO], Generic[_DF, _MeasColl, _SceneColl, _RootSO]
+class Experiment(  # type: ignore[misc]  # __eq__ false positive
+    collection.BaseCollection[_RootSO],
+    Generic[_DF, _MeasColl, _SceneColl, _RootSO],
+    ABC,
 ):
     """A collection subtype representing an annotated 2D matrix of measurements.
 
@@ -32,22 +37,6 @@ class Experiment(
 
     Lifecycle: maturing
     """
-
-    # This class is implemented as a mixin to be used with SOMA classes.
-    # For example, a SOMA implementation would look like this:
-    #
-    #     # This type-ignore comment will always be needed due to limitations
-    #     # of type annotations; it is (currently) expected.
-    #     class Experiment(  # type: ignore[type-var]
-    #         ImplBaseCollection[ImplSOMAObject],
-    #         somacore.Experiment[
-    #             ImplDataFrame,    # _DF
-    #             ImplMeasurement,  # _MeasColl
-    #             ImplScene,        # _SceneColl
-    #             ImplSOMAObject,   # _RootSO
-    #         ],
-    #     ):
-    #         ...
 
     __slots__ = ()
     soma_type: Final = "SOMAExperiment"  # type: ignore[misc]
@@ -77,24 +66,18 @@ class Experiment(
     ``scene_id`` and ``False`` otherwise.
     """
 
+    @abstractmethod
     def axis_query(
         self,
         measurement_name: str,
         *,
         obs_query: Optional[query.AxisQuery] = None,
         var_query: Optional[query.AxisQuery] = None,
-    ) -> "query.ExperimentAxisQuery[Self]":
+    ) -> ExperimentAxisQuery:
         """Creates an axis query over this experiment.
 
         See :class:`query.ExperimentAxisQuery` for details on usage.
 
         Lifecycle: maturing
         """
-        # mypy doesn't quite understand descriptors so it issues a spurious
-        # error here.
-        return query.ExperimentAxisQuery(  # type: ignore[type-var]
-            self,
-            measurement_name,
-            obs_query=obs_query or query.AxisQuery(),
-            var_query=var_query or query.AxisQuery(),
-        )
+        raise NotImplementedError
