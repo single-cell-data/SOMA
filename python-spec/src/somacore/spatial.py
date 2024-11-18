@@ -60,7 +60,6 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             "x",
             "y",
         ),
-        index_column_names: Optional[Sequence[str]] = None,
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
@@ -69,10 +68,14 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
         The schema of the created point cloud  will include a column named
         ``soma_joinid`` of type ``pyarrow.int64``, with negative values disallowed, and
-        at least one axis with numeric type.  If a ``soma_joinid`` column is
-        present in the provided schema, it must be of the correct type.  If the
-        ``soma_joinid`` column is not provided, one will be added. The ``soma_joinid``
-        may be an index column. The axis columns must be index columns.
+        at least one axis with numeric type.  If a ``soma_joinid`` column is present in
+        the provided schema, it must be of the correct type.  If the ``soma_joinid``
+        column is not provided, one will be added.
+
+
+        The schema of the created point cloud must contain columns for the axes in the
+        ``coordinate_space``. These columns will be index columns for the point cloud
+        dataframe.
 
         Args:
             uri: The URI where the dataframe will be created.
@@ -82,11 +85,6 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the point cloud is defined on.
-            index_column_names: A list of column names to use as user-defined index
-                columns (e.g., ``['x', 'y']``). Must include the axis names for all
-                axes in the coordinate space. May include the ``soma_joinid``.
-                Defaults to ``None`` which sets the index column names to be the
-                ``soma_joinid`` followed by the axis names for the coordinate space.
             domain: An optional sequence of tuples specifying the domain of each
                 index column. Each tuple should be a pair consisting of the minimum
                 and maximum values storable in the index column. If omitted entirely,
@@ -295,10 +293,6 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             "x",
             "y",
         ),
-        index_column_names: Sequence[str] = (
-            options.SOMA_JOINID,
-            options.SOMA_GEOMETRY,
-        ),
         domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
         platform_config: Optional[options.PlatformConfig] = None,
         context: Optional[Any] = None,
@@ -311,8 +305,10 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         ``pyarrow.large_binary``.  If a ``soma_joinid`` column or ``soma_geometry``
         are present in the provided schema, they must be of the correct type.  If
         either the ``soma_joinid`` column or ``soma_geometry`` column are not provided,
-        one will be added. The ``soma_joinid`` may be an index column. The
-        ``soma_geometry`` column must be an index column.
+        one will be added.
+
+        The geometry dataframe will be indexed using a spatial index for the
+        ``soma_geometry`` column.
 
         Args:
             uri: The URI where the dataframe will be created.
@@ -322,10 +318,6 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the point cloud is defined on.
-            index_column_names: A list of column names to use as user-defined
-                index columns (e.g., ``['cell_type', 'tissue_type']``).
-                All named columns must exist in the schema, and at least one
-                index column name is required.
             domain: An optional sequence of tuples specifying the domain of each
                 index column. Two tuples must be provided for the ``soma_geometry``
                 column which store the width followed by the height. Each tuple should
