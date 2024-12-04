@@ -23,6 +23,7 @@ from typing_extensions import Final, Literal, Self
 
 from . import base
 from . import options
+from .types import StatusAndReason
 
 _RO_AUTO = options.ResultOrder.AUTO
 
@@ -71,18 +72,23 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 All named columns must exist in the schema, and at least one
                 index column name is required.
 
-            domain: An optional sequence of tuples specifying the domain of each
-                index column. Each tuple should be a pair consisting of
-                the minimum and maximum values storable in the index column.
-                For example, if there is a single int64-valued index column,
-                then ``domain`` might be ``[(100, 200)]`` to indicate that
-                values between 100 and 200, inclusive, can be stored in that
-                column.  If provided, this sequence must have the same length as
+            domain:
+                An optional sequence of tuples specifying the domain of each
+                index column. Each tuple must be a pair consisting of the
+                minimum and maximum values storable in the index column. For
+                example, if there is a single int64-valued index column, then
+                ``domain`` might be ``[(100, 200)]`` to indicate that values
+                between 100 and 200, inclusive, can be stored in that column.
+                If provided, this sequence must have the same length as
                 ``index_column_names``, and the index-column domain will be as
                 specified.  If omitted entirely, or if ``None`` in a given
-                dimension, the corresponding index-column domain will use
-                the minimum and maximum possible values for the column's
-                datatype.  This makes a dataframe growable.
+                dimension, the corresponding index-column domain will use an
+                empty range, and data writes after that will fail with an
+                exception.  Unless you have a particular reason not to, you
+                should always provide the desired `domain` at create time: this
+                is an optional but strongly recommended parameter. See also
+                ``change_domain`` which allows you to expand the domain after
+                create.
 
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
@@ -161,6 +167,45 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
           from −10 to 3 on the given dimension.
 
         Lifecycle: maturing
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def change_domain(
+        self,
+        newdomain: Optional[Sequence[Optional[Tuple[Any, Any]]]],
+        check_only: bool = False,
+    ) -> StatusAndReason:
+        """Allows you to enlarge the domain of a SOMA :class:`DataFrame`, when
+        the ``DataFrame`` already has a domain.
+
+        The argument must be a tuple of pairs of low/high values for the desired
+        domain, one pair per index column. For string index columns, you must
+        offer the low/high pair as `("", "")`, or as ``None``.  If ``check_only``
+        is ``True``, returns whether the operation would succeed if attempted,
+        and a reason why it would not.
+
+        For example, suppose the dataframe's sole index-column name is
+        ``"soma_joinid"`` (which is the default at create).  If the dataframe's
+        ``.maxdomain`` is ``((0, 999999),)`` and its ``.domain`` is ``((0,
+        2899),)``, this means that ``soma_joinid`` values between 0 and 2899 can
+        be read or written; any attempt to read or write ``soma_joinid`` values
+        outside this range will result in an error. If you then apply
+        ``.change_domain([(0, 5700)])``, then ``.domain`` will
+        report ``((0, 5699),)``, and now ``soma_joinid`` values in the range 0
+        to 5699 can now be written to the dataframe.
+
+        If you use non-default ``index_column_names`` in the dataframe's
+        ``create`` then you need to specify the (low, high) pairs for each
+        index column. For example, if the dataframe's ``index_column_names``
+        is ``["soma_joinid", "cell_type"]``, then you can upgrade domain using
+        ``[(0, 5699), ("", "")]``.
+
+        Lastly, it is an error to try to set the ``domain`` to be smaller than
+        ``maxdomain`` along any index column.  The ``maxdomain`` of a dataframe is
+        set at creation time, and cannot be extended afterward.
+
+        Lirecycle: maturing
         """
         raise NotImplementedError()
 
@@ -256,6 +301,21 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
                 possible int64 will be used, making a sparse array growable.
 
         Returns: The newly created array, opened for writing.
+
+        Lifecycle: maturing
+        """
+        raise NotImplementedError()
+
+    def resize(
+        self, newshape: Sequence[Union[int, None]], check_only: bool = False
+    ) -> StatusAndReason:
+        """Increases the shape of the array as specfied. Raises an error if the new
+        shape is less than the current shape in any dimension. Raises an error if
+        the new shape exceeds maxshape in any dimension. Raises an error if the
+        array doesn't already have a shape: in that case please call
+        tiledbsoma_upgrade_shape. If ``check_only`` is ``True``, returns
+        whether the operation would succeed if attempted, and a reason why it
+        would not.
 
         Lifecycle: maturing
         """

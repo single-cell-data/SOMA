@@ -17,6 +17,10 @@ from typing import (
 
 from typing_extensions import Protocol, TypeGuard
 
+StatusAndReason = Tuple[bool, str]
+"""Information for whether an upgrade-shape or resize would succeed
+if attempted, along with a reason why not."""
+
 
 def is_nonstringy_sequence(it: object) -> TypeGuard[Sequence]:
     """Returns true if a sequence is a "normal" sequence and not str or bytes.
