@@ -85,12 +85,18 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the point cloud is defined on.
-            domain: An optional sequence of tuples specifying the domain of each
-                index column. Each tuple should be a pair consisting of the minimum
-                and maximum values storable in the index column. If omitted entirely,
-                or if ``None`` in a given dimension, the corresponding index-column
-                domain will use the minimum and maximum possible values for the
-                column's datatype.  This makes a point cloud dataframe growable.
+            domain:
+                An optional sequence of tuples specifying the domain of each
+                index column. Each tuple must be a pair consisting of the
+                minimum and maximum values storable in the index column.
+                If provided, this sequence must have the same length as
+                ``index_column_names``, and the index-column domain will be as
+                specified.  If omitted entirely, or if ``None`` in a given
+                dimension, the corresponding index-column domain will use an
+                empty range, and data writes after that will fail with an
+                exception.  Unless you have a particular reason not to, you
+                should always provide the desired `domain` at create time: this
+                is an optional but strongly recommended parameter.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
