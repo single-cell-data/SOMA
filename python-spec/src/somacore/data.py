@@ -173,7 +173,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def change_domain(
         self,
-        newdomain: Sequence[Tuple[Any, Any] | None] | None,
+        newdomain: Optional[Sequence[Optional[Tuple[Any, Any]]]],
         check_only: bool = False,
     ) -> StatusAndReason:
         """Allows you to enlarge the domain of a SOMA :class:`DataFrame`, when
@@ -307,7 +307,7 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     def resize(
-        self, newshape: Sequence[int | None], check_only: bool = False
+        self, newshape: Sequence[Union[int, None]], check_only: bool = False
     ) -> StatusAndReason:
         """Increases the shape of the array as specfied. Raises an error if the new
         shape is less than the current shape in any dimension. Raises an error if
