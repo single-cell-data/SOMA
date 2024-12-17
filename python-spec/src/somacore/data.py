@@ -11,6 +11,7 @@ from typing import (
     Any,
     ClassVar,
     Iterator,
+    List,
     Optional,
     Sequence,
     Tuple,
@@ -26,6 +27,9 @@ from . import options
 from .types import StatusAndReason
 
 _RO_AUTO = options.ResultOrder.AUTO
+
+AxisDomain = Union[None, Tuple[Any, Any], List[Any]]
+Domain = Sequence[AxisDomain]
 
 
 class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
@@ -173,7 +177,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def change_domain(
         self,
-        newdomain: Optional[Sequence[Optional[Tuple[Any, Any]]]],
+        newdomain: Domain,
         check_only: bool = False,
     ) -> StatusAndReason:
         """Allows you to enlarge the domain of a SOMA :class:`DataFrame`, when
