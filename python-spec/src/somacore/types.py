@@ -5,9 +5,10 @@ but are intended to be used by SOMA implementations for annotations and
 their own internal type-checking purposes.
 """
 
+from __future__ import annotations
+
 from concurrent import futures
 from typing import (
-    Optional,
     Sequence,
     Tuple,
     Type,
@@ -68,7 +69,7 @@ class Slice(Protocol[_T_co]):
     # We use @property here to indicate that these fields are read-only;
     # just saying::
     #
-    #     start: Optional[_T_co]
+    #     start: _T_co | None
     #
     # would imply that doing::
     #
@@ -78,13 +79,13 @@ class Slice(Protocol[_T_co]):
     # invariant rather than covariant.
 
     @property
-    def start(self) -> Optional[_T_co]: ...
+    def start(self) -> _T_co | None: ...
 
     @property
-    def stop(self) -> Optional[_T_co]: ...
+    def stop(self) -> _T_co | None: ...
 
     @property
-    def step(self) -> Optional[_T_co]: ...
+    def step(self) -> _T_co | None: ...
 
 
 def is_slice_of(__obj: object, __typ: Type[_T]) -> TypeGuard[Slice[_T]]:
@@ -103,4 +104,4 @@ class ContextBase(Protocol):
     experiment queries. Otherwise, the implementer will use its own threadpool.
     """
 
-    threadpool: Optional[futures.ThreadPoolExecutor]
+    threadpool: futures.ThreadPoolExecutor | None

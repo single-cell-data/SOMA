@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from abc import ABC
 from abc import abstractmethod
-from typing import Generic, Optional, TypeVar
+from typing import Generic, TypeVar
 
 from typing_extensions import Final
 
@@ -71,8 +73,8 @@ class Experiment(  # type: ignore[misc]  # __eq__ false positive
         self,
         measurement_name: str,
         *,
-        obs_query: Optional[query.AxisQuery] = None,
-        var_query: Optional[query.AxisQuery] = None,
+        var_query: query.AxisQuery | None = None,
+        obs_query: query.AxisQuery | None = None,
     ) -> ExperimentAxisQuery:
         """Creates an axis query over this experiment.
 

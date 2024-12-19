@@ -1,7 +1,9 @@
 """Implementation of the SOMA scene collection for spatial data"""
 
+from __future__ import annotations
+
 import abc
-from typing import Any, Generic, Optional, Sequence, TypeVar, Union
+from typing import Any, Generic, Sequence, TypeVar, Union
 
 from typing_extensions import Final, Self
 
@@ -97,11 +99,9 @@ class Scene(
         cls,
         uri: str,
         *,
-        coordinate_space: Optional[
-            Union[Sequence[str], coordinates.CoordinateSpace]
-        ] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        coordinate_space: Sequence[str] | coordinates.CoordinateSpace | None = None,
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new scene at the given URI.
 
@@ -123,7 +123,7 @@ class Scene(
 
     @property
     @abc.abstractmethod
-    def coordinate_space(self) -> Optional[coordinates.CoordinateSpace]:
+    def coordinate_space(self) -> coordinates.CoordinateSpace | None:
         """Coordinate system for this scene.
 
         Lifecycle: experimental
@@ -141,8 +141,8 @@ class Scene(
         key: str,
         subcollection: Union[str, Sequence[str]],
         *,
-        transform: Optional[coordinates.CoordinateTransform],
-        uri: Optional[str] = ...,
+        transform: coordinates.CoordinateTransform | None,
+        uri: str | None = ...,
         **kwargs,
     ) -> _GeometryDataFrame:
         """Adds a ``GeometryDataFrame`` to the scene and sets a coordinate transform
@@ -182,8 +182,8 @@ class Scene(
         key: str,
         subcollection: Union[str, Sequence[str]],
         *,
-        transform: Optional[coordinates.CoordinateTransform],
-        uri: Optional[str] = ...,
+        transform: coordinates.CoordinateTransform | None,
+        uri: str | None = ...,
         **kwargs,
     ) -> _MultiscaleImage:
         """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
@@ -214,8 +214,8 @@ class Scene(
         key: str,
         subcollection: Union[str, Sequence[str]],
         *,
-        transform: Optional[coordinates.CoordinateTransform],
-        uri: Optional[str] = ...,
+        transform: coordinates.CoordinateTransform | None,
+        uri: str | None = ...,
         **kwargs,
     ) -> _PointCloudDataFrame:
         """Adds a point cloud to the scene and sets a coordinate transform
@@ -257,7 +257,7 @@ class Scene(
         subcollection: Union[str, Sequence[str]] = "obsl",
         *,
         transform: coordinates.CoordinateTransform,
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        coordinate_space: coordinates.CoordinateSpace | None = None,
     ) -> _GeometryDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
         a geometry dataframe stored in the scene.
@@ -293,7 +293,7 @@ class Scene(
         subcollection: Union[str, Sequence[str]] = "img",
         *,
         transform: coordinates.CoordinateTransform,
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        coordinate_space: coordinates.CoordinateSpace | None = None,
     ) -> _MultiscaleImage:
         """Adds the coordinate transform for the scene coordinate space to
         a multiscale image stored in the scene.
@@ -325,7 +325,7 @@ class Scene(
         subcollection: Union[str, Sequence[str]] = "obsl",
         *,
         transform: coordinates.CoordinateTransform,
-        coordinate_space: Optional[coordinates.CoordinateSpace] = None,
+        coordinate_space: coordinates.CoordinateSpace | None = None,
     ) -> _PointCloudDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
         a point cloud stored in the scene.
@@ -380,7 +380,7 @@ class Scene(
         key: str,
         subcollection: str = "img",
         *,
-        level: Optional[Union[str, int]] = None,
+        level: str | int | None = None,
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the requested multiscale image to
         the scene.
@@ -444,7 +444,7 @@ class Scene(
         key: str,
         subcollection: str = "img",
         *,
-        level: Optional[Union[str, int]] = None,
+        level: str | int | None = None,
     ) -> coordinates.CoordinateTransform:
         """Returns the coordinate transformation from the scene to a requested
         multiscale image.

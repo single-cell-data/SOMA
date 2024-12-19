@@ -1,9 +1,11 @@
 """Definitions of types related to coordinate systems."""
 
+from __future__ import annotations
+
 import abc
 import collections.abc
 import itertools
-from typing import Iterable, Optional, Sequence, Tuple, Union
+from typing import Iterable, Sequence, Tuple, Union
 
 import attrs
 import numpy as np
@@ -23,7 +25,7 @@ class Axis:
 
     name: str
     """Name of the axis."""
-    unit: Optional[str] = None
+    unit: str | None = None
     """Optional string name for the units of the axis."""
 
 

@@ -4,8 +4,10 @@ SOMA users should ordinarily not need to import this module directly; relevant
 members will be exported to the ``somacore`` namespace.
 """
 
+from __future__ import annotations
+
 import abc
-from typing import Any, ClassVar, MutableMapping, Optional
+from typing import Any, ClassVar, MutableMapping
 
 from typing_extensions import LiteralString, Self
 
@@ -25,8 +27,8 @@ class SOMAObject(metaclass=abc.ABCMeta):
         uri: str,
         mode: options.OpenMode = "r",
         *,
-        context: Optional[Any] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        context: Any | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> Self:
         """Opens the SOMA object of this type at the given URI.
 
@@ -43,7 +45,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
     @classmethod
     @abc.abstractmethod
-    def exists(cls, uri: str, *, context: Optional[Any] = None) -> bool:
+    def exists(cls, uri: str, *, context: Any | None = None) -> bool:
         """Checks whether a SOMA object of this type is stored at the URI.
 
         Args:
@@ -66,7 +68,7 @@ class SOMAObject(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
-    def context(self) -> Optional[types.ContextBase]:
+    def context(self) -> types.ContextBase | None:
         """A value storing implementation-specific configuration information.
 
         This contains long-lived (i.e., not call-specific) information that is
