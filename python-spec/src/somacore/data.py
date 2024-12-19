@@ -6,13 +6,14 @@ members will be exported to the ``somacore`` namespace.
 Default values are provided here as a reference for implementors.
 """
 
+from __future__ import annotations
+
 import abc
 from typing import (
     Any,
     ClassVar,
     Iterator,
     List,
-    Optional,
     Sequence,
     Tuple,
     TypeVar,
@@ -51,9 +52,9 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        domain: Sequence[Tuple[Any, Any] | None] | None = None,
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new ``DataFrame`` at the given URI.
 
@@ -112,13 +113,13 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def read(
         self,
         coords: options.SparseDFCoords = (),
-        column_names: Optional[Sequence[str]] = None,
+        column_names: Sequence[str] | None = None,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        value_filter: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        value_filter: str | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> "ReadIter[pa.Table]":
         """Reads a user-defined slice of data into Arrow tables.
 
@@ -218,7 +219,7 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         self,
         values: Union[pa.RecordBatch, pa.Table],
         *,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> Self:
         """Writes the data from an Arrow table to the persistent object.
 
@@ -283,9 +284,9 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
         uri: str,
         *,
         type: pa.DataType,
-        shape: Sequence[Optional[int]],
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        shape: Sequence[int | None],
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new ND array of the current type at the given URI.
 
@@ -376,9 +377,9 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         self,
         coords: options.DenseNDCoords = (),
         *,
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> pa.Tensor:
         """Reads the specified subarray as a Tensor.
 
@@ -432,7 +433,7 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         coords: options.DenseNDCoords,
         values: pa.Tensor,
         *,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> Self:
         """Writes an Arrow tensor to a subarray of the persistent object.
 
@@ -476,9 +477,9 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         coords: options.SparseNDCoords = (),
         *,
         batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> "SparseRead":
         """Reads the specified subarray in batches.
 
@@ -537,7 +538,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
         self,
         values: SparseArrowData,
         *,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> Self:
         """Writes a Tensor to a subarray of the persistent object.
 

@@ -1,12 +1,13 @@
 """Implementation of the SOMA image collection for spatial data"""
 
+from __future__ import annotations
+
 import abc
 from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
     MutableMapping,
-    Optional,
     Sequence,
     Tuple,
     TypeVar,
@@ -60,9 +61,9 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             "x",
             "y",
         ),
-        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        domain: Sequence[Tuple[Any, Any] | None] | None = None,
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new ``PointCloudDataFrame`` at the given URI.
 
@@ -114,13 +115,13 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def read(
         self,
         coords: options.SparseDFCoords = (),
-        column_names: Optional[Sequence[str]] = None,
+        column_names: Sequence[str] | None = None,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        value_filter: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        value_filter: str | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> data.ReadIter[pa.Table]:
         """Reads a user-defined slice of data into Arrow tables.
 
@@ -151,16 +152,16 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read_spatial_region(
         self,
-        region: Optional[options.SpatialRegion] = None,
-        column_names: Optional[Sequence[str]] = None,
+        region: options.SpatialRegion | None = None,
+        column_names: Sequence[str] | None = None,
         *,
-        region_transform: Optional[coordinates.CoordinateTransform] = None,
-        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
+        region_transform: coordinates.CoordinateTransform | None = None,
+        region_coord_space: coordinates.CoordinateSpace | None = None,
         batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        value_filter: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        value_filter: str | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
         """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
@@ -203,7 +204,7 @@ class PointCloudDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         self,
         values: Union[pa.RecordBatch, pa.Table],
         *,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> Self:
         """Writes the data from an Arrow table to the persistent object.
 
@@ -299,9 +300,9 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
             "x",
             "y",
         ),
-        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        domain: Sequence[Tuple[Any, Any] | None] | None = None,
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new ``GeometryDataFrame`` at the given URI.
 
@@ -349,13 +350,13 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     def read(
         self,
         coords: options.SparseDFCoords = (),
-        column_names: Optional[Sequence[str]] = None,
+        column_names: Sequence[str] | None = None,
         *,
         batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        value_filter: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        value_filter: str | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> data.ReadIter[pa.Table]:
         """Reads a user-defined slice of data into Arrow tables.
 
@@ -386,16 +387,16 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read_spatial_region(
         self,
-        region: Optional[options.SpatialRegion] = None,
-        column_names: Optional[Sequence[str]] = None,
+        region: options.SpatialRegion | None = None,
+        column_names: Sequence[str] | None = None,
         *,
-        region_transform: Optional[coordinates.CoordinateTransform] = None,
-        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
+        region_transform: coordinates.CoordinateTransform | None = None,
+        region_coord_space: coordinates.CoordinateSpace | None = None,
         batch_size: options.BatchSize = options.BatchSize(),
-        partitions: Optional[options.ReadPartitions] = None,
+        partitions: options.ReadPartitions | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        value_filter: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        value_filter: str | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> "SpatialRead[data.ReadIter[pa.Table]]":
         """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
@@ -438,7 +439,7 @@ class GeometryDataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         self,
         values: Union[pa.RecordBatch, pa.Table],
         *,
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> Self:
         """Writes the data from an Arrow table to the persistent object.
 
@@ -551,14 +552,14 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         type: pa.DataType,
         level_shape: Sequence[int],
         level_key: str = "level0",
-        level_uri: Optional[str] = None,
+        level_uri: str | None = None,
         coordinate_space: Union[Sequence[str], coordinates.CoordinateSpace] = (
             "x",
             "y",
         ),
-        data_axis_order: Optional[Sequence[str]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        data_axis_order: Sequence[str] | None = None,
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new MultiscaleImage with one initial level.
 
@@ -598,7 +599,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         self,
         key: str,
         *,
-        uri: Optional[str] = None,
+        uri: str | None = None,
         shape: Sequence[int],
     ) -> _DenseND:
         """Add a new level in the multi-scale image.
@@ -617,7 +618,7 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         key: str,
         value: _DenseND,
         *,
-        use_relative_uri: Optional[bool] = None,
+        use_relative_uri: bool | None = None,
     ) -> Self:
         """Sets a new level in the multi-scale image to be an existing SOMA
         :class:`data.DenseNDArray`.
@@ -651,11 +652,11 @@ class MultiscaleImage(  # type: ignore[misc]  # __eq__ false positive
         region: options.SpatialRegion = (),
         *,
         channel_coords: options.DenseCoord = None,
-        region_transform: Optional[coordinates.CoordinateTransform] = None,
-        region_coord_space: Optional[coordinates.CoordinateSpace] = None,
+        region_transform: coordinates.CoordinateTransform | None = None,
+        region_coord_space: coordinates.CoordinateSpace | None = None,
         result_order: options.ResultOrderStr = _RO_AUTO,
-        data_axis_order: Optional[Sequence[str]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        data_axis_order: Sequence[str] | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> "SpatialRead[pa.Tensor]":
         """Reads a user-defined region of space into a :class:`SpatialRead` with data
         in either an Arrow tensor or table.

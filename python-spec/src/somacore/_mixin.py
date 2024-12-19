@@ -1,6 +1,8 @@
 """Tools for making mixins with SOMA Collections."""
 
-from typing import Generic, MutableMapping, Optional, Type, TypeVar, Union, overload
+from __future__ import annotations
+
+from typing import Generic, MutableMapping, Type, TypeVar, Union, overload
 
 import attrs
 
@@ -35,10 +37,10 @@ class item(Generic[_T]):
         inst.second = 500
     """
 
-    typ: Optional[Type[_T]] = None
+    typ: Type[_T] | None = None
     """The type we expect to return from this field."""
 
-    item_name: Optional[str] = None
+    item_name: str | None = None
     """The name of the item we are getting (``x._backing["whatever"]``).
 
     This uses the name of the field by default but can be manually overridden.
@@ -59,7 +61,7 @@ class item(Generic[_T]):
     @overload
     def __get__(self, inst: _Coll, owner: Type[_Coll]) -> _T: ...
 
-    def __get__(self, inst: Optional[_Coll], owner: Type[_Coll]) -> Union["item", _T]:
+    def __get__(self, inst: _Coll | None, owner: Type[_Coll]) -> Union["item", _T]:
         del owner  # unused
         if not inst:
             return self

@@ -1,4 +1,6 @@
-from typing import Optional, Sequence, Tuple
+from __future__ import annotations
+
+from typing import Sequence, Tuple
 
 import attrs
 import numpy as np
@@ -81,7 +83,7 @@ class AxisQuery:
     Lifecycle: maturing
     """
 
-    value_filter: Optional[str] = attrs.field(
+    value_filter: str | None = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )

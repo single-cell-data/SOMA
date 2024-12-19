@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from abc import ABC
 from abc import abstractmethod
 from typing import (
     Any,
     Mapping,
-    Optional,
     Sequence,
     Union,
 )
@@ -35,9 +36,9 @@ class AxisColumnNames(TypedDict, total=False):
     Lifecycle: maturing
     """
 
-    obs: Optional[Sequence[str]]
+    obs: Sequence[str] | None
     """obs columns to use. All columns if ``None`` or not present."""
-    var: Optional[Sequence[str]]
+    var: Sequence[str] | None
     """var columns to use. All columns if ``None`` or not present."""
 
 
@@ -59,11 +60,11 @@ class ExperimentAxisQuery(ABC):
     def obs(
         self,
         *,
-        column_names: Optional[Sequence[str]] = None,
+        column_names: Sequence[str] | None = None,
         batch_size: BatchSize = BatchSize(),
-        partitions: Optional[ReadPartitions] = None,
+        partitions: ReadPartitions | None = None,
         result_order: ResultOrderStr = _RO_AUTO,
-        platform_config: Optional[PlatformConfig] = None,
+        platform_config: PlatformConfig | None = None,
     ) -> ReadIter[pa.Table]:
         """Returns ``obs`` as an `Arrow table
         <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
@@ -77,11 +78,11 @@ class ExperimentAxisQuery(ABC):
     def var(
         self,
         *,
-        column_names: Optional[Sequence[str]] = None,
+        column_names: Sequence[str] | None = None,
         batch_size: BatchSize = BatchSize(),
-        partitions: Optional[ReadPartitions] = None,
+        partitions: ReadPartitions | None = None,
         result_order: ResultOrderStr = _RO_AUTO,
-        platform_config: Optional[PlatformConfig] = None,
+        platform_config: PlatformConfig | None = None,
     ) -> ReadIter[pa.Table]:
         """Returns ``var`` as an `Arrow table
         <https://arrow.apache.org/docs/python/generated/pyarrow.Table.html>`_
@@ -140,9 +141,9 @@ class ExperimentAxisQuery(ABC):
         layer_name: str,
         *,
         batch_size: BatchSize = BatchSize(),
-        partitions: Optional[ReadPartitions] = None,
+        partitions: ReadPartitions | None = None,
         result_order: ResultOrderStr = _RO_AUTO,
-        platform_config: Optional[PlatformConfig] = None,
+        platform_config: PlatformConfig | None = None,
     ) -> SparseRead:
         """Returns an ``X`` layer as a sparse read.
 
@@ -214,7 +215,7 @@ class ExperimentAxisQuery(ABC):
         self,
         X_name: str,
         *,
-        column_names: Optional[AxisColumnNames] = None,
+        column_names: AxisColumnNames | None = None,
         X_layers: Sequence[str] = (),
         obsm_layers: Sequence[str] = (),
         obsp_layers: Sequence[str] = (),
@@ -300,7 +301,7 @@ class Experimentish(Protocol):
     def obs(self) -> DataFrame: ...
 
     @property
-    def context(self) -> Optional[base_types.ContextBase]: ...
+    def context(self) -> base_types.ContextBase | None: ...
 
     @property
     def obs_spatial_presence(self) -> DataFrame: ...

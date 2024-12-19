@@ -4,8 +4,10 @@ These types are *concrete* and should be used as-is as inputs to the various
 SOMA types that require them, not reimplemented by the implementing package.
 """
 
+from __future__ import annotations
+
 import enum
-from typing import Any, Dict, Mapping, Optional, Sequence, TypeVar, Union
+from typing import Any, Dict, Mapping, Sequence, TypeVar, Union
 
 import attrs
 import numpy as np
@@ -89,9 +91,9 @@ class BatchSize:
         Experimental
     """
 
-    count: Optional[int] = attrs.field(default=None)
+    count: int | None = attrs.field(default=None)
     """``arrow.Table``s with this number of rows will be returned."""
-    bytes: Optional[int] = attrs.field(default=None)
+    bytes: int | None = attrs.field(default=None)
     """Data of up to this size in bytes will be returned."""
 
     @count.validator

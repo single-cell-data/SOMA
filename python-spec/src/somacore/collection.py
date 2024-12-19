@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import abc
 from typing import (
     Any,
     MutableMapping,
-    Optional,
     Sequence,
     Tuple,
     Type,
@@ -43,8 +44,8 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         cls,
         uri: str,
         *,
-        platform_config: Optional[options.PlatformConfig] = None,
-        context: Optional[Any] = None,
+        platform_config: options.PlatformConfig | None = None,
+        context: Any | None = None,
     ) -> Self:
         """Creates a new collection of this type at the given URI.
 
@@ -69,8 +70,8 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         key: str,
         kind: None = None,
         *,
-        uri: Optional[str] = ...,
-        platform_config: Optional[options.PlatformConfig] = ...,
+        uri: str | None = ...,
+        platform_config: options.PlatformConfig | None = ...,
     ) -> "Collection": ...
 
     @overload
@@ -80,18 +81,18 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         key: str,
         kind: Type[_CT],
         *,
-        uri: Optional[str] = ...,
-        platform_config: Optional[options.PlatformConfig] = ...,
+        uri: str | None = ...,
+        platform_config: options.PlatformConfig | None = ...,
     ) -> _CT: ...
 
     @abc.abstractmethod
     def add_new_collection(
         self,
         key: str,
-        kind: Optional[Type["BaseCollection"]] = None,
+        kind: Type["BaseCollection"] | None = None,
         *,
-        uri: Optional[str] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        uri: str | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> "BaseCollection":
         """Creates a new sub-collection of this collection.
         To add an existing collection as a sub-element of this collection,
@@ -151,11 +152,11 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         self,
         key: str,
         *,
-        uri: Optional[str] = None,
+        uri: str | None = None,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        domain: Optional[Sequence[Optional[Tuple[Any, Any]]]] = None,
-        platform_config: Optional[options.PlatformConfig] = None,
+        domain: Sequence[Tuple[Any, Any] | None] | None = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> data.DataFrame:
         """Creates a new DataFrame as a child of this collection.
 
@@ -174,10 +175,10 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         self,
         key: str,
         *,
-        uri: Optional[str] = None,
+        uri: str | None = None,
         type: pa.DataType,
         shape: Sequence[int],
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> data.DenseNDArray:
         """Creates a new dense NDArray as a child of this collection.
 
@@ -196,10 +197,10 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         self,
         key: str,
         *,
-        uri: Optional[str] = None,
+        uri: str | None = None,
         type: pa.DataType,
         shape: Sequence[int],
-        platform_config: Optional[options.PlatformConfig] = None,
+        platform_config: options.PlatformConfig | None = None,
     ) -> data.SparseNDArray:
         """Creates a new sparse NDArray as a child of this collection.
 
@@ -219,7 +220,7 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
 
     @abc.abstractmethod
     def set(
-        self, key: str, value: _Elem, *, use_relative_uri: Optional[bool] = None
+        self, key: str, value: _Elem, *, use_relative_uri: bool | None = None
     ) -> Self:
         """Sets an entry of this collection.
 
