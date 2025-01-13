@@ -23,10 +23,15 @@ class Axis:
     Lifecycle: experimental
     """
 
-    name: str
+    name: str = attrs.field()
     """Name of the axis."""
     unit: str | None = None
     """Optional string name for the units of the axis."""
+
+    @name.validator
+    def check(self, attribute, value):
+        if value.startswith("soma_"):
+            raise ValueError(f"Invalid axis name '{value}'. Cannot start with 'soma_'.")
 
 
 @attrs.define(frozen=True)

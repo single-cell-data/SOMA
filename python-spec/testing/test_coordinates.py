@@ -30,6 +30,11 @@ def check_transform_is_equal(
         assert False
 
 
+def test_invalid_axis_name():
+    with pytest.raises(ValueError):
+        Axis("soma_axis")
+
+
 def test_coordinate_space():
     coord_space = CoordinateSpace(
         (Axis("x", unit="nanometer"), Axis("y", unit="nanometer"))  # type: ignore[arg-type]
