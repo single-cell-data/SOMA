@@ -65,3 +65,5 @@ python_version = 3.9
 # These dependencies do not currently have canonical type stubs.
 module = ["anndata", "pyarrow", "pyarrow.compute", "pyarrow_hotfix", "scipy", "shapely"]
 ignore_missing_imports = true
+
+# testing
