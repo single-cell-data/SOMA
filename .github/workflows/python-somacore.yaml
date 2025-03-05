@@ -77,6 +77,11 @@ jobs:
       && github.event.action == 'published'
       && startsWith(github.event.release.tag_name, 'python-')
     runs-on: ubuntu-latest
+    # Configuration: https://github.com/single-cell-data/SOMA/settings/environments
+    environment: pypi
+    # Configuration: https://pypi.org/manage/project/somacore/settings/publishing
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -89,7 +94,3 @@ jobs:
           pip install --upgrade build pip wheel setuptools setuptools-scm
           python -m build .
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          packages_dir: dist
