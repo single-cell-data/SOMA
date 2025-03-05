@@ -12,7 +12,7 @@ trap "trash $TEMPDIR" EXIT
 # The version of Python we want to run lints under.
 LINTVER=3.9
 
-for PYVER in 3.9 3.10 3.11 3.12; do
+for PYVER in 3.9 3.10 3.11 3.12 3.13; do
   CONDIR="$TEMPDIR/py-$PYVER"
   conda create -y -p "$CONDIR" "python=$PYVER"
   (
