@@ -648,7 +648,48 @@ add_new_collection(string key, CollectionType kind, string uri = "", PlatformCon
 
 ## SOMAScene
 
-<!-- TODO: Add the operations. -->
+Summary of operations in addition to those inherited from `SOMACollection :
+
+| Operation                                                                            | Description                                                                                                                                                  |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| static create(uri, ..) -> SOMAScene                                                  | Create a `SOMAScene`.                                                                                                                                        |
+| get coordinate_space -> SOMACoordinateSpace                                          | Returns the coordinate space the `SOMAScene` is defined on.                                                                                                  |
+| set coordinate_space(coordinaate_space)                                              | Sets the coordinate space the `SOMAScene` is defined on.                                                                                                     |
+| add_new_geometry_dataframe(string key, ...) -> SOMAGeometryDataFrame                 | Creates a new `SOMAGeometryDataFrame` and adds it to this `SOMAScene`.                                                                                       |
+| add_new_multiscale_image(string key, ...) -> SOMAMultiscaleImage                     | Creates a new `SOMAMultiscaleImage` and adds it to this `SOMAScene`.                                                                                         |
+| add_new_point_cloud_dataframe(string key, ...) -> SOMAPointCloudDataFrame            | Creates a new `PointCloudDataFrame` and adds it to this `SOMAScene`.                                                                                         |
+| set_transform_to_geometry_dataframe(string key, ...) -> SOMAGeometryDataFrame        | Sets a coordinate transformation from the coordinate space of the `SOMAScene` to the coordinate space of a `SOMAGeometryDataFrame` inside the `SOMAScene`.   |
+| set_transform_to_multiscale_image(string key, ...) -> SOMAMultiscaleImage            | Sets a coordinate transformation from the coordinate space of the `SOMAScene` to the coordinate space of a `SOMAMultiscaleImage` inside the `SOMAScene`.     |
+| set_transform_to_point_cloud_dataframe(string key, ...) -> SOMAPointCloudDataFrame   | Sets a coordinate transformation from the coordinate space of the `SOMAScene` to the coordinate space of a `SOMAPointCloudDataFrame` inside the `SOMAScene`. |
+| get_transform_from_geometry_dataframe(string key, ...) -> SOMAGeometryDataFrame      | Gets the coordinate transformation from the coordinate space of a `SOMAGeometryDataFrame` inside the this `SOMAScene` to the `SOMAScene`.                    |
+| get_transform_from_multiscale_image(string key, ...) -> SOMAMultiscaleImage          | Gets the coordinate transformation from the coordinate space of a `SOMAMultiscaleImage` inside the this `SOMAScene` to the `SOMAScene`.                      |
+| get_transform_from_point_cloud_dataframe(string key, ...) -> SOMAPointCloudDataFrame | Gets the coordinate transformation from the coordinate space of a `SOMAPointCloudDataFrame` inside the this `SOMAScene` to the `SOMAScene`.                  |
+| get_transform_to_geometry_dataframe(string key, ...) -> SOMAGeometryDataFrame        | Gets the coordinate transformation from the coordinate space of this `SOMAScene` to a `SOMAGeometryDataFrame` inside the `SOMAScene`.                        |
+| get_transform_to_multiscale_image(string key, ...) -> SOMAMultiscaleImage            | Gets the coordinate transformation from the coordinate space of this `SOMAScene` to a `SOMAMultiscaleImage` inside the `SOMAScene`.                          |
+| get_transform_to_point_cloud_dataframe(string key, ...) -> SOMAPointCloudDataFrame   | Gets the coordinate transformation from the coordinate space of this `SOMAScene` to a `SOMAPointCloudDataFrame` inside the `SOMAScene`.                      |
+
+### Operation: add_new\_<var>spatial_object_type</var>
+
+Each <code>add_new\_<var>spatial_object_type</var> method creates a new SOMA object in storage, adds it to the scene (with the same semantics as the `create` operation), sets a transformation from this scene to the newly created object, and returns the new object to the user. The newly created entry has the same `context` value as the existing scene and is [owned by the current scene].
+
+```
+add_new_geometry_dataframe(string key, string uri = "", ...)  -> SOMAGeometryDataFrame
+add_new_multiscale_image(string key, string uri = "", ...)  -> SOMAMultiscaleImage
+add_new_point_cloud_dataframe(string key, string uri = "", ...)  -> SOMAPointCloudDataFrame
+```
+
+Parameters:
+
+- `key`: The key to add the new element at. This cannot already be a key of the scene.
+- `uri`: An optional parameter to specify a URI to create the new scne, which may be [relative or absolute](#collection-entry-uris). If the URI is relative, the new entry will be added with that relative URI. If the URI is absolute, the new entry will be added with that absolute URI. If a object already exists at the user-provided URI, the operation should fail. If the user does not specify a URI, the collection will generate a new URI for the entry. When possible, this should be a relative URI based on a sanitized version of the key.
+
+The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the current scenes's context.
+
+### Operation: set*transform_to*\_<var>spatial_object_type</var>
+
+### Operation: get*transform_to*\_<var>spatial_object_type</var>
+
+### Operation: get*transform_from*\_<var>spatial_object_type</var>
 
 ## SOMADataFrame
 
