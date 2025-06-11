@@ -24,8 +24,8 @@ SOMA_JOINID: Final = "soma_joinid"
 SOMA_GEOMETRY: Final = "soma_geometry"
 """Global constant for SOMA spatial geometry type."""
 
-OpenMode = Literal["r", "w"]
-"""How to open a SOMA object: read or write."""
+OpenMode = Literal["r", "w", "d"]
+"""How to open a SOMA object: read, write, or delete."""
 
 
 class ReadPartitions:
