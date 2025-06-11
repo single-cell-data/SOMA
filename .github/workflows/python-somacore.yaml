@@ -12,7 +12,7 @@ jobs:
   format-check:
     runs-on: ubuntu-latest
     env:
-      PYTHON_VERSION: "3.8"
+      PYTHON_VERSION: "3.9"
     steps:
       - uses: actions/checkout@v3
 
@@ -20,11 +20,11 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
-          cache-dependency-path: python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
+          cache-dependency-path: "python-spec/requirements-py${{ env.PYTHON_VERSION }}*.txt"
 
       - name: Install static analysis packages
-        run: |
-          pip install -r python-spec/requirements-py${{ env.PYTHON_VERSION }}-lint.txt
+        working-directory: python-spec
+        run: pip install -r requirements-py${PYTHON_VERSION}.txt -r requirements-py${PYTHON_VERSION}-lint.txt
 
       - name: Restore pre-commit cache
         uses: actions/cache@v3
@@ -45,14 +45,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # setuptools-scm needs a deep clone so it can look through history
           # to find a relevant tag.
           fetch-depth: 0
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -77,9 +77,14 @@ jobs:
       && github.event.action == 'published'
       && startsWith(github.event.release.tag_name, 'python-')
     runs-on: ubuntu-latest
+    # Configuration: https://github.com/single-cell-data/SOMA/settings/environments
+    environment: pypi
+    # Configuration: https://pypi.org/manage/project/somacore/settings/publishing
+    permissions:
+      id-token: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           cache: pip
           cache-dependency-path: python-spec/requirements-py3.10.txt
@@ -89,7 +94,3 @@ jobs:
           pip install --upgrade build pip wheel setuptools setuptools-scm
           python -m build .
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          packages_dir: dist

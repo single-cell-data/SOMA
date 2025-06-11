@@ -1,4 +1,6 @@
-from typing import Optional, Sequence, Tuple
+from __future__ import annotations
+
+from typing import Sequence, Tuple
 
 import attrs
 import numpy as np
@@ -72,16 +74,16 @@ class AxisQuery:
 
         AxisQuery()  # all data
         AxisQuery(coords=())  # also all data
-        AxisQuery(coords=(slice(1,10),))  # 1D, slice
-        AxisQuery(coords=([0,1,2]))  # 1D, point indexing using array-like
-        AxisQuery(coords=(slice(None), numpy.array([0,88,1001])))  # 2D
+        AxisQuery(coords=(slice(1, 10),))  # 1D, slice
+        AxisQuery(coords=([0, 1, 2]))  # 1D, point indexing using array-like
+        AxisQuery(coords=(slice(None), numpy.array([0, 88, 1001])))  # 2D
         AxisQuery(value_filter="tissue == 'lung'")
         AxisQuery(coords=(slice(1,None),), value_filter="tissue == 'lung'")
 
     Lifecycle: maturing
     """
 
-    value_filter: Optional[str] = attrs.field(
+    value_filter: str | None = attrs.field(
         default=None,
         validator=attrs.validators.optional(attrs.validators.instance_of(str)),
     )

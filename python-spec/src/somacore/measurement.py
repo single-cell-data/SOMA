@@ -62,7 +62,7 @@ class Measurement(
     soma_type: Final = "SOMAMeasurement"  # type: ignore[misc]
 
     var = _mixin.item[_DF]()
-    """Primary annotations on the variable axis for vars on this meansurement.
+    """Primary annotations on the variable axis for vars on this measurement.
 
     This annotates _columns_ of the ``X`` arrays. The contents of the
     ``soma_joinid`` pseudo-column define the variable index domain (``varid``)
@@ -83,7 +83,7 @@ class Measurement(
     """
 
     obsp = _mixin.item[_SparseNDColl]()
-    """Matrices containg pairwise annotations of each ``obs`` row.
+    """Matrices containing pairwise annotations of each ``obs`` row.
 
     This is indexed by ``[obsid_1, obsid_2]``.
     """
@@ -95,7 +95,18 @@ class Measurement(
     """
 
     varp = _mixin.item[_SparseNDColl]()
-    """Matrices containg pairwise annotations of each ``var`` row.
+    """Matrices containing pairwise annotations of each ``var`` row.
 
     This is indexed by ``[varid_1, varid_2]``.
+    """
+
+    var_spatial_presence = _mixin.item[_DF]()
+    """A dataframe that stores the presence of var in the spatial scenes.
+
+    This provides a join table for the var ``soma_joinid`` and the scene names used in
+    the ``spatial`` collection. This dataframe must contain index columns ``soma_joinid``
+    and ``scene_id``. The ``scene_id`` column  must have type ``string``. The
+    dataframe must contain a ``boolean`` column ``data``. The values of ``data`` are
+    ``True`` if the var with varid ``soma_joinid`` is contained in scene with name
+    ``scene_id`` and ``False`` otherwise.
     """

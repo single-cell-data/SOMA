@@ -16,6 +16,13 @@ import pyarrow_hotfix  # noqa: F401
 
 from .base import SOMAObject
 from .collection import Collection
+from .coordinates import AffineTransform
+from .coordinates import Axis
+from .coordinates import CoordinateSpace
+from .coordinates import CoordinateTransform
+from .coordinates import IdentityTransform
+from .coordinates import ScaleTransform
+from .coordinates import UniformScaleTransform
 from .data import DataFrame
 from .data import DenseNDArray
 from .data import NDArray
@@ -30,6 +37,11 @@ from .options import ResultOrder
 from .query import AxisColumnNames
 from .query import AxisQuery
 from .query import ExperimentAxisQuery
+from .scene import Scene
+from .spatial import GeometryDataFrame
+from .spatial import MultiscaleImage
+from .spatial import PointCloudDataFrame
+from .spatial import SpatialRead
 from .types import ContextBase
 
 try:
@@ -52,8 +64,14 @@ __all__ = (
     "ReadIter",
     "SparseNDArray",
     "SparseRead",
+    "SpatialRead",
     "Experiment",
     "Measurement",
+    "Scene",
+    "ImageProperties",
+    "MultiscaleImage",
+    "GeometryDataFrame",
+    "PointCloudDataFrame",
     "BatchSize",
     "IOfN",
     "ResultOrder",
@@ -61,4 +79,11 @@ __all__ = (
     "AxisQuery",
     "ExperimentAxisQuery",
     "ContextBase",
+    "Axis",
+    "CoordinateSpace",
+    "CoordinateTransform",
+    "AffineTransform",
+    "ScaleTransform",
+    "UniformScaleTransform",
+    "IdentityTransform",
 )

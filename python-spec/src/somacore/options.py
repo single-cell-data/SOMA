@@ -4,19 +4,25 @@ These types are *concrete* and should be used as-is as inputs to the various
 SOMA types that require them, not reimplemented by the implementing package.
 """
 
+from __future__ import annotations
+
 import enum
-from typing import Any, Dict, Mapping, Optional, Sequence, TypeVar, Union
+from typing import Any, Dict, Mapping, Sequence, TypeVar, Union
 
 import attrs
 import numpy as np
 import numpy.typing as npt
 import pyarrow as pa
+import shapely
 from typing_extensions import Final, Literal
 
 from . import types
 
 SOMA_JOINID: Final = "soma_joinid"
 """Global constant for the SOMA join ID."""
+
+SOMA_GEOMETRY: Final = "soma_geometry"
+"""Global constant for SOMA spatial geometry type."""
 
 OpenMode = Literal["r", "w"]
 """How to open a SOMA object: read or write."""
@@ -85,9 +91,9 @@ class BatchSize:
         Experimental
     """
 
-    count: Optional[int] = attrs.field(default=None)
+    count: int | None = attrs.field(default=None)
     """``arrow.Table``s with this number of rows will be returned."""
-    bytes: Optional[int] = attrs.field(default=None)
+    bytes: int | None = attrs.field(default=None)
     """Data of up to this size in bytes will be returned."""
 
     @count.validator
@@ -177,5 +183,11 @@ SparseNDCoord = Union[
     pa.ChunkedArray,
 ]
 """A single coordinate range for one dimension of a sparse ndarray."""
+
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
+
+SpatialRegion = Union[
+    Sequence[int], Sequence[float], shapely.geometry.base.BaseGeometry
+]
+"""A spatial region used for reading spatial dataframes and multiscale images."""
