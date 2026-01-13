@@ -34,4 +34,4 @@ tomli==2.2.1
 types-pytz==2025.1.0.20250204
 typing_extensions==4.12.2
 tzdata==2025.1
-virtualenv==20.29.2
+virtualenv==20.36.1
