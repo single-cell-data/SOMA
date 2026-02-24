@@ -8,20 +8,10 @@ Default values are provided here as a reference for implementors.
 
 from __future__ import annotations
 
-import abc
-from typing import (
-    Any,
-    ClassVar,
-    Iterator,
-    List,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-)
+from typing import Any, Sequence, TypeVar, Union
 
 import pyarrow as pa
-from typing_extensions import Final, Literal, Self
+from typing_extensions import Protocol, Self, runtime_checkable
 
 from . import base
 from . import options
@@ -29,30 +19,27 @@ from .types import StatusAndReason
 
 _RO_AUTO = options.ResultOrder.AUTO
 
-AxisDomain = Union[None, Tuple[Any, Any], List[Any]]
+AxisDomain = Union[None, tuple[Any, Any], list[Any]]
 Domain = Sequence[AxisDomain]
 
 
-class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
+@runtime_checkable
+class DataFrame(base.SOMAObject, Protocol):
     """A multi-column table with a user-defined schema.
 
     Lifecycle: maturing
     """
 
-    __slots__ = ()
-    soma_type: Final = "SOMADataFrame"  # type: ignore[misc]
-
     # Lifecycle
 
     @classmethod
-    @abc.abstractmethod
     def create(
         cls,
         uri: str,
         *,
         schema: pa.Schema,
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        domain: Sequence[Tuple[Any, Any] | None] | None = None,
+        domain: Sequence[tuple[Any, Any] | None] | None = None,
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
@@ -105,11 +92,10 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     # Data operations
 
-    @abc.abstractmethod
     def read(
         self,
         coords: options.SparseDFCoords = (),
@@ -173,9 +159,8 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def change_domain(
         self,
         newdomain: Domain,
@@ -210,14 +195,13 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
         ``maxdomain`` along any index column.  The ``maxdomain`` of a dataframe is
         set at creation time, and cannot be extended afterward.
 
-        Lirecycle: maturing
+        Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def write(
         self,
-        values: Union[pa.RecordBatch, pa.Table],
+        values: pa.RecordBatch | pa.Table,
         *,
         platform_config: options.PlatformConfig | None = None,
     ) -> Self:
@@ -235,31 +219,28 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     # Metadata operations
 
     @property
-    @abc.abstractmethod
     def schema(self) -> pa.Schema:
         """The schema of the data in this dataframe.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
-    @abc.abstractmethod
-    def index_column_names(self) -> Tuple[str, ...]:
+    def index_column_names(self) -> tuple[str, ...]:
         """The names of the index (dimension) columns.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
-    @abc.abstractmethod
-    def domain(self) -> Tuple[Tuple[Any, Any], ...]:
+    def domain(self) -> tuple[tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
         Returns: a tuple of minimum and maximum values, inclusive,
@@ -267,18 +248,17 @@ class DataFrame(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
 
-class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
+@runtime_checkable
+class NDArray(base.SOMAObject, Protocol):
     """Common behaviors of N-dimensional arrays of a single primitive type."""
 
-    __slots__ = ()
 
     # Lifecycle
 
     @classmethod
-    @abc.abstractmethod
     def create(
         cls,
         uri: str,
@@ -309,10 +289,10 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     def resize(
-        self, newshape: Sequence[Union[int, None]], check_only: bool = False
+        self, newshape: Sequence[int | None], check_only: bool = False
     ) -> StatusAndReason:
         """Increases the shape of the array as specfied. Raises an error if the new
         shape is less than the current shape in any dimension. Raises an error if
@@ -324,18 +304,17 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     # Metadata operations
 
     @property
-    @abc.abstractmethod
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """The maximum capacity (domain) of each dimension of this array.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
     def ndim(self) -> int:
@@ -343,36 +322,25 @@ class NDArray(base.SOMAObject, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        return len(self.shape)
+        ...
 
     @property
-    @abc.abstractmethod
     def schema(self) -> pa.Schema:
         """The schema of the data in this array.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
-
-    is_sparse: ClassVar[Literal[True, False]]
-    """True if the array is sparse, False if it is dense.
-
-    Lifecycle: maturing
-    """
+        ...
 
 
-class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
+@runtime_checkable
+class DenseNDArray(NDArray, Protocol):
     """
     An N-dimensional array stored densely.
 
     Lifecycle: maturing
     """
 
-    __slots__ = ()
-    soma_type: Final = "SOMADenseNDArray"  # type: ignore[misc]
-    is_sparse: Final = False  # type: ignore[misc]
-
-    @abc.abstractmethod
     def read(
         self,
         coords: options.DenseNDCoords = (),
@@ -425,9 +393,8 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def write(
         self,
         coords: options.DenseNDCoords,
@@ -449,29 +416,16 @@ class DenseNDArray(NDArray, metaclass=abc.ABCMeta):
         Returns: ``self``, to enable method chaining.
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
 
-SparseArrowData = Union[
-    pa.SparseCSCMatrix,
-    pa.SparseCSRMatrix,
-    pa.SparseCOOTensor,
-    pa.Table,
-]
-"""Any of the sparse data storages provided by Arrow."""
-
-
-class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
+@runtime_checkable
+class SparseNDArray(NDArray, Protocol):
     """A N-dimensional array stored sparsely.
 
     Lifecycle: maturing
     """
 
-    __slots__ = ()
-    soma_type: Final = "SOMASparseNDArray"  # type: ignore[misc]
-    is_sparse: Final = True  # type: ignore[misc]
-
-    @abc.abstractmethod
     def read(
         self,
         coords: options.SparseNDCoords = (),
@@ -532,11 +486,11 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
+        ...
 
-    @abc.abstractmethod
     def write(
         self,
-        values: SparseArrowData,
+        values: pa.SparseCSCMatrix | pa.SparseCSRMatrix | pa.SparseCOOTensor | pa.Table,
         *,
         platform_config: options.PlatformConfig | None = None,
     ) -> Self:
@@ -560,7 +514,7 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
     def nnz(self) -> int:
@@ -568,31 +522,30 @@ class SparseNDArray(NDArray, metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
 
 #
 # Read types
 #
 
-_T = TypeVar("_T")
+_T = TypeVar("_T", covariant=True)
 
 
 # Sparse reads are returned as an iterable structure:
 
 
-class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
+@runtime_checkable
+class ReadIter(Protocol[_T]):
     """SparseRead result iterator allowing users to flatten the iteration.
 
     Lifecycle: maturing
     """
 
-    __slots__ = ()
+    def __next__(self) -> _T: ...
 
-    # __iter__ is already implemented as `return self` in Iterator.
-    # SOMA implementations must implement __next__.
+    def __iter__(self) -> _T: ...
 
-    @abc.abstractmethod
     def concat(self) -> _T:
         """Returns all the requested data in a single operation.
 
@@ -601,10 +554,10 @@ class ReadIter(Iterator[_T], metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
 
-class SparseRead:
+class SparseRead(Protocol):
     """Intermediate type to choose result format when reading a sparse array.
 
     A query may not be able to return all of these formats. The concrete result
@@ -615,16 +568,10 @@ class SparseRead:
     Lifecycle: maturing
     """
 
-    __slots__ = ()
+    def coos(self) -> ReadIter[pa.SparseCOOTensor]: ...
 
-    def coos(self) -> ReadIter[pa.SparseCOOTensor]:
-        raise NotImplementedError()
+    def dense_tensors(self) -> ReadIter[pa.Tensor]: ...
 
-    def dense_tensors(self) -> ReadIter[pa.Tensor]:
-        raise NotImplementedError()
+    def record_batches(self) -> ReadIter[pa.RecordBatch]: ...
 
-    def record_batches(self) -> ReadIter[pa.RecordBatch]:
-        raise NotImplementedError()
-
-    def tables(self) -> ReadIter[pa.Table]:
-        raise NotImplementedError()
+    def tables(self) -> ReadIter[pa.Table]: ...

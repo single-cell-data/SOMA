@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from abc import ABC
-from abc import abstractmethod
 from typing import (
     Any,
     Mapping,
     Sequence,
     Union,
+    runtime_checkable,
 )
 
 import numpy as np
@@ -42,7 +41,8 @@ class AxisColumnNames(TypedDict, total=False):
     """var columns to use. All columns if ``None`` or not present."""
 
 
-class ExperimentAxisQuery(ABC):
+@runtime_checkable
+class ExperimentAxisQuery(Protocol):
     """Axis-based query against a SOMA Experiment.
 
     ExperimentAxisQuery allows easy selection and extraction of data from a
@@ -56,7 +56,6 @@ class ExperimentAxisQuery(ABC):
     Lifecycle: maturing
     """
 
-    @abstractmethod
     def obs(
         self,
         *,
@@ -74,7 +73,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def var(
         self,
         *,
@@ -92,7 +90,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def obs_joinids(self) -> pa.IntegerArray:
         """Returns ``obs`` ``soma_joinids`` as an Arrow array.
 
@@ -100,7 +97,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def var_joinids(self) -> pa.IntegerArray:
         """Returns ``var`` ``soma_joinids`` as an Arrow array.
 
@@ -109,7 +105,6 @@ class ExperimentAxisQuery(ABC):
         ...
 
     @property
-    @abstractmethod
     def n_obs(self) -> int:
         """The number of ``obs`` axis query results.
 
@@ -118,7 +113,6 @@ class ExperimentAxisQuery(ABC):
         ...
 
     @property
-    @abstractmethod
     def n_vars(self) -> int:
         """The number of ``var`` axis query results.
 
@@ -127,7 +121,6 @@ class ExperimentAxisQuery(ABC):
         ...
 
     @property
-    @abstractmethod
     def indexer(self) -> "AxisIndexer":
         """A ``soma_joinid`` indexer for both ``obs`` and ``var`` axes.
 
@@ -135,7 +128,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def X(
         self,
         layer_name: str,
@@ -162,7 +154,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def obsp(self, layer: str) -> SparseRead:
         """Returns an ``obsp`` layer as a sparse read.
 
@@ -170,7 +161,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def varp(self, layer: str) -> SparseRead:
         """Returns a ``varp`` layer as a sparse read.
 
@@ -178,21 +168,18 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def obsm(self, layer: str) -> SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
         Lifecycle: maturing
         """
         ...
 
-    @abstractmethod
     def varm(self, layer: str) -> SparseRead:
         """Returns a ``varm`` layer as a sparse read.
         Lifecycle: maturing
         """
         ...
 
-    @abstractmethod
     def obs_scene_ids(self) -> pa.Array:
         """Returns a pyarrow array with scene ids that contain obs from this
         query.
@@ -201,7 +188,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def var_scene_ids(self) -> pa.Array:
         """Return a pyarrow array with scene ids that contain var from this
         query.
@@ -210,7 +196,6 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def to_anndata(
         self,
         X_name: str,
@@ -252,7 +237,6 @@ class ExperimentAxisQuery(ABC):
 
     # Context management
 
-    @abstractmethod
     def close(self) -> None:
         """Releases resources associated with this query.
 
@@ -262,10 +246,8 @@ class ExperimentAxisQuery(ABC):
         """
         ...
 
-    @abstractmethod
     def __enter__(self) -> Self: ...
 
-    @abstractmethod
     def __exit__(self, *_: Any) -> None: ...
 
 
@@ -273,19 +255,18 @@ Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 """Things that can be converted to a NumPy array."""
 
 
-class AxisIndexer(ABC):
+@runtime_checkable
+class AxisIndexer(Protocol):
     """
     Given a query, provides index-building services for obs/var axis.
 
     Lifecycle: maturing
     """
 
-    @abstractmethod
     def by_obs(self, coords: Numpyable) -> npt.NDArray[np.intp]:
         """Reindex the coords (soma_joinids) over the ``obs`` axis."""
         ...
 
-    @abstractmethod
     def by_var(self, coords: Numpyable) -> npt.NDArray[np.intp]:
         """Reindex for the coords (soma_joinids) over the ``var`` axis."""
         ...
