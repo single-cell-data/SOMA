@@ -255,7 +255,6 @@ class DataFrame(base.SOMAObject, Protocol):
 class NDArray(base.SOMAObject, Protocol):
     """Common behaviors of N-dimensional arrays of a single primitive type."""
 
-
     # Lifecycle
 
     @classmethod
