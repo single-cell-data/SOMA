@@ -19,7 +19,7 @@ class Axis(Protocol):
 
     @property
     def unit(self) -> str | None:
-        """Optional string name for hte units of the axis."""
+        """Optional string name for the units of the axis."""
 
 
 @runtime_checkable

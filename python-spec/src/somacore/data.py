@@ -293,13 +293,7 @@ class NDArray(base.SOMAObject, Protocol):
     def resize(
         self, newshape: Sequence[int | None], check_only: bool = False
     ) -> StatusAndReason:
-        """Increases the shape of the array as specfied. Raises an error if the new
-        shape is less than the current shape in any dimension. Raises an error if
-        the new shape exceeds maxshape in any dimension. Raises an error if the
-        array doesn't already have a shape: in that case please call
-        tiledbsoma_upgrade_shape. If ``check_only`` is ``True``, returns
-        whether the operation would succeed if attempted, and a reason why it
-        would not.
+        """Increases the shape of the array as specified. 
 
         Lifecycle: maturing
         """
@@ -556,6 +550,7 @@ class ReadIter(Protocol[_T]):
         ...
 
 
+@runtime_checkable
 class SparseRead(Protocol):
     """Intermediate type to choose result format when reading a sparse array.
 

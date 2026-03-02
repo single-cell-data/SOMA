@@ -60,6 +60,7 @@ class Scene(
 
         Lifecycle: experimental
         """
+        ...
 
     @classmethod
     def create(

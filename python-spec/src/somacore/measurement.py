@@ -2,12 +2,13 @@
 
 from typing_extensions import Protocol, runtime_checkable
 
+from . import base
 from . import collection
 from . import data
 
 
 @runtime_checkable
-class Measurement(collection.Collection, Protocol):
+class Measurement(collection.BaseCollection[base.SOMAObject], Protocol):
     """A set of observations defined by a dataframe, with measurements.
 
     This is a common set of annotated variables (defined by the ``var``

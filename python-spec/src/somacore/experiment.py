@@ -14,7 +14,7 @@ from .query import ExperimentAxisQuery
 @runtime_checkable
 class Experiment(
     collection.BaseCollection[base.SOMAObject],
-    Protocol,
+    Protocol
 ):
     """A collection subtype representing an annotated 2D matrix of measurements.
 
@@ -43,6 +43,7 @@ class Experiment(
 
         Lifecycle: maturing
         """
+        ...
 
     @property
     def spatial(self) -> collection.Collection:
