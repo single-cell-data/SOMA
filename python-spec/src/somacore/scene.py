@@ -2,36 +2,24 @@
 
 from __future__ import annotations
 
-import abc
-from typing import Any, Generic, Sequence, TypeVar, Union
+from typing import Any, Sequence, TypeVar, Union, runtime_checkable
 
-from typing_extensions import Final, Self
+from typing_extensions import Protocol, Self
 
-from . import _mixin
 from . import base
 from . import collection
 from . import coordinates
 from . import options
 from . import spatial
 
-_MultiscaleImage = TypeVar("_MultiscaleImage", bound=spatial.MultiscaleImage)
-"""A particular implementation of a multiscale image."""
-
-_PointCloudDataFrame = TypeVar(
-    "_PointCloudDataFrame", bound=spatial.PointCloudDataFrame
-)
-"""A particular implementation of a point cloud."""
-
-_GeometryDataFrame = TypeVar("_GeometryDataFrame", bound=spatial.GeometryDataFrame)
-"""A particular implementation of a geometry dataframe."""
-
-_RootSO = TypeVar("_RootSO", bound=base.SOMAObject)
+_Elem = TypeVar("_Elem", bound=base.SOMAObject)
 """The root SomaObject type of the implementation."""
 
 
+@runtime_checkable
 class Scene(
-    collection.BaseCollection[_RootSO],
-    Generic[_MultiscaleImage, _PointCloudDataFrame, _GeometryDataFrame, _RootSO],
+    collection.BaseCollection[_Elem],
+    Protocol,
 ):
     """A collection subtype representing spatial assets that can all be stored
     on a single coordinate space.
@@ -39,62 +27,42 @@ class Scene(
     Lifecycle: experimental
     """
 
-    # This class is implemented as a mixin to be used with SOMA classes.
-    # For example, a SOMA implementation would look like this:
-    #
-    #     # This type-ignore comment will always be needed due to limitations
-    #     # of type annotations; it is (currently) expected.
-    #     class Scene(  # type: ignore[type-var]
-    #         ImplBaseCollection[ImplSOMAObject],
-    #         somacore.Scene[
-    #             ImplMultiscaleImage,
-    #             ImplPointCloudDataFrame,
-    #             ImplGeometryDataFrame,
-    #             ImplSOMAObject,
-    #         ],
-    #     ):
-    #         ...
+    @property
+    def img(self) -> collection.Collection:
+        """A collection of multiscale images backing the spatial data.
 
-    __slots__ = ()
-    soma_type: Final = "SOMAScene"  # type: ignore[misc]
+        Lifecycle: experimental
+        """
+        ...
 
-    img = _mixin.item[collection.Collection[_MultiscaleImage]]()
-    """A collection of multiscale images backing the spatial data.
+    @property
+    def obsl(self) -> collection.Collection:
+        """A collection of observation location data.
 
-    Lifecycle: experimental
-    """
+        This collection exists to store any spatial data in the scene that joins on the obs
+        ``soma_joinid``. Each dataframe in ``obsl`` can be either a PointCloudDataFrame
+        or a GeometryDataFrame.
 
-    obsl = _mixin.item[
-        collection.Collection[Union[_PointCloudDataFrame, _GeometryDataFrame]]
-    ]()
-    """A collection of observation location data.
+        Lifecycle: experimental
+        """
+        ...
 
-    This collection exists to store any spatial data in the scene that joins on the obs
-    ``soma_joinid``. Each dataframe in ``obsl`` can be either a PointCloudDataFrame
-    or a GeometryDataFrame.
+    @property
+    def varl(self) -> collection.Collection:
+        """A collection of collections of variable location data.
 
-    Lifecycle: experimental
-    """
+        This collection exists to store any spatial data in the scene that joins on the
+        variable ``soma_joinid`` for the measurements in the SOMA experiment. The top-level
+        collection maps from measurement name to a collection of dataframes.
 
-    varl = _mixin.item[
-        collection.Collection[
-            collection.Collection[Union[_PointCloudDataFrame, _GeometryDataFrame]]
-        ]
-    ]()
-    """A collection of collections of variable location data.
+        Each dataframe in a ``varl`` subcollection can be either a GeometryDataFrame or a
+        PointCloudDataFrame.
 
-    This collection exists to store any spatial data in the scene that joins on the
-    variable ``soma_joinid`` for the measurements in the SOMA experiment. The top-level
-    collection maps from measurement name to a collection of dataframes.
-
-    Each dataframe in a ``varl`` subcollection can be either a GeometryDataFrame or a
-    PointCloudDataFrame.
-
-    Lifecycle: experimental
-    """
+        Lifecycle: experimental
+        """
+        ...
 
     @classmethod
-    @abc.abstractmethod
     def create(
         cls,
         uri: str,
@@ -119,23 +87,19 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
     @property
-    @abc.abstractmethod
     def coordinate_space(self) -> coordinates.CoordinateSpace | None:
         """Coordinate system for this scene.
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
     @coordinate_space.setter
-    @abc.abstractmethod
-    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None:
-        raise NotImplementedError()
+    def coordinate_space(self, value: coordinates.CoordinateSpace) -> None: ...
 
-    @abc.abstractmethod
     def add_new_geometry_dataframe(
         self,
         key: str,
@@ -144,7 +108,7 @@ class Scene(
         transform: coordinates.CoordinateTransform | None,
         uri: str | None = ...,
         **kwargs,
-    ) -> _GeometryDataFrame:
+    ) -> spatial.GeometryDataFrame:
         """Adds a ``GeometryDataFrame`` to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
@@ -174,9 +138,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def add_new_multiscale_image(
         self,
         key: str,
@@ -185,7 +148,7 @@ class Scene(
         transform: coordinates.CoordinateTransform | None,
         uri: str | None = ...,
         **kwargs,
-    ) -> _MultiscaleImage:
+    ) -> spatial.MultiscaleImage:
         """Adds a ``MultiscaleImage`` to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
@@ -206,9 +169,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def add_new_point_cloud_dataframe(
         self,
         key: str,
@@ -217,7 +179,7 @@ class Scene(
         transform: coordinates.CoordinateTransform | None,
         uri: str | None = ...,
         **kwargs,
-    ) -> _PointCloudDataFrame:
+    ) -> spatial.PointCloudDataFrame:
         """Adds a point cloud to the scene and sets a coordinate transform
         between the scene and the dataframe.
 
@@ -248,9 +210,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def set_transform_to_geometry_dataframe(
         self,
         key: str,
@@ -258,7 +219,7 @@ class Scene(
         *,
         transform: coordinates.CoordinateTransform,
         coordinate_space: coordinates.CoordinateSpace | None = None,
-    ) -> _GeometryDataFrame:
+    ) -> spatial.GeometryDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
         a geometry dataframe stored in the scene.
 
@@ -284,9 +245,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def set_transform_to_multiscale_image(
         self,
         key: str,
@@ -294,7 +254,7 @@ class Scene(
         *,
         transform: coordinates.CoordinateTransform,
         coordinate_space: coordinates.CoordinateSpace | None = None,
-    ) -> _MultiscaleImage:
+    ) -> spatial.MultiscaleImage:
         """Adds the coordinate transform for the scene coordinate space to
         a multiscale image stored in the scene.
 
@@ -316,9 +276,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def set_transform_to_point_cloud_dataframe(
         self,
         key: str,
@@ -326,7 +285,7 @@ class Scene(
         *,
         transform: coordinates.CoordinateTransform,
         coordinate_space: coordinates.CoordinateSpace | None = None,
-    ) -> _PointCloudDataFrame:
+    ) -> spatial.PointCloudDataFrame:
         """Adds the coordinate transform for the scene coordinate space to
         a point cloud stored in the scene.
 
@@ -353,9 +312,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def get_transform_from_geometry_dataframe(
         self, key: str, subcollection: Union[str, Sequence[str]] = "obsl"
     ) -> coordinates.CoordinateTransform:
@@ -372,9 +330,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def get_transform_from_multiscale_image(
         self,
         key: str,
@@ -398,9 +355,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def get_transform_from_point_cloud_dataframe(
         self, key: str, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
@@ -417,9 +373,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def get_transform_to_geometry_dataframe(
         self, key: str, subcollection: Union[str, Sequence[str]] = "obsl"
     ) -> coordinates.CoordinateTransform:
@@ -436,9 +391,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def get_transform_to_multiscale_image(
         self,
         key: str,
@@ -462,9 +416,8 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def get_transform_to_point_cloud_dataframe(
         self, key: str, subcollection: str = "obsl"
     ) -> coordinates.CoordinateTransform:
@@ -481,4 +434,4 @@ class Scene(
 
         Lifecycle: experimental
         """
-        raise NotImplementedError()
+        ...

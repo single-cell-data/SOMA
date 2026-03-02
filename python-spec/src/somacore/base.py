@@ -6,22 +6,19 @@ members will be exported to the ``somacore`` namespace.
 
 from __future__ import annotations
 
-import abc
-from typing import Any, ClassVar, MutableMapping
+from typing import Any, MutableMapping, runtime_checkable
 
-from typing_extensions import LiteralString, Self
+from typing_extensions import Protocol, Self
 
 from . import options
 from . import types
 
 
-class SOMAObject(metaclass=abc.ABCMeta):
+@runtime_checkable
+class SOMAObject(Protocol):
     """The base type for all SOMA objects, containing common behaviors."""
 
-    __slots__ = ("__weakref__",)
-
     @classmethod
-    @abc.abstractmethod
     def open(
         cls,
         uri: str,
@@ -41,10 +38,9 @@ class SOMAObject(metaclass=abc.ABCMeta):
         Returns: The SOMA object, opened for reading.
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @classmethod
-    @abc.abstractmethod
     def exists(cls, uri: str, *, context: Any | None = None) -> bool:
         """Checks whether a SOMA object of this type is stored at the URI.
 
@@ -56,16 +52,15 @@ class SOMAObject(metaclass=abc.ABCMeta):
             False if the object does not exist, or is of a different type.
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
-    @abc.abstractmethod
     def uri(self) -> str:
         """The URI of this SOMA object.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
     def context(self) -> types.ContextBase | None:
@@ -81,10 +76,9 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        return None
+        ...
 
     @property
-    @abc.abstractmethod
     def metadata(self) -> MutableMapping[str, Any]:
         """The metadata of this SOMA object.
 
@@ -94,35 +88,23 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
-    @abc.abstractmethod
     def mode(self) -> options.OpenMode:
         """Returns the mode this object was opened in, either ``r`` or ``w``.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     @property
-    @abc.abstractmethod
     def closed(self) -> bool:
         """True if this object has been closed; False if still open.
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
-
-    soma_type: ClassVar[LiteralString]
-    """A string describing the SOMA type of this object. This is constant.
-
-    This uses ClassVar since you can't do abstract class properties.
-    This is the equivalent, just without abc-based automatic verification.
-    Overrides are marked Final with an ignore[misc] because mypy by default
-    wants this to be mutable, and doesn't like overriding the mutable member
-    with a Final member.
-    """
+        ...
 
     # Context management
 
@@ -138,28 +120,8 @@ class SOMAObject(metaclass=abc.ABCMeta):
 
         Lifecycle: maturing
         """
-        # Default implementation does nothing.
+        ...
 
-    def __enter__(self) -> Self:
-        return self
+    def __enter__(self) -> Self: ...
 
-    def __exit__(self, *_: Any) -> None:
-        self.close()
-
-    def __del__(self) -> None:
-        self.close()
-        super_del = getattr(super(), "__del__", lambda: None)
-        super_del()
-
-    # Explicitly use Python's identity-based equality/hash checks.
-    # These will show up in the `__mro__` before any other classes
-    # provided a SOMAObject base is put first:
-    #
-    #    class SubType(SomeSOMAObject, MutableMapping):
-    #        ...
-    #
-    #    # sub_type_inst.__eq__ uses object.__eq__ rather than
-    #    # MutableMapping.__eq__.
-
-    __eq__ = object.__eq__
-    __hash__ = object.__hash__
+    def __exit__(self, *_: Any) -> None: ...

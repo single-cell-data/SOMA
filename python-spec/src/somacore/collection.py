@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import abc
 from typing import (
     Any,
-    MutableMapping,
+    Iterator,
     Sequence,
     Tuple,
     Type,
@@ -12,7 +11,7 @@ from typing import (
 )
 
 import pyarrow as pa
-from typing_extensions import Final, Self
+from typing_extensions import Protocol, Self, runtime_checkable
 
 from . import base
 from . import data
@@ -24,9 +23,8 @@ _CT = TypeVar("_CT", bound="BaseCollection")
 """Any implementation of a Collection."""
 
 
-class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
-    base.SOMAObject, MutableMapping[str, _Elem], metaclass=abc.ABCMeta
-):
+@runtime_checkable
+class BaseCollection(base.SOMAObject, Protocol[_Elem]):
     """A generic string-keyed collection of :class:`base.SOMAObject`s.
 
     The generic type specifies what type the Collection may contain. At its
@@ -36,10 +34,19 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
     Lifecycle: maturing
     """
 
-    __slots__ = ()
+    # MutableMapping interface methods
+
+    def __getitem__(self, key: str) -> _Elem: ...
+
+    def __delitem__(self, key: str) -> None: ...
+
+    def __iter__(self) -> Iterator[str]: ...
+
+    def __len__(self) -> int: ...
+
+    # Lifecycle
 
     @classmethod
-    @abc.abstractmethod
     def create(
         cls,
         uri: str,
@@ -55,7 +62,7 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
             The newly created collection, opened for writing.
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     # Overloads to allow type inference to work when doing:
     #
@@ -64,7 +71,6 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
     #     some_coll.add_new_collection("key", Experiment)  # -> Experiment
 
     @overload
-    @abc.abstractmethod
     def add_new_collection(
         self,
         key: str,
@@ -75,7 +81,6 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
     ) -> "Collection": ...
 
     @overload
-    @abc.abstractmethod
     def add_new_collection(
         self,
         key: str,
@@ -85,7 +90,6 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
         platform_config: options.PlatformConfig | None = ...,
     ) -> _CT: ...
 
-    @abc.abstractmethod
     def add_new_collection(
         self,
         key: str,
@@ -145,9 +149,8 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def add_new_dataframe(
         self,
         key: str,
@@ -168,9 +171,8 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def add_new_dense_ndarray(
         self,
         key: str,
@@ -190,9 +192,8 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
-    @abc.abstractmethod
     def add_new_sparse_ndarray(
         self,
         key: str,
@@ -212,13 +213,12 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
     def __setitem__(self, key: str, value: _Elem) -> None:
         """Sets an entry into this collection. See :meth:`set` for details."""
         self.set(key, value)
 
-    @abc.abstractmethod
     def set(
         self, key: str, value: _Elem, *, use_relative_uri: bool | None = None
     ) -> Self:
@@ -253,14 +253,14 @@ class BaseCollection(  # type: ignore[misc]  # __eq__ false positive
 
         Lifecycle: maturing
         """
-        raise NotImplementedError()
+        ...
 
 
-class Collection(BaseCollection[_Elem]):
+@runtime_checkable
+class Collection(BaseCollection[base.SOMAObject], Protocol):
     """SOMA Collection imposing no semantics on the contained values.
 
     Lifecycle: maturing
     """
 
-    soma_type: Final = "SOMACollection"  # type: ignore[misc]
-    __slots__ = ()
+    ...
