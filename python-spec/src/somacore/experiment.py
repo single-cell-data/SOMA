@@ -12,10 +12,7 @@ from .query import ExperimentAxisQuery
 
 
 @runtime_checkable
-class Experiment(
-    collection.BaseCollection[base.SOMAObject],
-    Protocol
-):
+class Experiment(collection.BaseCollection[base.SOMAObject], Protocol):
     """A collection subtype representing an annotated 2D matrix of measurements.
 
     In single cell biology, this can represent multiple modes of measurement

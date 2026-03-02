@@ -293,7 +293,7 @@ class NDArray(base.SOMAObject, Protocol):
     def resize(
         self, newshape: Sequence[int | None], check_only: bool = False
     ) -> StatusAndReason:
-        """Increases the shape of the array as specified. 
+        """Increases the shape of the array as specified.
 
         Lifecycle: maturing
         """
