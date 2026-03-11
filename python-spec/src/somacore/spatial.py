@@ -34,11 +34,11 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
         uri: str,
         *,
         schema: pa.Schema,
+        domain: Sequence[tuple[Any, Any]],
         coordinate_space: Sequence[str] | coordinates.CoordinateSpace = (
             "x",
             "y",
         ),
-        domain: Sequence[tuple[Any, Any] | None] | None = None,
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
@@ -63,18 +63,9 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the point cloud is defined on.
-            domain:
-                An optional sequence of tuples specifying the domain of each
-                index column. Each tuple must be a pair consisting of the
-                minimum and maximum values storable in the index column.
-                If provided, this sequence must have the same length as
-                ``index_column_names``, and the index-column domain will be as
-                specified.  If omitted entirely, or if ``None`` in a given
-                dimension, the corresponding index-column domain will use an
-                empty range, and data writes after that will fail with an
-                exception.  Unless you have a particular reason not to, you
-                should always provide the desired `domain` at create time: this
-                is an optional but strongly recommended parameter.
+            domain: A sequence of tuples specifying the domain of each index column. Each
+                tuple must be a pair consisting of the minimum and maximum values storable
+                in the index column. 
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
@@ -262,8 +253,8 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
         uri: str,
         *,
         schema: pa.Schema,
+        domain: Sequence[tuple[Any, Any] | None],
         coordinate_space: Sequence[str] | coordinates.CoordinateSpace = ("x", "y"),
-        domain: Sequence[tuple[Any, Any] | None] | None = None,
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
@@ -288,14 +279,10 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the point cloud is defined on.
-            domain: An optional sequence of tuples specifying the domain of each
-                index column. Two tuples must be provided for the ``soma_geometry``
-                column which store the width followed by the height. Each tuple should
-                be a pair consisting of the minimum and maximum values storable in the
-                index column. If omitted entirely, or if ``None`` in a given dimension,
-                the corresponding index-column domain will use the minimum and maximum
-                possible values for the column's datatype.  This makes a dataframe
-                growable.
+            domain: An sequence of tuples specifying the domain of each index column. 
+                Two tuples must be provided for the ``soma_geometry`` column which store
+                the width followed by the height. Each tuple should be a pair consisting
+                of the minimum and maximum values storable in the index column.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
