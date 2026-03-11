@@ -65,7 +65,7 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
                 coordinate space the point cloud is defined on.
             domain: A sequence of tuples specifying the domain of each index column. Each
                 tuple must be a pair consisting of the minimum and maximum values storable
-                in the index column. 
+                in the index column.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
@@ -279,7 +279,7 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
                 implementation, an error will be raised.
             coordinate_space: Either the coordinate space or the axis names for the
                 coordinate space the point cloud is defined on.
-            domain: An sequence of tuples specifying the domain of each index column. 
+            domain: An sequence of tuples specifying the domain of each index column.
                 Two tuples must be provided for the ``soma_geometry`` column which store
                 the width followed by the height. Each tuple should be a pair consisting
                 of the minimum and maximum values storable in the index column.
