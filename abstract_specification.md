@@ -230,7 +230,7 @@ In addition to the `soma_joinid`, every `SOMAGeometryDataFrame` must contain a c
 names of other columns in the table. The `soma_geometry` must be an index column, but the user may also specify other additional columns as
 index columns. Multiple items with the same geometry may be stored in the `SOMAGeometryDataFrame`.
 
-`SOMADataFrame` is the zero or null value of the respective column data type (e.g., `Arrow.float32` defaults to 0.0, `Arrow.string` to `""`, etc).
+`SOMADataFrame` is the zero or null value of the respective column data type (e.g., `Arrow.float32` defaults to 0.0, `Arrow.string` to `"\"`, etc).
 
 ### SOMADenseNDArray
 
@@ -658,12 +658,19 @@ Summary of additional operations on a `SOMAScene`:
 | get soma_type | Returns the constant "SOMAScene". |
 | get coordinate_space -> CoordinateSpace | Return the coordinate space for this scene. |
 | set coordinate_space | Set the coordinate space for this scene. |
-| add_new\_`<spatial_type>`(key, subcollection, transform, ...) | Create a new spatial object in a sub-collection and register its transform. |
-| set_transform_to\_`<spatial_type>`(key, subcollection, transform, ...) | Set the coordinate transform to an existing spatial object. |
-| get_transform_to\_`<spatial_type>`(key, subcollection, ...) -> CoordinateTransform | Return the transform from the scene to a spatial object. |
-| get_transform_from\_`<spatial_type>`(key, subcollection, ...) -> CoordinateTransform | Return the transform from a spatial object to the scene. |
+| add_new\_point_cloud_dataframe(key, subcollection, transform, ...) | Create a new `PointCloudDataFrame` in a sub-collection and register its transform. |
+| add_new\_geometry_dataframe(key, subcollection, transform, ...) | Create a new `GeometryDataFrame` in a sub-collection and register its transform. |
+| add_new\_multiscale_image(key, subcollection, transform, ...) | Create a new `MultiscaleImage` in a sub-collection and register its transform. |
+| set_transform_to\_point_cloud_dataframe(key, subcollection, transform, ...) | Set the coordinate transform to an existing `PointCloudDataFrame` stored in a sub-collection in this `SOMAScene`. |
+| set_transform_to\_geometry_dataframe(key, subcollection, transform, ...) | Set the coordinate transform to an existing `GeometryDataFrame` stored in a sub-collection in this `SOMAScene`. |
+| set_transform_to\_MultiscaleImage(key, subcollection, transform, ...) | Set the coordinate transform to an existing `MultiscaleImage` stored in this `SOMAScene`. |
+| get_transform_to\_point_cloud_dataframe(key, subcollection, ...) -> CoordinateTransform | Return the transform from the `SOMAScene` to a PointCloudDataFrame contained in it. |
+| get_transform_to\_geometry_dataframe(key, subcollection, ...) -> CoordinateTransform | Return the transform from the `SOMAScene` to a `GeometryDataFrame` contained in it. |
+| get_transform_to\_multiscale_image(key, subcollection, ...) -> CoordinateTransform | Return the transform from the `SOMAScene` to a `MultiscaleImage`. |
+| get_transform_from\_point_cloud_dataframe(key, subcollection, ...) -> CoordinateTransform | Return the transform from a `PointCloudDataFrame` to the `SOMAScene`. |
+| get_transform_from\_geometry_dataframe(key, subcollection, ...) -> CoordinateTransform | Return the transform from a `GeometryDataframe` to the `SOMAScene`. |
+| get_transform_from\_multiscale_image(key, subcollection, ...) -> CoordinateTransform | Return the transform from a `MultiscaleImage` to the `SOMAScene`. |
 
-Where `<spatial_type>` is one of `geometry_dataframe`, `multiscale_image`, or `point_cloud_dataframe`.
 
 ### Operation: create()
 
