@@ -230,7 +230,7 @@ In addition to the `soma_joinid`, every `SOMAGeometryDataFrame` must contain a c
 names of other columns in the table. The `soma_geometry` must be an index column, but the user may also specify other additional columns as
 index columns. Multiple items with the same geometry may be stored in the `SOMAGeometryDataFrame`.
 
-SOMADataFrame`is the zero or null value of the respective column data type (e.g.,`Arrow.float32`defaults to 0.0,`Arrow.string`to`""\`, etc).
+`SOMADataFrame` is the zero or null value of the respective column data type (e.g., `Arrow.float32` defaults to 0.0, `Arrow.string` to `""`, etc).
 
 ### SOMADenseNDArray
 
@@ -282,7 +282,7 @@ The `SOMAExperiment`, `SOMAMeasurement`, and `SOMAScene` types comprise [foundat
 - `SOMAMeasurement`: for all observables, a common set of annotated variables (defined by a `SOMADataFrame`) for which values (e.g., measurements, calculations) are stored in `SOMADenseNDArray` and `SOMASparseNDArray`.
 - `SOMAScene`: images and spatially indexed data stored on a fixed coordinate system that relate back to the observables and measurements.
 
-In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`. Each `SOMAScene` stores images and spatial dataframes that join on the `obs` and var\` dataframes.
+In other words, every `SOMAMeasurement` has a distinct set of variables (features), and inherits common observables from its parent `SOMAExperiment`. The `obs` and `var` dataframes define the axis annotations, and their respective `soma_joinid` values are the indices for all matrixes stored in the `SOMAMeasurement`. Each `SOMAScene` stores images and spatial dataframes that join on the `obs` and `var` dataframes.
 
 <figure>
     <img src="images/SOMAExperiment.png" alt="SOMAExperiment">
@@ -648,7 +648,121 @@ add_new_collection(string key, CollectionType kind, string uri = "", PlatformCon
 
 ## SOMAScene
 
-<!-- TODO: Add the operations. -->
+`SOMAScene` is a specialization of `SOMACollection` that stores spatially resolved data registered to a single coordinate space. All [SOMACollection operations](#somacollection) apply. In addition, `SOMAScene` provides a coordinate space, three fixed sub-collections (`img` for multiscale images, `obsl` for observation data at a given location, and `varl` for variable data at a given locatino), and operations to create and query coordinate transforms between elements in those sub-collections and the scene.
+
+Summary of additional operations on a `SOMAScene`:
+
+| Operation | Description |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| static create(uri, ...) -> SOMAScene | Create a `SOMAScene`. |
+| get soma_type | Returns the constant "SOMAScene". |
+| get coordinate_space -> CoordinateSpace | Return the coordinate space for this scene. |
+| set coordinate_space | Set the coordinate space for this scene. |
+| add_new\_`<spatial_type>`(key, subcollection, transform, ...) | Create a new spatial object in a sub-collection and register its transform. |
+| set_transform_to\_`<spatial_type>`(key, subcollection, transform, ...) | Set the coordinate transform to an existing spatial object. |
+| get_transform_to\_`<spatial_type>`(key, subcollection, ...) -> CoordinateTransform | Return the transform from the scene to a spatial object. |
+| get_transform_from\_`<spatial_type>`(key, subcollection, ...) -> CoordinateTransform | Return the transform from a spatial object to the scene. |
+
+Where `<spatial_type>` is one of `geometry_dataframe`, `multiscale_image`, or `point_cloud_dataframe`.
+
+### Operation: create()
+
+Create a new `SOMAScene` with user-specified URI.
+
+```
+SOMAScene.create(string uri, CoordinateSpace coordinate_space = NULL, platform_config, context) -> SOMAScene
+```
+
+Parameters:
+
+- `uri`: location at which to create the object.
+- `coordinate_space`: the coordinate space for the scene, or a list of axis names from which to construct one. If `NULL`, no coordinate space is set at creation time.
+- [`platform_config`](#platform-specific-configuration): optional storage-engine-specific configuration.
+- [`context`](#long-lived-context-data): optional context to use for this new object.
+
+Returns: The newly created `SOMAScene`, opened in write mode.
+
+### get coordinate_space
+
+Return the `CoordinateSpace` for the scene. Returns `NULL` if no coordinate space has been set.
+
+### set coordinate_space
+
+Set the coordinate space for the scene. The provided value must be a `CoordinateSpace`.
+
+### Operation: add_new\_<var>spatial_type</var>
+
+Each <code>add_new\_<var>spatial_type</var></code> method creates a new spatial SOMA object in storage, adds it to the specified sub-collection, registers a coordinate transform between the scene and the new object, and returns it to the user. The newly created entry has the same `context` value as the scene and is [owned by the scene](#operation-close-collection-types).
+
+```
+add_new_geometry_dataframe(string key, string|string[] subcollection, CoordinateTransform transform, string uri = "", ...) -> SOMAGeometryDataFrame
+add_new_multiscale_image(string key, string|string[] subcollection, CoordinateTransform transform, string uri = "", ...) -> SOMAMultiscaleImage
+add_new_point_cloud_dataframe(string key, string|string[] subcollection, CoordinateTransform transform, string uri = "", ...) -> SOMAPointCloudDataFrame
+```
+
+Parameters:
+
+- `key`: The name for the new object within its sub-collection.
+- `subcollection`: The name of the sub-collection (`"img"`, `"obsl"`, or `"varl"`) in which to store the object. If the target is more than one level deep (e.g., a measurement-specific collection within `varl`), provide a sequence of names.
+- `transform`: The coordinate transform from the scene coordinate space to the new object. May be `NULL` to leave the transform unregistered at creation time.
+- `uri`: An optional URI for the new object. Follows the same semantics as [`add_new_<var>object_type</var>`](#operation-add_new_object_type).
+
+The remaining parameters are passed directly to the respective type's `create` static method, except for `context`, which is always set to the scene's context.
+
+### Operation: set_transform_to\_<var>spatial_type</var>
+
+Each <code>set_transform_to\_<var>spatial_type</var></code> method sets (or replaces) the coordinate transform from the scene coordinate space to an existing spatial object stored in the scene.
+
+```
+set_transform_to_geometry_dataframe(string key, string|string[] subcollection = "obsl", CoordinateTransform transform, CoordinateSpace coordinate_space = NULL) -> SOMAGeometryDataFrame
+set_transform_to_multiscale_image(string key, string|string[] subcollection = "img", CoordinateTransform transform, CoordinateSpace coordinate_space = NULL) -> SOMAMultiscaleImage
+set_transform_to_point_cloud_dataframe(string key, string|string[] subcollection = "obsl", CoordinateTransform transform, CoordinateSpace coordinate_space = NULL) -> SOMAPointCloudDataFrame
+```
+
+Parameters:
+
+- `key`: The name of the spatial object within its sub-collection.
+- `subcollection`: The name, or sequence of names, of the sub-collection the object is stored in. Defaults to `"obsl"` for dataframes and `"img"` for images.
+- `transform`: The coordinate transform from the scene coordinate space to the spatial object. For `SOMAMultiscaleImage`, the transform must be to the reference level of the image.
+- `coordinate_space`: If provided, replaces the existing coordinate space of the spatial object.
+
+Returns: The spatial object, opened for writing.
+
+### Operation: get_transform_to\_<var>spatial_type</var>
+
+Each <code>get_transform_to\_<var>spatial_type</var></code> method returns the coordinate transform from the scene coordinate space to the requested spatial object.
+
+```
+get_transform_to_geometry_dataframe(string key, string|string[] subcollection = "obsl") -> CoordinateTransform
+get_transform_to_multiscale_image(string key, string|string[] subcollection = "img", string|int level = NULL) -> CoordinateTransform
+get_transform_to_point_cloud_dataframe(string key, string|string[] subcollection = "obsl") -> CoordinateTransform
+```
+
+Parameters:
+
+- `key`: The name of the spatial object within its sub-collection.
+- `subcollection`: The name, or sequence of names, of the sub-collection the object is stored in.
+- `level` (multiscale image only): The image level to get the transform to. Defaults to `NULL`, which returns the transform to the reference level.
+
+Returns: A `CoordinateTransform` from the scene coordinate space to the requested object.
+
+### Operation: get_transform_from\_<var>spatial_type</var>
+
+Each <code>get_transform_from\_<var>spatial_type</var></code> method returns the coordinate transform from the requested spatial object to the scene coordinate space (the inverse direction of <code>get_transform_to\_<var>spatial_type</var></code>).
+
+```
+get_transform_from_geometry_dataframe(string key, string|string[] subcollection = "obsl") -> CoordinateTransform
+get_transform_from_multiscale_image(string key, string|string[] subcollection = "img", string|int level = NULL) -> CoordinateTransform
+get_transform_from_point_cloud_dataframe(string key, string|string[] subcollection = "obsl") -> CoordinateTransform
+```
+
+Parameters:
+
+- `key`: The name of the spatial object within its sub-collection.
+- `subcollection`: The name, or sequence of names, of the sub-collection the object is stored in.
+- `level` (multiscale image only): The image level to get the transform from. Defaults to `NULL`, which returns the transform from the reference level.
+
+Returns: A `CoordinateTransform` from the requested object to the scene coordinate space.
 
 ## SOMADataFrame
 
