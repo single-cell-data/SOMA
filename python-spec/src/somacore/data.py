@@ -38,8 +38,8 @@ class DataFrame(base.SOMAObject, Protocol):
         uri: str,
         *,
         schema: pa.Schema,
+        domain: Sequence[tuple[Any, Any] | None],
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
-        domain: Sequence[tuple[Any, Any] | None] | None = None,
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
@@ -65,23 +65,11 @@ class DataFrame(base.SOMAObject, Protocol):
                 index column name is required.
 
             domain:
-                An optional sequence of tuples specifying the domain of each
-                index column. Each tuple must be a pair consisting of the
-                minimum and maximum values storable in the index column. For
-                example, if there is a single int64-valued index column, then
-                ``domain`` might be ``[(100, 200)]`` to indicate that values
-                between 100 and 200, inclusive, can be stored in that column.
-                If provided, this sequence must have the same length as
-                ``index_column_names``, and the index-column domain will be as
-                specified.  If omitted entirely, or if ``None`` in a given
-                dimension, the corresponding index-column domain will use an
-                empty range, and data writes after that will fail with an
-                exception.  Unless you have a particular reason not to, you
-                should always provide the desired `domain` at create time: this
-                is an optional but strongly recommended parameter. See also
-                ``change_domain`` which allows you to expand the domain after
-                create.
-
+                A sequence of tuples specifying the domain of each index
+                column. Each tuple must be a pair consisting of the minimum
+                and maximum values storable in the index column. This sequence
+                must have the same length as ``index_column_names``. Use ``None`` for string
+                index columns when the implementation does not support string domains.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
@@ -171,9 +159,9 @@ class DataFrame(base.SOMAObject, Protocol):
 
         The argument must be a tuple of pairs of low/high values for the desired
         domain, one pair per index column. For string index columns, you must
-        offer the low/high pair as `("", "")`, or as ``None``.  If ``check_only``
-        is ``True``, returns whether the operation would succeed if attempted,
-        and a reason why it would not.
+        offer the low/high pair as `("", "")`, or as ``None`` for string columns.  If
+        ``check_only`` is ``True``, returns whether the operation would succeed if
+        attempted, and a reason why it would not.
 
         For example, suppose the dataframe's sole index-column name is
         ``"soma_joinid"`` (which is the default at create).  If the dataframe's
@@ -263,7 +251,7 @@ class NDArray(base.SOMAObject, Protocol):
         uri: str,
         *,
         type: pa.DataType,
-        shape: Sequence[int | None],
+        shape: Sequence[int],
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
@@ -273,16 +261,10 @@ class NDArray(base.SOMAObject, Protocol):
             uri: The URI where the array will be created.
             type: The Arrow type to store in the array.
                 If the type is unsupported, an error will be raised.
-            shape: The maximum capacity of each dimension, including room
-                for any intended future appends, specified as one element
-                per dimension, e.g. ``(100, 10)``.  All lengths must be in
-                the positive int64 range, or ``None``.  It's necessary to say
-                ``shape=(None, None)`` or ``shape=(None, None, None)``,
-                as the sequence length determines the number of dimensions
-                (N) in the N-dimensional array.
-
-                For sparse arrays only, if a slot is None, then the maximum
-                possible int64 will be used, making a sparse array growable.
+            shape: The initial maximum capacity of each dimension, specified
+                as one element per dimension, e.g. ``(100, 10)`` for a 2D array.
+                All lengths must be in the positive int64 range. The shape can
+                be increased after creation using :meth:`resize`.
 
         Returns: The newly created array, opened for writing.
 
