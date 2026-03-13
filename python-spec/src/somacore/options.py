@@ -60,9 +60,7 @@ class IOfN(ReadPartitions):
     def _validate(self, _, __):
         del _, __  # Unused.
         if not 0 <= self.i < self.n:
-            raise ValueError(
-                f"Partition index {self.i} must be in the range [0, {self.n})"
-            )
+            raise ValueError(f"Partition index {self.i} must be in the range [0, {self.n})")
 
 
 @attrs.define(frozen=True)
@@ -187,7 +185,5 @@ SparseNDCoord = Union[
 SparseNDCoords = Sequence[SparseNDCoord]
 """A sequence of coordinate ranges for reading sparse ndarrays."""
 
-SpatialRegion = Union[
-    Sequence[int], Sequence[float], shapely.geometry.base.BaseGeometry
-]
+SpatialRegion = Union[Sequence[int], Sequence[float], shapely.geometry.base.BaseGeometry]
 """A spatial region used for reading spatial dataframes and multiscale images."""

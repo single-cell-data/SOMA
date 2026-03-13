@@ -219,9 +219,7 @@ class BaseCollection(base.SOMAObject, Protocol[_Elem]):
         """Sets an entry into this collection. See :meth:`set` for details."""
         self.set(key, value)
 
-    def set(
-        self, key: str, value: _Elem, *, use_relative_uri: bool | None = None
-    ) -> Self:
+    def set(self, key: str, value: _Elem, *, use_relative_uri: bool | None = None) -> Self:
         """Sets an entry of this collection.
 
         Important note: Because parent objects may need to share

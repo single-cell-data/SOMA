@@ -16,7 +16,8 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.10
     hooks:
-      - id: ruff
+      - id: ruff-check
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     # This mypy step is not perfect; in the interest of not reproducing
@@ -27,11 +28,6 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [attrs]
-
-  - repo: https://github.com/psf/black
-    rev: "25.1.0"
-    hooks:
-      - id: black
 
   - repo: https://github.com/hukkin/mdformat
     rev: 0.7.22  # Use the ref you want to point at

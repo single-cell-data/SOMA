@@ -45,6 +45,8 @@ tag_regex = '^python-(?P<version>[vV]?\d+(?:\.\d+){0,2}[^\+]*)(?:\+.*)?$'
 lint.extend-select = ["I"]
 target-version = "py39"
 fix = true
+preview = true  # enables "beta" rules: https://docs.astral.sh/ruff/preview/
+line-length = 120
 
 [tool.ruff.lint.isort]
 force-single-line = true
