@@ -68,10 +68,8 @@ class DataFrame(base.SOMAObject, Protocol):
                 A sequence of tuples specifying the domain of each index
                 column. Each tuple must be a pair consisting of the minimum
                 and maximum values storable in the index column. This sequence
-                must have the same length as ``index_column_names``, and the
-                index-column domain will be as specified. Use ``None`` to speficy the
-                domain on string columns if the implementation does not support domains.
-
+                must have the same length as ``index_column_names``. Use ``None`` for string
+                index columns when the implementation does not support string domains.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
@@ -264,9 +262,9 @@ class NDArray(base.SOMAObject, Protocol):
             type: The Arrow type to store in the array.
                 If the type is unsupported, an error will be raised.
             shape: The initial maximum capacity of each dimension, specified
-                as one element per dimension, e.g. ``(100, 10)``.  All lengths
-                must be in the positive int64 range. The shape can be increased
-                after creation using :meth:`resize`.
+                as one element per dimension, e.g. ``(100, 10)`` for a 2D array.
+                All lengths must be in the positive int64 range. The shape can
+                be increased after creation using :meth:`resize`.
 
         Returns: The newly created array, opened for writing.
 
