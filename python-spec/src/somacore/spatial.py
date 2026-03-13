@@ -663,18 +663,14 @@ class MultiscaleImage(base.SOMAObject, Protocol):
         """
         ...
 
-    def get_transform_from_level(
-        self, level: int | str
-    ) -> coordinates.CoordinateTransform:
+    def get_transform_from_level(self, level: int | str) -> coordinates.CoordinateTransform:
         """Returns the transformation from user requested level to image reference level.
 
         Lifecycle: experimental
         """
         ...
 
-    def get_transform_to_level(
-        self, level: int | str
-    ) -> coordinates.CoordinateTransform:
+    def get_transform_to_level(self, level: int | str) -> coordinates.CoordinateTransform:
         """Returns the transformation from the image reference level to the user
         requested level.
 

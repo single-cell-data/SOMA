@@ -22,12 +22,9 @@ def _canonicalize_coords(
         return tuple(_canonicalize_coord(c) for c in in_coords)
     if isinstance(in_coords, (str, bytes)):
         raise TypeError(
-            "Query coordinates must be a normal sequence, not `str` or `bytes`."
-            f" Did you mean {(in_coords,)}?"
+            f"Query coordinates must be a normal sequence, not `str` or `bytes`. Did you mean {(in_coords,)}?"
         )
-    raise TypeError(
-        f"Query coordinates must be a sequence, not a single {type(in_coords)}"
-    )
+    raise TypeError(f"Query coordinates must be a sequence, not a single {type(in_coords)}")
 
 
 def _canonicalize_coord(coord: options.SparseDFCoord) -> options.SparseDFCoord:

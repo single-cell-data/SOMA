@@ -67,7 +67,6 @@ __all__ = (
     "GeometryDataFrame",
     "PointCloudDataFrame",
     "BatchSize",
-    "IOfN",
     "ResultOrder",
     "AxisColumnNames",
     "AxisQuery",
