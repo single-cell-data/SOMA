@@ -38,8 +38,8 @@ class DataFrame(base.SOMAObject, Protocol):
         uri: str,
         *,
         schema: pa.Schema,
-        domain: Sequence[tuple[Any, Any] | None],
         index_column_names: Sequence[str] = (options.SOMA_JOINID,),
+        domain: Sequence[tuple[Any, Any] | None],
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:

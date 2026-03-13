@@ -34,11 +34,11 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
         uri: str,
         *,
         schema: pa.Schema,
-        domain: Sequence[tuple[Any, Any]],
         coordinate_space: Sequence[str] | coordinates.CoordinateSpace = (
             "x",
             "y",
         ),
+        domain: Sequence[tuple[Any, Any]],
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
@@ -253,8 +253,8 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
         uri: str,
         *,
         schema: pa.Schema,
-        domain: Sequence[tuple[Any, Any] | None],
         coordinate_space: Sequence[str] | coordinates.CoordinateSpace = ("x", "y"),
+        domain: Sequence[tuple[Any, Any] | None],
         platform_config: options.PlatformConfig | None = None,
         context: Any | None = None,
     ) -> Self:
