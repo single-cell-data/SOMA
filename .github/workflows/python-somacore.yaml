@@ -14,9 +14,9 @@ jobs:
     env:
       PYTHON_VERSION: "3.12"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
@@ -27,7 +27,7 @@ jobs:
         run: pip install -r requirements-py${PYTHON_VERSION}.txt -r requirements-py${PYTHON_VERSION}-lint.txt
 
       - name: Restore pre-commit cache
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
@@ -47,12 +47,12 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           # setuptools-scm needs a deep clone so it can look through history
           # to find a relevant tag.
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
@@ -83,8 +83,8 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           cache: pip
           cache-dependency-path: python-spec/requirements-py3.10.txt
