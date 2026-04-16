@@ -132,7 +132,6 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
         """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
 
-
         Args:
             region: The region to query. May be a box in the form
                 [x_min, y_min, x_max, y_max] (for 2D images), a box in the form
@@ -183,7 +182,8 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -227,7 +227,8 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
     def domain(self) -> tuple[tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
-        Returns: a tuple of minimum and maximum values, inclusive,
+        Returns:
+            A tuple of minimum and maximum values, inclusive,
             storable on each index column of the dataframe.
 
         Lifecycle: experimental
@@ -328,6 +329,7 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
                 for the particular SOMA implementation for details.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
+
         Returns:
             A :class:`ReadIter` of :class:`pa.Table`s.
 
@@ -350,7 +352,6 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
     ) -> "SpatialRead[pa.Table]":
         """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
-
 
         Args:
             region: The region to query. May be a box in the form
@@ -402,7 +403,8 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -446,7 +448,8 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
     def domain(self) -> tuple[tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
-        Returns: a tuple of minimum and maximum values, inclusive,
+        Returns:
+            A tuple of minimum and maximum values, inclusive,
             storable on each index column of the dataframe.
 
         Lifecycle: experimental
@@ -569,7 +572,8 @@ class MultiscaleImage(base.SOMAObject, Protocol):
                 is not possible at all, the collection should raise an error.
                 If ``False``, will always use an absolute URI.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -623,6 +627,8 @@ class MultiscaleImage(base.SOMAObject, Protocol):
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
             :class:`pa.Tensor` data.
+
+        Lifecycle: experimental
         """
         ...
 
@@ -706,7 +712,7 @@ _T = TypeVar("_T", covariant=True)
 class SpatialRead(Protocol[_T]):
     """Reader for spatial data.
 
-    Args:
+    Attributes:
         data: The data accessor.
         data_coordinate_space: The coordinate space the read data is defined on.
         output_coordinate_space: The requested output coordinate space.

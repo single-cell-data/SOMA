@@ -58,8 +58,10 @@ class BaseCollection(base.SOMAObject, Protocol[_Elem]):
 
         Args:
             uri: The URI where the collection will be created.
+
         Returns:
             The newly created collection, opened for writing.
+
         Lifecycle: maturing
         """
         ...
@@ -99,6 +101,7 @@ class BaseCollection(base.SOMAObject, Protocol[_Elem]):
         platform_config: options.PlatformConfig | None = None,
     ) -> "BaseCollection":
         """Creates a new sub-collection of this collection.
+
         To add an existing collection as a sub-element of this collection,
         use :meth:`set` or indexed access (``coll[name] = value``) instead.
 
@@ -140,7 +143,6 @@ class BaseCollection(base.SOMAObject, Protocol[_Elem]):
             kind: The type of child that should be added.
             uri: If provided, overrides the default URI that would be used
                 to create this object. This may be absolute or relative.
-                If not provided,
             platform_config: Platform-specific configuration options used
                 when creating the child.
 
@@ -247,7 +249,8 @@ class BaseCollection(base.SOMAObject, Protocol[_Elem]):
                 is not possible at all, the collection should raise an error.
                 If ``False``, will always use an absolute URI.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: maturing
         """
