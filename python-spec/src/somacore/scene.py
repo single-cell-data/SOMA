@@ -128,9 +128,9 @@ class Scene(
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in.
             transform: The coordinate transformation from the scene to the dataframe.
-            uri: If provided, overrides the default URI what would be used to create
-                this object. This may be aboslution or relative.
-            kwargs: Additional keyword arugments as specified in
+            uri: If provided, overrides the default URI that would be used to create
+                this object. This may be absolute or relative.
+            kwargs: Additional keyword arguments as specified in
                 :meth:`spatial.GeometryDataFrame.create`.
 
         Returns:
@@ -159,9 +159,9 @@ class Scene(
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in.
             transform: The coordinate transformation from the scene to the dataframe.
-            uri: If provided, overrides the default URI what would be used to create
-                this object. This may be aboslution or relative.
-            kwargs: Additional keyword arugments as specified in
+            uri: If provided, overrides the default URI that would be used to create
+                this object. This may be absolute or relative.
+            kwargs: Additional keyword arguments as specified in
                 :meth:`spatial.MultiscaleImage.create`.
 
         Returns:
@@ -192,7 +192,6 @@ class Scene(
                 'transcripts', subcollection=['var', 'RNA'], **kwargs
             )
 
-
         See :meth:`add_new_collection` for details about child URIs.
 
         Args:
@@ -200,9 +199,9 @@ class Scene(
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in.
             transform: The coordinate transformation from the scene to the dataframe.
-            uri: If provided, overrides the default URI what would be used to create
-                this object. This may be aboslution or relative.
-            kwargs: Additional keyword arugments as specified in
+            uri: If provided, overrides the default URI that would be used to create
+                this object. This may be absolute or relative.
+            kwargs: Additional keyword arguments as specified in
                 :meth:`spatial.PointCloudDataFrame.create`.
 
         Returns:
@@ -234,9 +233,9 @@ class Scene(
 
         Args:
             key: The name of the geometry dataframe.
-            transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
+            transform: The coordinate transformation from the scene to the dataframe.
             coordinate_space: Optional coordinate space for the dataframe. This will
                 replace the existing coordinate space of the dataframe.
 

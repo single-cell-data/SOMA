@@ -61,11 +61,11 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
                 must define all columns, including columns to be named as index
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
-            coordinate_space: Either the coordinate space or the axis names for the
-                coordinate space the point cloud is defined on.
             domain: A sequence of tuples specifying the domain of each index column. Each
                 tuple must be a pair consisting of the minimum and maximum values storable
                 in the index column.
+            coordinate_space: Either the coordinate space or the axis names for the
+                coordinate space the point cloud is defined on.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
@@ -132,7 +132,6 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
         """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
 
-
         Args:
             region: The region to query. May be a box in the form
                 [x_min, y_min, x_max, y_max] (for 2D images), a box in the form
@@ -183,7 +182,8 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -227,7 +227,8 @@ class PointCloudDataFrame(base.SOMAObject, Protocol):
     def domain(self) -> tuple[tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
-        Returns: a tuple of minimum and maximum values, inclusive,
+        Returns:
+            A tuple of minimum and maximum values, inclusive,
             storable on each index column of the dataframe.
 
         Lifecycle: experimental
@@ -277,14 +278,14 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
                 must define all columns, including columns to be named as index
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
-            coordinate_space: Either the coordinate space or the axis names for the
-                coordinate space the point cloud is defined on.
             domain: A sequence of tuples specifying the domain of each index column. Each
                 tuple should be a pair consisting of the minimum and maximum values storable
                 in the index column. Two tuples must be provided for the ``soma_geometry``
                 column with the first tuple specifying the minimum and maximum values of
                 the width and the second tuple specifying the minimum and maximum values of the
                 height.
+            coordinate_space: Either the coordinate space or the axis names for the
+                coordinate space the point cloud is defined on.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
             context: Other implementation-specific configuration.
@@ -328,6 +329,7 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
                 for the particular SOMA implementation for details.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
+
         Returns:
             A :class:`ReadIter` of :class:`pa.Table`s.
 
@@ -350,7 +352,6 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
     ) -> "SpatialRead[pa.Table]":
         """Reads data intersecting an user-defined region of space into a
         :class:`SpatialRead` with data in Arrow tables.
-
 
         Args:
             region: The region to query. May be a box in the form
@@ -402,7 +403,8 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -446,7 +448,8 @@ class GeometryDataFrame(base.SOMAObject, Protocol):
     def domain(self) -> tuple[tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
-        Returns: a tuple of minimum and maximum values, inclusive,
+        Returns:
+            A tuple of minimum and maximum values, inclusive,
             storable on each index column of the dataframe.
 
         Lifecycle: experimental
@@ -569,7 +572,8 @@ class MultiscaleImage(base.SOMAObject, Protocol):
                 is not possible at all, the collection should raise an error.
                 If ``False``, will always use an absolute URI.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: experimental
         """
@@ -611,18 +615,20 @@ class MultiscaleImage(base.SOMAObject, Protocol):
             region_coord_space: An optional coordinate space for the region being read.
                 The axis names must match the input axis names of the transform.
                 Defaults to ``None``, coordinate space will be inferred from transform.
-            data_axis_order: The order to return the data axes in. Use ``soma_channel``
-                to specify the location of the channel coordinate.
             result_order: The order data to return results, specified as a
                 :class:`~options.ResultOrder` or its string value. This is the result
                 order the data is read from disk. It may be permuted if
                 ``data_axis_order`` is not the default order.
+            data_axis_order: The order to return the data axes in. Use ``soma_channel``
+                to specify the location of the channel coordinate.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
         Returns:
             The data bounding the requested region as a :class:`SpatialRead` with
             :class:`pa.Tensor` data.
+
+        Lifecycle: experimental
         """
         ...
 
@@ -706,7 +712,7 @@ _T = TypeVar("_T", covariant=True)
 class SpatialRead(Protocol[_T]):
     """Reader for spatial data.
 
-    Args:
+    Attributes:
         data: The data accessor.
         data_coordinate_space: The coordinate space the read data is defined on.
         output_coordinate_space: The requested output coordinate space.

@@ -26,7 +26,7 @@ class Axis(Protocol):
 class CoordinateSpace(Protocol):
     """A coordinate space for spatial data.
 
-    Args:
+    Attributes:
         axes: The axes of the coordinate system in order.
 
     Lifecycle: experimental
@@ -58,7 +58,7 @@ class CoordinateSpace(Protocol):
 class CoordinateTransform(Protocol):
     """A coordinate transformation from one coordinate space to another.
 
-    Args:
+    Attributes:
         input_axes: The names of the axes for the input coordinate space.
         output_axes: The names of the axes for the output coordinate space.
 

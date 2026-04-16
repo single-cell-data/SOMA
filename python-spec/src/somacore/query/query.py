@@ -29,8 +29,7 @@ _RO_AUTO = ResultOrder.AUTO
 
 
 class AxisColumnNames(TypedDict, total=False):
-    """
-    Specifies column names for experiment axis query read operations.
+    """Specifies column names for experiment axis query read operations.
 
     Lifecycle: maturing
     """
@@ -170,12 +169,14 @@ class ExperimentAxisQuery(Protocol):
 
     def obsm(self, layer: str) -> SparseRead:
         """Returns an ``obsm`` layer as a sparse read.
+
         Lifecycle: maturing
         """
         ...
 
     def varm(self, layer: str) -> SparseRead:
         """Returns a ``varm`` layer as a sparse read.
+
         Lifecycle: maturing
         """
         ...
@@ -208,8 +209,7 @@ class ExperimentAxisQuery(Protocol):
         varp_layers: Sequence[str] = (),
         drop_levels: bool = False,
     ) -> AnnData:
-        """
-        Executes the query and return result as an ``AnnData`` in-memory object.
+        """Executes the query and return result as an ``AnnData`` in-memory object.
 
         Args:
             X_name: The X layer to read and return in the ``X`` slot.
@@ -217,16 +217,11 @@ class ExperimentAxisQuery(Protocol):
                 to read.
             X_layers: Additional X layers to read and return
                 in the ``layers`` slot.
-            obsm_layers:
-                Additional obsm layers to read and return in the obsm slot.
-            obsp_layers:
-                Additional obsp layers to read and return in the obsp slot.
-            varm_layers:
-                Additional varm layers to read and return in the varm slot.
-            varp_layers:
-                Additional varp layers to read and return in the varp slot.
-            drop_levels:
-                Indicate whether unused categories on axis frames should be
+            obsm_layers: Additional obsm layers to read and return in the obsm slot.
+            obsp_layers: Additional obsp layers to read and return in the obsp slot.
+            varm_layers: Additional varm layers to read and return in the varm slot.
+            varp_layers: Additional varp layers to read and return in the varp slot.
+            drop_levels: Indicate whether unused categories on axis frames should be
                 dropped. By default, False, the categories which are present
                 in the SOMA Experiment and not present in the query output
                 are not dropped.
@@ -257,8 +252,7 @@ Numpyable = Union[pa.Array, pa.ChunkedArray, npt.NDArray[np.int64]]
 
 @runtime_checkable
 class AxisIndexer(Protocol):
-    """
-    Given a query, provides index-building services for obs/var axis.
+    """Given a query, provides index-building services for obs/var axis.
 
     Lifecycle: maturing
     """

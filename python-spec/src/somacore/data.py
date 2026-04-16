@@ -53,26 +53,22 @@ class DataFrame(base.SOMAObject, Protocol):
 
         Args:
             uri: The URI where the dataframe will be created.
-
             schema: Arrow schema defining the per-column schema. This schema
                 must define all columns, including columns to be named as index
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
-
+            domain: A sequence of tuples specifying the domain of each index
+                column. Each tuple must be a pair consisting of the minimum
+                and maximum values storable in the index column. This sequence
+                must have the same length as ``index_column_names``. Use
+                ``None`` for string index columns when the implementation does
+                not support string domains.
             index_column_names: A list of column names to use as user-defined
                 index columns (e.g., ``['cell_type', 'tissue_type']``).
                 All named columns must exist in the schema, and at least one
                 index column name is required.
-
-            domain:
-                A sequence of tuples specifying the domain of each index
-                column. Each tuple must be a pair consisting of the minimum
-                and maximum values storable in the index column. This sequence
-                must have the same length as ``index_column_names``. Use ``None`` for string
-                index columns when the implementation does not support string domains.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
-
             context: Other implementation-specific configuration.
 
         Returns:
@@ -110,9 +106,9 @@ class DataFrame(base.SOMAObject, Protocol):
                 The default of ``None`` represents no filter. Value filter
                 syntax is implementation-defined; see the documentation
                 for the particular SOMA implementation for details.
+
         Returns:
             A :class:`ReadIter` of :class:`pa.Table`s.
-
 
         **Indexing:**
 
@@ -203,7 +199,8 @@ class DataFrame(base.SOMAObject, Protocol):
                 the index columns. The schema for the values must match
                 the schema for the ``DataFrame``.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: maturing
         """
@@ -231,7 +228,8 @@ class DataFrame(base.SOMAObject, Protocol):
     def domain(self) -> tuple[tuple[Any, Any], ...]:
         """The allowable range of values in each index column.
 
-        Returns: a tuple of minimum and maximum values, inclusive,
+        Returns:
+            A tuple of minimum and maximum values, inclusive,
             storable on each index column of the dataframe.
 
         Lifecycle: maturing
@@ -266,7 +264,8 @@ class NDArray(base.SOMAObject, Protocol):
                 All lengths must be in the positive int64 range. The shape can
                 be increased after creation using :meth:`resize`.
 
-        Returns: The newly created array, opened for writing.
+        Returns:
+            The newly created array, opened for writing.
 
         Lifecycle: maturing
         """
@@ -308,8 +307,7 @@ class NDArray(base.SOMAObject, Protocol):
 
 @runtime_checkable
 class DenseNDArray(NDArray, Protocol):
-    """
-    An N-dimensional array stored densely.
+    """An N-dimensional array stored densely.
 
     Lifecycle: maturing
     """
@@ -340,7 +338,8 @@ class DenseNDArray(NDArray, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: The data over the requested range as a tensor.
+        Returns:
+            The data over the requested range as a tensor.
 
         **Indexing:**
 
@@ -386,7 +385,10 @@ class DenseNDArray(NDArray, Protocol):
                 See :meth:`read` for details about indexing.
             values: The values to be written to the subarray.  Must have
                 the same shape as ``coords``, and matching type to the array.
-        Returns: ``self``, to enable method chaining.
+
+        Returns:
+            ``self``, to enable method chaining.
+
         Lifecycle: maturing
         """
         ...
@@ -420,7 +422,7 @@ class SparseNDArray(NDArray, Protocol):
             coords: A per-dimension sequence of coordinates defining
                 the range to be read.
             batch_size: The size of batches that should be returned from a read.
-            See :class:`options.BatchSize` for details.
+                See :class:`options.BatchSize` for details.
             partitions: Specifies that this is part of a partitioned read,
                 and which partition to include, if present.
             result_order: the order to return results, specified as a
@@ -428,7 +430,8 @@ class SparseNDArray(NDArray, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: The data that was requested in a :class:`SparseRead`,
+        Returns:
+            The data that was requested in a :class:`SparseRead`,
             allowing access in any supported format.
 
         **Indexing:**
@@ -483,7 +486,8 @@ class SparseNDArray(NDArray, Protocol):
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
-        Returns: ``self``, to enable method chaining.
+        Returns:
+            ``self``, to enable method chaining.
 
         Lifecycle: maturing
         """

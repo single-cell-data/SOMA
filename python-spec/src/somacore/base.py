@@ -35,7 +35,10 @@ class SOMAObject(Protocol):
             context: The Context value to use when opening the object.
             platform_config: Platform configuration options specific to
                 this open operation.
-        Returns: The SOMA object, opened for reading.
+
+        Returns:
+            The SOMA object, opened for reading.
+
         Lifecycle: maturing
         """
         ...
@@ -50,6 +53,7 @@ class SOMAObject(Protocol):
         Returns:
             True if the object exists and is of the correct type.
             False if the object does not exist, or is of a different type.
+
         Lifecycle: maturing
         """
         ...
