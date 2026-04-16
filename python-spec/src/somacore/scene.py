@@ -234,9 +234,9 @@ class Scene(
 
         Args:
             key: The name of the geometry dataframe.
-            transform: The coordinate transformation from the scene to the dataframe.
             subcollection: The name, or sequence of names, of the subcollection the
                 dataframe is stored in. Defaults to ``'obsl'``.
+            transform: The coordinate transformation from the scene to the dataframe.
             coordinate_space: Optional coordinate space for the dataframe. This will
                 replace the existing coordinate space of the dataframe.
 

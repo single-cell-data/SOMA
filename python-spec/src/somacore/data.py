@@ -59,17 +59,17 @@ class DataFrame(base.SOMAObject, Protocol):
                 columns.  If the schema includes types unsupported by the SOMA
                 implementation, an error will be raised.
 
-            index_column_names: A list of column names to use as user-defined
-                index columns (e.g., ``['cell_type', 'tissue_type']``).
-                All named columns must exist in the schema, and at least one
-                index column name is required.
-
             domain:
                 A sequence of tuples specifying the domain of each index
                 column. Each tuple must be a pair consisting of the minimum
                 and maximum values storable in the index column. This sequence
                 must have the same length as ``index_column_names``. Use ``None`` for string
                 index columns when the implementation does not support string domains.
+
+            index_column_names: A list of column names to use as user-defined
+                index columns (e.g., ``['cell_type', 'tissue_type']``).
+                All named columns must exist in the schema, and at least one
+                index column name is required.
             platform_config: platform-specific configuration; keys are SOMA
                 implementation names.
 
