@@ -6,7 +6,7 @@ natsort==8.4.0
 numpy==2.2.3
 packaging==24.2
 pandas==2.2.3
-pyarrow==19.0.1
+pyarrow==23.0.1
 pyarrow-hotfix==0.6
 python-dateutil==2.9.0.post0
 pytz==2025.1
